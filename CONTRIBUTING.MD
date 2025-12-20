@@ -1,5 +1,5 @@
 ## Contributing
-Contributors to this project are more than welcome, weather you have just started or are balls deap in open source contributions,
+Contributors to this project are more than welcome, weather you have just started or are experienced in open source contributions,
 I am happy for you to contribute to this project. However, I do have some requirements.
 
 - Be nice please, I want this to be a project that doesn't have a dark doomy cloud of "but the maintainers are hard to work with".
