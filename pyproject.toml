@@ -5,7 +5,7 @@ description = "A package to add fully featured OSC support to python"
 authors = [
     {name = "Morph Tollon",email = "32335272-MorphTollon@users.noreply.gitlab.com"}
 ]
-license = "GPL-2.0-only"
+license = "MIT License"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
