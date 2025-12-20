@@ -1,22 +1,9 @@
 # PyOSC
 
-The new generation python lib to support OSC (Open Sound Control).
+Python library to support OSC (Open Sound Control).
 
 ## About the Project
 
-I had issues getting the support I needed out of any of the other packages, so I deciede how hard can it be...
+I had issues getting the support I needed out of any of the other packages, so I decide how hard can it be...
 
-
-## Contributing
-Contributors to this project are more than welcome, weather you have just started or are balls deap in open source contributions, 
-I am happy for you to contribute to this project. However, I do have some requirements.
-
-- Be nice please, I want this to be a project that doesn't have a dark doomy cloud of "but the maintainers are hard to work with".
-- Please make your code clean, easy to understand, and make every solution the best solution **YOU** can come up with. I don't care that it's the best, I care that you tried.
-- Please explain your changes, when you make them, and why. I'm not a programmer by trade, nor am I particularly good at it, please please explain in your PRs what you have done, and why.
-- My AI policy is simple, don't make it effect the project, or the maintainers of this project. If your changes make it hard to maintain this project going into the future, or otherwise comprimises the intgegruity of this project, please think about what you are committing.
-
-## License
-
-This Project is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 ONLY. (Contrary to what gitlab has to say about it in the repo description.)
 
