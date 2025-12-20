@@ -113,3 +113,12 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Macos
+.DS_Store
+
+# VS Code
+.vscode/
+
+# Poetry lock file
+poetry.lock
