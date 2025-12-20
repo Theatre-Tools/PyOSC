@@ -4,11 +4,11 @@ The new generation python lib to support OSC (Open Sound Control).
 
 ## About the Project
 
-I had issues getting the support I needed out of any of the other packages, so I deciede how hard can it be...
+I had issues getting the support I needed out of any of the other packages, so I decide how hard can it be...
 
 
 ## Contributing
-Contributors to this project are more than welcome, weather you have just started or are balls deap in open source contributions, 
+Contributors to this project are more than welcome, weather you have just started or are balls deap in open source contributions,
 I am happy for you to contribute to this project. However, I do have some requirements.
 
 - Be nice please, I want this to be a project that doesn't have a dark doomy cloud of "but the maintainers are hard to work with".
