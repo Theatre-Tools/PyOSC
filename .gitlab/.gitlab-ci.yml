@@ -1,0 +1,72 @@
+stages:
+  - build
+  - test
+  - publish
+
+build:
+  ## Install Poetry, run poetry install, run poetry build
+  stage: build
+  image: python:3.13
+  before_script:
+    - pip install poetry
+    - poetry lock
+    - poetry install --with ci
+  script:
+    - poetry build
+  artifacts:
+    paths:
+      - dist/
+
+test_job:
+  stage: test
+  image: python:3.13
+  before_script:
+    - pip install poetry
+    - poetry install
+  script:
+    - poetry run python3 -m unittest tests/test_oscparser.py
+
+publish_to_testpypi:
+  id_tokens:
+    TESTPYPI_ID_TOKEN: 
+      aud: testpypi
+  stage: publish
+  image: python:3.13
+  before_script:
+    - pip install poetry
+    - poetry lock
+    - poetry install --with ci
+  dependencies:
+    - build
+  script:
+    - poetry run twine upload --repository testpypi dist/*
+  
+publish_to_gitlab:
+  image: python:latest
+  stage: publish
+  variables:
+    TWINE_USERNAME: gitlab-ci-token
+    TWINE_PASSWORD: $CI_JOB_TOKEN
+  before_script:
+    - pip install poetry
+    - poetry lock
+    - poetry install --with ci
+  dependencies:
+    - build
+  script:
+    - poetry run twine upload --repository-url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi dist/*
+
+publish_to_pypi:
+  id_tokens:
+    PYPI_ID_TOKEN: 
+      aud: pypi
+  stage: publish
+  image: python:3.13
+  before_script:
+    - pip install poetry
+    - poetry lock
+    - poetry install --with ci
+  dependencies:
+    - build
+  script:
+    - poetry run twine upload dist/* 
