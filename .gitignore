@@ -122,3 +122,6 @@ dmypy.json
 
 # Poetry lock file
 poetry.lock
+
+## testing files
+testin.py
