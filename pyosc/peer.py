@@ -18,9 +18,11 @@ class Framing:
     OSC10 = OSCFraming.OSC10
     OSC11 = OSCFraming.OSC11
 
+
 class Modes:
     TCP = OSCModes.TCP
     UDP = OSCModes.UDP
+
 
 class Message:
     """Abstractified the OSCMessage for easier use within the Peer class
@@ -43,7 +45,6 @@ class Message:
         """
         self.newargs = []
         for arg in self.args:
-            print(arg)
             ## If it is a native python type, convert it to an OSCArg
             if not isinstance(arg, OSCArg):
                 if not isinstance(arg, list):
@@ -70,9 +71,7 @@ class Message:
 
     @staticmethod
     def to_arg(arg):
-        print(arg)
         if isinstance(arg, int):
-            print("int")
             return OSCInt(value=arg)
         elif isinstance(arg, str):
             return OSCString(value=arg)
@@ -83,7 +82,6 @@ class Message:
                 return OSCFalse()
         elif isinstance(arg, float):
             return OSCFloat(value=arg)
-
 
 
 class Dispatcher:
@@ -175,7 +173,6 @@ class Peer:
             e: Any exceptions raised during sending are propagated upwards
 
         """
-        print(message.to_message().args)
         if self.mode == OSCModes.TCP:
             encoded_message = self.encoder.encode(message.to_message())
             self.tcp_connection.sendall(encoded_message)
