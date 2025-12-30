@@ -6,7 +6,9 @@ from oscparser import OSCArg, OSCDecoder, OSCEncoder, OSCFraming, OSCMessage, OS
 
 
 class Peer:
-    def __init__(self, address: str, port: int, mode: OSCModes = OSCModes.UDP, framing=OSCFraming.OSC10, udp_rx_port: int = 8001):
+    def __init__(
+        self, address: str, port: int, mode: OSCModes = OSCModes.UDP, framing=OSCFraming.OSC10, udp_rx_port: int = 8001
+    ):
         self.address = address
         self.port = port
         self.message = OSCMessage
@@ -21,7 +23,7 @@ class Peer:
             self.tcp_connection.connect((self.address, self.port))
         elif self.mode == OSCModes.UDP:
             self.udp_connection = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            self.udp_connection.bind(('localhost', self.udpRxPort))
+            self.udp_connection.bind(("localhost", self.udpRxPort))
 
     def send_message(self, message: OSCMessage):
         """
@@ -39,7 +41,7 @@ class Peer:
         try:
             while data := self.tcp_connection.recv(1024):
                 for msg in self.decoder.decode(data):
-                    print(f"{msg}")
+                    print(f"{msg.address}")  # type: ignore
         except Exception as e:
             raise e
 
@@ -47,13 +49,11 @@ class Peer:
         print("Listening on UDP")
         ## Listens on a UDP socket on the port specifies (Mimmicks behavure of the TCP listener)
         try:
-
-            while data :=self.udp_connection.recvfrom(1024):
-                print(data)
+            while data := self.udp_connection.recv(1024):
+                for msg in self.decoder.decode(data):
+                    print(msg.address)  # type: ignore
         except Exception as e:
             raise e
-
-
 
     ## Have a second thread listening for incoming messages on a different thread
     def start_listening(self):
