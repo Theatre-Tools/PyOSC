@@ -5,9 +5,10 @@ from typing import Callable
 from oscparser import OSCArg, OSCBundle, OSCDecoder, OSCEncoder, OSCFraming, OSCMessage, OSCModes
 
 
-class Dispatcher():
+class Dispatcher:
     def __init__(self):
         self.handlers = {}
+
     Handler = Callable[[OSCMessage], None]
 
     def add_handler(self, address: str, handler: Handler):
@@ -30,16 +31,22 @@ class Dispatcher():
         ## Split the address into it's parts
         ## This allows us to iterate over every part of it in order to match wildcards and less specific addresses
         parts = message.address.split("/")
-        print(parts)
         for i in range(len(parts), 0, -1):
             addr_to_check = "/".join(parts[:i])
-            print(f"Checking address: {addr_to_check} against {self.handlers.keys()}")
             if addr_to_check in self.handlers:
                 self.handlers[addr_to_check](message)
                 return
+
+
 class Peer:
     def __init__(
-        self, address: str, port: int, dispatcher: Dispatcher, mode: OSCModes = OSCModes.UDP, framing=OSCFraming.OSC10, udp_rx_port: int = 8001
+        self,
+        address: str,
+        port: int,
+        dispatcher: Dispatcher,
+        mode: OSCModes = OSCModes.UDP,
+        framing=OSCFraming.OSC10,
+        udp_rx_port: int = 8001,
     ):
         self.address = address
         self.port = port
@@ -105,5 +112,3 @@ class Peer:
         elif self.mode == OSCModes.UDP:
             background = threading.Thread(target=self.listen_udp, daemon=True)
             background.start()
-
-
