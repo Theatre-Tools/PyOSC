@@ -17,6 +17,8 @@ class Dispatcher:
             raise ValueError(f"Handler already exists for address {address}")
         else:
             self.handlers[address] = handler
+        if address.endswith("/") and len(address) > 1:
+            address = address[:-1]
 
     def remove_handler(self, address: str):
         if address in self.handlers:
