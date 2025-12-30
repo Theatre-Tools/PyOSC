@@ -1,6 +1,10 @@
 import socket
+import threading
+import time
 
 from oscparser import OSCArg, OSCDecoder, OSCEncoder, OSCFraming, OSCMessage, OSCModes
+
+from .listener import listen_tcp
 
 
 class Peer:
@@ -24,3 +28,10 @@ class Peer:
         encoded_message = self.encoder.encode(message)
         self.tcp_connection.sendall(encoded_message)
 
+    ## Have a second thread listening for incoming messages on a different thread
+    def start_listening(self):
+        background = threading.Thread(target=listen_tcp, daemon=True, args=[self.tcp_connection, self.decoder])
+        background.start()
+        for i in range(100):
+            print("I AM THE CHOSEN ONE1")
+            time.sleep(10)
