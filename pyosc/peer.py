@@ -1,12 +1,45 @@
 import socket
 import threading
+from typing import Callable
 
 from oscparser import OSCArg, OSCBundle, OSCDecoder, OSCEncoder, OSCFraming, OSCMessage, OSCModes
 
 
+class Dispatcher():
+    def __init__(self):
+        self.handlers = {}
+    Handler = Callable[[OSCMessage], None]
+
+    def add_handler(self, address: str, handler: Handler):
+        ## Check if there is a handler already for this address
+        if address in self.handlers:
+            raise ValueError(f"Handler already exists for address {address}")
+        else:
+            self.handlers[address] = handler
+
+    def remove_handler(self, address: str):
+        if address in self.handlers:
+            del self.handlers[address]
+        else:
+            raise ValueError(f"No handler exists for address {address}")
+
+    def add_default_handler(self, handler: Handler):
+        self.handlers[""] = handler
+
+    def dispatch(self, message: OSCMessage):
+        ## Split the address into it's parts
+        ## This allows us to iterate over every part of it in order to match wildcards and less specific addresses
+        parts = message.address.split("/")
+        print(parts)
+        for i in range(len(parts), 0, -1):
+            addr_to_check = "/".join(parts[:i])
+            print(f"Checking address: {addr_to_check} against {self.handlers.keys()}")
+            if addr_to_check in self.handlers:
+                self.handlers[addr_to_check](message)
+                return
 class Peer:
     def __init__(
-        self, address: str, port: int, mode: OSCModes = OSCModes.UDP, framing=OSCFraming.OSC10, udp_rx_port: int = 8001
+        self, address: str, port: int, dispatcher: Dispatcher, mode: OSCModes = OSCModes.UDP, framing=OSCFraming.OSC10, udp_rx_port: int = 8001
     ):
         self.address = address
         self.port = port
@@ -23,6 +56,7 @@ class Peer:
         elif self.mode == OSCModes.UDP:
             self.udp_connection = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.udp_connection.bind(("localhost", self.udpRxPort))
+        self.Dispatcher = dispatcher
 
     def send_message(self, message: OSCMessage):
         """
@@ -42,10 +76,10 @@ class Peer:
                 for msg in self.decoder.decode(data):
                     ## Check if the msg is a message or a bundle
                     if isinstance(msg, OSCMessage):
-                        print(msg.address)  # type: ignore
+                        self.Dispatcher.dispatch(msg)  # type: ignore
                     elif isinstance(msg, OSCBundle):
                         for inner_msg in msg.messages:  # type: ignore
-                            print(inner_msg.address)  # type: ignore
+                            self.Dispatcher.dispatch(inner_msg)  # type: ignore
         except Exception as e:
             raise e
 
@@ -56,10 +90,10 @@ class Peer:
             while data := self.udp_connection.recv(1024):
                 for msg in self.decoder.decode(data):
                     if isinstance(msg, OSCMessage):
-                        print(msg.address)  # type: ignore
+                        self.Dispatcher.dispatch(msg)  # type: ignore
                     elif isinstance(msg, OSCBundle):
                         for inner_msg in msg.messages:  # type: ignore
-                            print(inner_msg.address)  # type: ignore
+                            self.Dispatcher.dispatch(inner_msg)  # type: ignore
         except Exception as e:
             raise e
 
@@ -71,3 +105,5 @@ class Peer:
         elif self.mode == OSCModes.UDP:
             background = threading.Thread(target=self.listen_udp, daemon=True)
             background.start()
+
+
