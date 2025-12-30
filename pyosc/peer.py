@@ -6,13 +6,19 @@ from oscparser import OSCArg, OSCBundle, OSCDecoder, OSCEncoder, OSCFraming, OSC
 
 
 class Dispatcher:
+    """Dispatches incoming OSC messages to registered handlers based on their addresses."""
+
     def __init__(self):
         self.handlers = {}
 
     Handler = Callable[[OSCMessage], None]
 
     def add_handler(self, address: str, handler: Handler):
-        ## Check if there is a handler already for this address
+        """
+        Add a handler for a specific OSC address.
+        - ``address``: The OSC address to handle.
+        - ``handler``: A callable that takes an OSCMessage as its only argument.
+        """
         if address in self.handlers:
             raise ValueError(f"Handler already exists for address {address}")
         if address.endswith("/") and len(address) > 1:
@@ -20,15 +26,27 @@ class Dispatcher:
         self.handlers[address] = handler
 
     def remove_handler(self, address: str):
+        """ "
+        Removes a handler for a specific OSC address.
+        - ``address``: The OSC address to remove the handler for.
+        """
         if address in self.handlers:
             del self.handlers[address]
         else:
             raise ValueError(f"No handler exists for address {address}")
 
     def add_default_handler(self, handler: Handler):
+        """
+        Adds a fallback default handler to any messages that don't have a specific handler assigned.
+        - ``handler``: A callable that takes an OSCMessage as its only argument.
+        """
         self.handlers[""] = handler
 
     def dispatch(self, message: OSCMessage):
+        """
+        Dispatches an incoming OSC message to the appropriate handler based on its address.
+        - ``message``: The incoming OSCMessage to dispatch.
+        """
         ## Split the address into it's parts
         ## This allows us to iterate over every part of it in order to match wildcards and less specific addresses
         parts = message.address.split("/")
@@ -40,6 +58,8 @@ class Dispatcher:
 
 
 class Peer:
+    """An OSC Peer that can send and receive OSC messages over TCP or UDP."""
+
     def __init__(
         self,
         address: str,
@@ -69,6 +89,10 @@ class Peer:
     def send_message(self, message: OSCMessage):
         """
         Sends an OSC packet with a given message to the peer
+        - ``message``: The OSCMessage to send
+        Raises:
+            e: Any exceptions raised during sending are propagated upwards
+
         """
         if self.mode == OSCModes.TCP:
             encoded_message = self.encoder.encode(message)
@@ -78,6 +102,11 @@ class Peer:
             self.udp_connection.sendto(encoded_message, (self.address, self.port))
 
     def listen_tcp(self):
+        """Starts a background thread listening on TCP
+
+        Raises:
+            e: Any exceptions raised during listening are propagated upwards
+        """
         print("Listening on TCP \n")
         try:
             while data := self.tcp_connection.recv(1024):
@@ -92,8 +121,12 @@ class Peer:
             raise e
 
     def listen_udp(self):
+        """Starts a background thread Listening on UDP
+
+        Raises:
+            e: Any exceptions raised during listening are propagated upwards
+        """
         print("Listening on UDP \n")
-        ## Listens on a UDP socket on the port specifies (Mimmicks behavure of the TCP listener)
         try:
             while data := self.udp_connection.recv(1024):
                 for msg in self.decoder.decode(data):
@@ -105,8 +138,8 @@ class Peer:
         except Exception as e:
             raise e
 
-    ## Have a second thread listening for incoming messages on a different thread
     def start_listening(self):
+        """Invokes the above to methods dependant on what mode is in use"""
         if self.mode == OSCModes.TCP:
             background = threading.Thread(target=self.listen_tcp, daemon=True)  # , args=[self.tcp_connection, self.decoder]
             background.start()
