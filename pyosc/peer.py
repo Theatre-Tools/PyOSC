@@ -17,7 +17,6 @@ class Dispatcher:
             raise ValueError(f"Handler already exists for address {address}")
         print(address)
         if address.endswith("/") and len(address) > 1:
-            print("Removing trailing slash from address")
             address = address[:-1]
         self.handlers[address] = handler
 
