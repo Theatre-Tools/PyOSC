@@ -15,7 +15,6 @@ class Dispatcher:
         ## Check if there is a handler already for this address
         if address in self.handlers:
             raise ValueError(f"Handler already exists for address {address}")
-        print(address)
         if address.endswith("/") and len(address) > 1:
             address = address[:-1]
         self.handlers[address] = handler
