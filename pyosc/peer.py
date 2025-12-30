@@ -1,6 +1,5 @@
 import socket
 import threading
-import time
 
 from oscparser import OSCArg, OSCBundle, OSCDecoder, OSCEncoder, OSCFraming, OSCMessage, OSCModes
 
@@ -69,12 +68,6 @@ class Peer:
         if self.mode == OSCModes.TCP:
             background = threading.Thread(target=self.listen_tcp, daemon=True)  # , args=[self.tcp_connection, self.decoder]
             background.start()
-            for i in range(100):
-                print("I AM THE CHOSEN ONE1")
-                time.sleep(10)
         elif self.mode == OSCModes.UDP:
             background = threading.Thread(target=self.listen_udp, daemon=True)
             background.start()
-            for i in range(100):
-                print("Main thread")
-                time.sleep(10)
