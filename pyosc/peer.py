@@ -71,17 +71,20 @@ class Message:
 
     @staticmethod
     def to_arg(arg):
-        if isinstance(arg, int):
-            return OSCInt(value=arg)
-        elif isinstance(arg, str):
-            return OSCString(value=arg)
-        elif isinstance(arg, bool):
-            if arg:
-                return OSCTrue()
-            else:
-                return OSCFalse()
-        elif isinstance(arg, float):
-            return OSCFloat(value=arg)
+        try:
+            if isinstance(arg, int):
+                return OSCInt(value=arg)
+            elif isinstance(arg, str):
+                return OSCString(value=arg)
+            elif isinstance(arg, bool):
+                if arg:
+                    return OSCTrue()
+                else:
+                    return OSCFalse()
+            elif isinstance(arg, float):
+                return OSCFloat(value=arg)
+        except Exception as e:
+            raise e
 
 
 class Dispatcher:
