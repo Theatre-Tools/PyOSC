@@ -26,7 +26,7 @@ class Dispatcher:
         self.handlers[address] = handler
 
     def remove_handler(self, address: str):
-        """ "
+        """
         Removes a handler for a specific OSC address.
         - ``address``: The OSC address to remove the handler for.
         """
