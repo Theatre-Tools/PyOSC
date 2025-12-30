@@ -2,7 +2,7 @@ import socket
 import threading
 import time
 
-from oscparser import OSCArg, OSCDecoder, OSCEncoder, OSCFraming, OSCMessage, OSCModes
+from oscparser import OSCArg, OSCBundle, OSCDecoder, OSCEncoder, OSCFraming, OSCMessage, OSCModes
 
 
 class Peer:
@@ -41,7 +41,12 @@ class Peer:
         try:
             while data := self.tcp_connection.recv(1024):
                 for msg in self.decoder.decode(data):
-                    print(f"{msg.address}")  # type: ignore
+                    ## Check if the msg is a message or a bundle
+                    if isinstance(msg, OSCMessage):
+                        print(msg.address)  # type: ignore
+                    elif isinstance(msg, OSCBundle):
+                        for inner_msg in msg.messages:  # type: ignore
+                            print(inner_msg.address)  # type: ignore
         except Exception as e:
             raise e
 
@@ -51,7 +56,11 @@ class Peer:
         try:
             while data := self.udp_connection.recv(1024):
                 for msg in self.decoder.decode(data):
-                    print(msg.address)  # type: ignore
+                    if isinstance(msg, OSCMessage):
+                        print(msg.address)  # type: ignore
+                    elif isinstance(msg, OSCBundle):
+                        for inner_msg in msg.messages:  # type: ignore
+                            print(inner_msg.address)  # type: ignore
         except Exception as e:
             raise e
 
