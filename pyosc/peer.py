@@ -15,10 +15,11 @@ class Dispatcher:
         ## Check if there is a handler already for this address
         if address in self.handlers:
             raise ValueError(f"Handler already exists for address {address}")
-        else:
-            self.handlers[address] = handler
+        print(address)
         if address.endswith("/") and len(address) > 1:
+            print("Removing trailing slash from address")
             address = address[:-1]
+        self.handlers[address] = handler
 
     def remove_handler(self, address: str):
         if address in self.handlers:
@@ -79,7 +80,7 @@ class Peer:
             self.udp_connection.sendto(encoded_message, (self.address, self.port))
 
     def listen_tcp(self):
-        print("listening on TCP")
+        print("Listening on TCP \n")
         try:
             while data := self.tcp_connection.recv(1024):
                 for msg in self.decoder.decode(data):
@@ -93,7 +94,7 @@ class Peer:
             raise e
 
     def listen_udp(self):
-        print("Listening on UDP")
+        print("Listening on UDP \n")
         ## Listens on a UDP socket on the port specifies (Mimmicks behavure of the TCP listener)
         try:
             while data := self.udp_connection.recv(1024):
