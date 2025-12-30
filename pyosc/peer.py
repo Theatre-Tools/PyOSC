@@ -11,7 +11,7 @@ from oscparser import (
     OSCMessage,
     OSCModes,
 )
-from oscparser.types import OSCArray, OSCFalse, OSCInt, OSCString, OSCTrue
+from oscparser.types import OSCArray, OSCFalse, OSCFloat, OSCInt, OSCString, OSCTrue
 
 
 class Framing:
@@ -81,6 +81,9 @@ class Message:
                 return OSCTrue()
             else:
                 return OSCFalse()
+        elif isinstance(arg, float):
+            return OSCFloat(value=arg)
+
 
 
 class Dispatcher:
@@ -172,6 +175,7 @@ class Peer:
             e: Any exceptions raised during sending are propagated upwards
 
         """
+        print(message.to_message().args)
         if self.mode == OSCModes.TCP:
             encoded_message = self.encoder.encode(message.to_message())
             self.tcp_connection.sendall(encoded_message)
