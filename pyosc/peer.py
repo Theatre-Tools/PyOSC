@@ -2,7 +2,77 @@ import socket
 import threading
 from typing import Callable
 
-from oscparser import OSCArg, OSCBundle, OSCDecoder, OSCEncoder, OSCFraming, OSCMessage, OSCModes
+from oscparser import (
+    OSCArg,
+    OSCBundle,
+    OSCDecoder,
+    OSCEncoder,
+    OSCFraming,
+    OSCMessage,
+    OSCModes,
+)
+from oscparser.types import OSCArray, OSCFalse, OSCInt, OSCString, OSCTrue
+
+
+class Message:
+    """Abstractified the OSCMessage for easier use within the Peer class
+     - ``address``: The OSC Address of the message
+    - ``args``: A tuple of OSCArgs contained within the message
+
+        This class will then convert them to OSCArgs internally
+
+    """
+
+    def __init__(self, address: str, args: list = []):
+        self.address = address
+        self.args = args
+
+    def to_message(self) -> OSCMessage:
+        """Used by the module to get a OSCMessage object to send to the peer
+
+        Returns:
+            OSCMessage: Returns an OSC message
+        """
+        self.newargs = []
+        for arg in self.args:
+            print(arg)
+            ## If it is a native python type, convert it to an OSCArg
+            if not isinstance(arg, OSCArg):
+                if not isinstance(arg, list):
+                    self.newargs.append(  # type: ignore
+                        self.to_arg(arg),
+                    )
+                else:
+                    array = []
+                    for item in arg:
+                        if not isinstance(item, OSCArg):
+                            array.append(self.to_arg(item))
+                        else:
+                            array.append(item)
+                    self.newargs = (OSCArray(items=tuple(array)),)
+            else:
+                self.newargs += (arg,)
+
+        return OSCMessage(
+            address=self.address,
+            args=tuple(
+                self.newargs,
+            ),
+        )
+
+    @staticmethod
+    def to_arg(arg):
+        print(arg)
+        if isinstance(arg, int):
+            print("int")
+            return OSCInt(value=arg)
+        elif isinstance(arg, str):
+            return OSCString(value=arg)
+        elif isinstance(arg, bool):
+            if arg:
+                return OSCTrue()
+            else:
+                return OSCFalse()
 
 
 class Dispatcher:
@@ -86,7 +156,7 @@ class Peer:
             self.udp_connection.bind(("localhost", self.udpRxPort))
         self.Dispatcher = dispatcher
 
-    def send_message(self, message: OSCMessage):
+    def send_message(self, message: Message):
         """
         Sends an OSC packet with a given message to the peer
         - ``message``: The OSCMessage to send
@@ -95,10 +165,10 @@ class Peer:
 
         """
         if self.mode == OSCModes.TCP:
-            encoded_message = self.encoder.encode(message)
+            encoded_message = self.encoder.encode(message.to_message())
             self.tcp_connection.sendall(encoded_message)
         elif self.mode == OSCModes.UDP:
-            encoded_message = self.encoder.encode(message)
+            encoded_message = self.encoder.encode(message.to_message())
             self.udp_connection.sendto(encoded_message, (self.address, self.port))
 
     def listen_tcp(self):
