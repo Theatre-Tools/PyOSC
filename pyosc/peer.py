@@ -14,6 +14,14 @@ from oscparser import (
 from oscparser.types import OSCArray, OSCFalse, OSCInt, OSCString, OSCTrue
 
 
+class Framing:
+    OSC10 = OSCFraming.OSC10
+    OSC11 = OSCFraming.OSC11
+
+class Modes:
+    TCP = OSCModes.TCP
+    UDP = OSCModes.UDP
+
 class Message:
     """Abstractified the OSCMessage for easier use within the Peer class
      - ``address``: The OSC Address of the message
