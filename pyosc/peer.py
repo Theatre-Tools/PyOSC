@@ -17,5 +17,10 @@ class Peer:
             self.tcp_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.tcp_connection.connect((self.address, self.port))
 
-
+    def send_message(self, message: OSCMessage):
+        """
+        Sends an OSC packet with a given message to the peer
+        """
+        encoded_message = self.encoder.encode(message)
+        self.tcp_connection.sendall(encoded_message)
 
