@@ -229,8 +229,9 @@ class Peer:
     def start_listening(self):
         """Invokes the above to methods dependant on what mode is in use"""
         if self.mode == OSCModes.TCP:
-            background = threading.Thread(target=self.listen_tcp, daemon=True)  # , args=[self.tcp_connection, self.decoder]
-            background.start()
+            self.background = threading.Thread(target=self.listen_tcp, daemon=True)  # , args=[self.tcp_connection, self.decoder]
+            self.background.start()
         elif self.mode == OSCModes.UDP:
-            background = threading.Thread(target=self.listen_udp, daemon=True)
-            background.start()
+            self.background = threading.Thread(target=self.listen_udp, daemon=True)
+            self.background.start()
+
