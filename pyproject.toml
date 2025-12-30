@@ -10,7 +10,7 @@ maintainers = [
     { name = "Morph Tollon", email = "code@morphtollon.co.uk"}
 ]
 keywords = ["osc", "sound", "midi", "music", "sockets", "transport", "Lighting", "Theatre"]
-license = "MIT License"
+license = "MIT"
 readme = "README.md"
 requires-python = "<3.14,>=3.13"
 dependencies = [
