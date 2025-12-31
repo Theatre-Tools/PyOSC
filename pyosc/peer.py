@@ -85,7 +85,43 @@ class Message:
                 return OSCFloat(value=arg)
         except Exception as e:
             raise e
+    @staticmethod
+    def from_arg(arg: OSCArg):
+        """Converts an OSCArg to a native python type"""
+        if isinstance(arg, OSCInt):
+            return arg.value
+        elif isinstance(arg, OSCString):
+            return arg.value
+        elif isinstance(arg, OSCFloat):
+            return arg.value
+        elif isinstance(arg, OSCTrue):
+            return True
+        elif isinstance(arg, OSCFalse):
+            return False
+        elif isinstance(arg, OSCArray):
+            array = []
+            for item in arg.items:
+                if isinstance(item, OSCInt):
+                    array.append(item.value)
+                elif isinstance(item, OSCString):
+                    array.append(item.value)
+                elif isinstance(item, OSCFloat):
+                    array.append(item.value)
+                elif isinstance(item, OSCTrue):
+                    array.append(True)
+                elif isinstance(item, OSCFalse):
+                    array.append(False)
+            return array
 
+    @staticmethod
+    def from_message(message: OSCMessage):
+        """Converts an OSCMessage to a Message object, does the inverse of to_message"""
+
+        ## take in the args, and convert them from OSCArgs to native python types
+        args = []
+        for arg in message.args:
+            args.append(Message.from_arg(arg))
+        return Message(address=message.address, args=args)
 
 class Dispatcher:
     """Dispatches incoming OSC messages to registered handlers based on their addresses."""
@@ -135,7 +171,7 @@ class Dispatcher:
         for i in range(len(parts), 0, -1):
             addr_to_check = "/".join(parts[:i])
             if addr_to_check in self.handlers:
-                self.handlers[addr_to_check](message)
+                self.handlers[addr_to_check](Message.from_message(message))
                 return
 
 
