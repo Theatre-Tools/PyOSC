@@ -82,8 +82,28 @@ class Message:
         return OSCArray(items=tuple(converted_items))
 
     @staticmethod
+    def _from_array_recursive(osc_array: OSCArray) -> list:
+        """Recursively converts an OSCArray (potentially with nested arrays) to a native Python list
+
+        Args:
+            osc_array: The OSCArray to convert, may contain nested OSCArrays
+
+        Returns:
+            list: A native Python list with items recursively converted
+        """
+        result = []
+        for item in osc_array.items:
+            if isinstance(item, OSCArray):
+                result.append(Message._from_array_recursive(item))
+            else:
+                result.append(Message.from_arg(item))
+        return result
+
+    @staticmethod
     def to_arg(arg):
         try:
+            if isinstance(arg, OSCArray):
+                return Message._from_array_recursive(arg)
             if isinstance(arg, int):
                 return OSCInt(value=arg)
             elif isinstance(arg, str):
@@ -97,6 +117,7 @@ class Message:
                 return OSCFloat(value=arg)
         except Exception as e:
             raise e
+
     @staticmethod
     def from_arg(arg: OSCArg):
         """Converts an OSCArg to a native python type"""
@@ -126,6 +147,7 @@ class Message:
         for arg in message.args:
             args.append(Message.from_arg(arg))
         return Message(address=message.address, args=args)
+
 
 class Dispatcher:
     """Dispatches incoming OSC messages to registered handlers based on their addresses."""
@@ -269,9 +291,10 @@ class Peer:
     def start_listening(self):
         """Invokes the above to methods dependant on what mode is in use"""
         if self.mode == OSCModes.TCP:
-            self.background = threading.Thread(target=self.listen_tcp, daemon=True)  # , args=[self.tcp_connection, self.decoder]
+            self.background = threading.Thread(
+                target=self.listen_tcp, daemon=True
+            )  # , args=[self.tcp_connection, self.decoder]
             self.background.start()
         elif self.mode == OSCModes.UDP:
             self.background = threading.Thread(target=self.listen_udp, daemon=True)
             self.background.start()
-
