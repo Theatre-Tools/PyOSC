@@ -30,7 +30,6 @@ class Message:
     - ``args``: A tuple of OSCArgs contained within the message
 
         This class will then convert them to OSCArgs internally
-
     """
 
     def __init__(self, address: str, args: list = []):
@@ -52,13 +51,7 @@ class Message:
                         self.to_arg(arg),
                     )
                 else:
-                    array = []
-                    for item in arg:
-                        if not isinstance(item, OSCArg):
-                            array.append(self.to_arg(item))
-                        else:
-                            array.append(item)
-                    self.newargs = (OSCArray(items=tuple(array)),)
+                    self.newargs.append(self._convert_array_recursive(arg))
             else:
                 self.newargs += (arg,)
 
@@ -68,6 +61,25 @@ class Message:
                 self.newargs,
             ),
         )
+
+    def _convert_array_recursive(self, array: list) -> OSCArray:
+        """Recursively converts a list (potentially with nested lists) to an OSCArray
+
+        Args:
+            array: The list to convert, may contain nested lists
+
+        Returns:
+            OSCArray: An OSCArray with items recursively converted
+        """
+        converted_items = []
+        for item in array:
+            if isinstance(item, OSCArg):
+                converted_items.append(item)
+            elif isinstance(item, list):
+                converted_items.append(self._convert_array_recursive(item))
+            else:
+                converted_items.append(self.to_arg(item))
+        return OSCArray(items=tuple(converted_items))
 
     @staticmethod
     def to_arg(arg):
@@ -101,16 +113,8 @@ class Message:
         elif isinstance(arg, OSCArray):
             array = []
             for item in arg.items:
-                if isinstance(item, OSCInt):
-                    array.append(item.value)
-                elif isinstance(item, OSCString):
-                    array.append(item.value)
-                elif isinstance(item, OSCFloat):
-                    array.append(item.value)
-                elif isinstance(item, OSCTrue):
-                    array.append(True)
-                elif isinstance(item, OSCFalse):
-                    array.append(False)
+                # Recursively handle nested arrays
+                array.append(Message.from_arg(item))
             return array
 
     @staticmethod
