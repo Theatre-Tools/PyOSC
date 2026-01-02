@@ -17,6 +17,10 @@ dependencies = [
     "sockets (>=1.0.0,<2.0.0)",
     "oscparser (>=1.1.0,<2.0.0)",    
 ]
+[project.urls]
+Repository = "https://github.com/Theatre-Tools/PyOSC"
+Homepage = "https://github.com/Theatre-Tools/PyOSC"
+Issues = "https://github.com/Theatre-Tools/PyOSC/issues"
 
 [tool.poetry.dependencies]
 pydantic = "^2.12.5"
