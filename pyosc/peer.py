@@ -3,18 +3,11 @@ import threading
 from select import select
 from typing import Literal, overload
 
-from oscparser import (
-    OSCBundle,
-    OSCDecoder,
-    OSCEncoder,
-    OSCFraming,
-    OSCMessage,
-    OSCModes,
-)
+from oscparser import OSCBundle, OSCDecoder, OSCEncoder, OSCFraming, OSCMessage, OSCModes
 
 from pyosc.dispatcher import Dispatcher
-from pyosc.message import Message
 
+#penis
 
 class Peer:
     """An OSC Peer that can send and receive OSC messages over TCP or UDP."""
@@ -68,7 +61,9 @@ class Peer:
                 self.tcp_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 self.tcp_connection.connect((self.address, self.port))
             except OSError as e:
-                raise Exception(f"Could not connect to TCP Peer at {self.address}:{self.port} - {e}")
+                raise Exception(
+                    f"Could not connect to TCP Peer at {self.address}:{self.port} - {e}"
+                )
         elif self.mode == OSCModes.UDP:
             try:
                 if self.udp_rx_address is None:
@@ -76,10 +71,12 @@ class Peer:
                 self.udp_connection = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 self.udp_connection.bind((self.udp_rx_address, self.udp_rx_port))
             except OSError as e:
-                raise Exception(f"Could not bind UDP Peer at localhost:{self.udp_rx_port} - {e}")
+                raise Exception(
+                    f"Could not bind UDP Peer at localhost:{self.udp_rx_port} - {e}"
+                )
         self.Dispatcher = dispatcher
 
-    def send_message(self, message: Message):
+    def send_message(self, message: OSCMessage):
         """
         Sends an OSC packet with a given message to the peer
         - ``message``: The OSCMessage to send
@@ -88,10 +85,10 @@ class Peer:
 
         """
         if self.mode == OSCModes.TCP:
-            encoded_message = self.encoder.encode(message.to_message())
+            encoded_message = self.encoder.encode(message)
             self.tcp_connection.sendall(encoded_message)
         elif self.mode == OSCModes.UDP:
-            encoded_message = self.encoder.encode(message.to_message())
+            encoded_message = self.encoder.encode(message)
             self.udp_connection.sendto(encoded_message, (self.address, self.port))
 
     def listen_tcp(self):

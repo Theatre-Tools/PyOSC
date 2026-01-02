@@ -2,8 +2,6 @@ from typing import Callable
 
 from oscparser import OSCMessage
 
-from .message import Message
-
 
 class Dispatcher:
     """Dispatches incoming OSC messages to registered handlers based on their addresses."""
@@ -11,7 +9,7 @@ class Dispatcher:
     def __init__(self):
         self.handlers = {}
 
-    Handler = Callable[[Message], None]
+    Handler = Callable[[OSCMessage], None]
 
     def add_handler(self, address: str, handler: Handler):
         """
@@ -53,5 +51,5 @@ class Dispatcher:
         for i in range(len(parts), 0, -1):
             addr_to_check = "/".join(parts[:i])
             if addr_to_check in self.handlers:
-                self.handlers[addr_to_check](Message.from_message(message))
+                self.handlers[addr_to_check](message)
                 return
