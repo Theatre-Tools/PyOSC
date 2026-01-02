@@ -7,7 +7,6 @@ from oscparser import OSCBundle, OSCDecoder, OSCEncoder, OSCFraming, OSCMessage,
 
 from pyosc.dispatcher import Dispatcher
 
-#penis
 
 class Peer:
     """An OSC Peer that can send and receive OSC messages over TCP or UDP."""
