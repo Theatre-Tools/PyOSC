@@ -15,7 +15,7 @@ readme = "README.md"
 requires-python = "<3.14,>=3.13"
 dependencies = [
     "sockets (>=1.0.0,<2.0.0)",
-    "oscparser (>=1.0.2,<2.0.0)"
+    "oscparser (>=1.1.0,<2.0.0)",    
 ]
 
 [tool.poetry.dependencies]
