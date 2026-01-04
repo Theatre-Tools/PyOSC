@@ -1,17 +1,40 @@
-from typing import Callable
+from typing import Generic, Protocol, TypeVar, overload
 
 from oscparser import OSCMessage
+from pydantic import BaseModel, ValidationError
 
+
+class DispatcherInterface[T: BaseModel](Protocol):
+    def __call__(self, message: T) -> None:
+        ...
+
+T_C = TypeVar("T_C", bound=BaseModel, covariant=True)
+
+class DispatcherControler(Generic[T_C]):
+    def __init__(self, dispatcher: "DispatcherInterface[T_C]", validator: type[T_C]) -> None:
+        self.dispatcher = dispatcher
+        self.validator = validator
+
+    def run(self, message: BaseModel):
+        try:
+            validated_message = self.validator.model_validate(message.model_dump())
+            self.dispatcher(validated_message)
+        except ValidationError:
+            pass
 
 class Dispatcher:
     """Dispatches incoming OSC messages to registered handlers based on their addresses."""
 
     def __init__(self):
-        self.handlers = {}
+        self.handlers: dict[str, DispatcherControler[BaseModel]] = {}
 
-    Handler = Callable[[OSCMessage], None]
+    @overload
+    def add_handler(self, address: str, handler: DispatcherInterface[OSCMessage]) -> None: ...
 
-    def add_handler(self, address: str, handler: Handler):
+    @overload
+    def add_handler[T: BaseModel](self, address: str, handler: DispatcherInterface[T], validator: type[T]) -> None: ...
+
+    def add_handler[T: BaseModel](self, address: str, handler: DispatcherInterface[T], validator: type[T] = OSCMessage):
         """
         Add a handler for a specific OSC address.
         - ``address``: The OSC address to handle.
@@ -21,7 +44,7 @@ class Dispatcher:
             raise ValueError(f"Handler already exists for address {address}")
         if address.endswith("/") and len(address) > 1:
             address = address[:-1]
-        self.handlers[address] = handler
+        self.handlers[address] = DispatcherControler(handler, validator)
 
     def remove_handler(self, address: str):
         """
@@ -33,12 +56,12 @@ class Dispatcher:
         else:
             raise ValueError(f"No handler exists for address {address}")
 
-    def add_default_handler(self, handler: Handler):
+    def add_default_handler(self, handler: DispatcherInterface[OSCMessage]):
         """
         Adds a fallback default handler to any messages that don't have a specific handler assigned.
         - ``handler``: A callable that takes an OSCMessage as its only argument.
         """
-        self.handlers[""] = handler
+        self.handlers[""] = DispatcherControler(handler, OSCMessage)
 
     def dispatch(self, message: OSCMessage):
         """
@@ -51,5 +74,5 @@ class Dispatcher:
         for i in range(len(parts), 0, -1):
             addr_to_check = "/".join(parts[:i])
             if addr_to_check in self.handlers:
-                self.handlers[addr_to_check](message)
+                self.handlers[addr_to_check].run(message)
                 return
