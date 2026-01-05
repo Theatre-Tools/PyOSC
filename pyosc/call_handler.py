@@ -46,10 +46,10 @@ class CallHandler:
         """Calling a call handler will send a message to the peer, and await a response that meets the critieria.
 
         Args:
-            `msg (OSCMessage)`: An OSCMessage to send to the peer.
-            `return_addr (str | None, optional)`: The address to listen for a response on. Defaults to None.
-            `validator (type[BaseModel] | None, optional)`: A Pydantic model to validate the response against. Defaults to None.
-            `timeout (float, optional)`: How long to wait for a response before timing out. Defaults to 5.0.
+            ``msg (OSCMessage)``: An OSCMessage to send to the peer.
+            ``return_addr (str | None, optional)``: The address to listen for a response on. Defaults to None.
+            ``validator (type[BaseModel] | None, optional)``: A Pydantic model to validate the response against. Defaults to None.
+            ``timeout (float, optional)``: How long to wait for a response before timing out. Defaults to 5.0.
 
         Returns:
             BaseModel | None: The validated response model if received within the timeout period, otherwise None.
