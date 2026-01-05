@@ -1,0 +1,35 @@
+site_name: PyOSC Documentation
+#site_url: https://pyosc.morphtollon.co.uk
+site_url: http://127.0.0.1:8000
+theme:
+  name: material
+  font:
+    code: D-Din
+
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/pencil 
+    view: material/eye
+
+  features:
+    - content.action.view
+    - content.action.edit
+    - search.highlight
+    - search.suggest
+
+repo_url: https://github.com/theatre-tools/PyOSC
+repo_name: theatre-tools/PyOSC
+edit_uri: https://github.com/theatre-tools/PyOSC/tree/main/docs/
+plugins:
+  - git-revision-date-localized:
+      enable_creation_date: true
+  - git-committers:
+      repository: theatre-tools/PyOSC
+      branch: main
+  - search
+
+
+extra:
+  version:
+    provider: mike
+    default: stable
