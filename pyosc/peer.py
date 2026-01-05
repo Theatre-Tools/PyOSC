@@ -41,7 +41,7 @@ class Peer:
         port: int,
         dispatcher: Dispatcher,
         *,
-        mode: OSCModes = OSCModes.UDP,
+        mode: OSCModes = OSCModes.TCP,
         udp_rx_port: int | None = None,
         udp_rx_address: str | None = None,
         framing: OSCFraming = OSCFraming.OSC10,
@@ -60,9 +60,7 @@ class Peer:
                 self.tcp_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 self.tcp_connection.connect((self.address, self.port))
             except OSError as e:
-                raise Exception(
-                    f"Could not connect to TCP Peer at {self.address}:{self.port} - {e}"
-                )
+                raise Exception(f"Could not connect to TCP Peer at {self.address}:{self.port} - {e}")
         elif self.mode == OSCModes.UDP:
             try:
                 if self.udp_rx_address is None:
@@ -70,9 +68,7 @@ class Peer:
                 self.udp_connection = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 self.udp_connection.bind((self.udp_rx_address, self.udp_rx_port))
             except OSError as e:
-                raise Exception(
-                    f"Could not bind UDP Peer at localhost:{self.udp_rx_port} - {e}"
-                )
+                raise Exception(f"Could not bind UDP Peer at localhost:{self.udp_rx_port} - {e}")
         self.Dispatcher = dispatcher
 
     def send_message(self, message: OSCMessage):
