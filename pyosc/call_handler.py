@@ -15,6 +15,8 @@ class Call:
 
 
 class CallHandler:
+    """A call handler is a way of communicating with a peer that is more akin to a restuful API from the user point of view. You send a request, it gives you a response."""
+
     def __init__(self, peer: Peer):
         self.peer = peer
         self.queues: dict[str, Call] = {}
@@ -25,7 +27,12 @@ class CallHandler:
 
     @overload
     def call[T: BaseModel](
-        self, msg: OSCMessage, *, return_addr: str | None = None, validator: type[T], timeout: float = 5.0
+        self,
+        msg: OSCMessage,
+        *,
+        return_addr: str | None = None,
+        validator: type[T],
+        timeout: float = 5.0,
     ) -> T | None: ...
 
     def call(
@@ -36,6 +43,17 @@ class CallHandler:
         validator: type[BaseModel] | None = None,
         timeout: float = 5.0,
     ) -> BaseModel | None:
+        """Calling a call handler will send a message to the peer, and await a response that meets the critieria.
+
+        Args:
+            `msg (OSCMessage)`: An OSCMessage to send to the peer.
+            `return_addr (str | None, optional)`: The address to listen for a response on. Defaults to None.
+            `validator (type[BaseModel] | None, optional)`: A Pydantic model to validate the response against. Defaults to None.
+            `timeout (float, optional)`: How long to wait for a response before timing out. Defaults to 5.0.
+
+        Returns:
+            BaseModel | None: The validated response model if received within the timeout period, otherwise None.
+        """
         if validator is None:
             validator = OSCMessage
         if not return_addr:
