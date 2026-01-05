@@ -5,13 +5,14 @@ from typing import overload
 from oscparser import OSCMessage
 from pydantic import BaseModel, ValidationError
 
-from .peer import Peer
+from pyosc.peer import Peer
 
 
 class Call:
     def __init__[T: BaseModel](self, queue: queue.Queue[T], validator: type[T]):
         self.queue = queue
         self.validator = validator
+
 
 class CallHandler:
     def __init__(self, peer: Peer):
@@ -20,9 +21,7 @@ class CallHandler:
         self.queue_lock = threading.Lock()
 
     @overload
-    def call(
-        self, msg: OSCMessage, *, return_addr: str | None = None, timeout: float = 5.0
-    ) -> OSCMessage | None: ...
+    def call(self, msg: OSCMessage, *, return_addr: str | None = None, timeout: float = 5.0) -> OSCMessage | None: ...
 
     @overload
     def call[T: BaseModel](
@@ -30,7 +29,12 @@ class CallHandler:
     ) -> T | None: ...
 
     def call(
-        self, msg: OSCMessage, *, return_addr: str | None = None, validator: type[BaseModel] | None = None,  timeout: float = 5.0
+        self,
+        msg: OSCMessage,
+        *,
+        return_addr: str | None = None,
+        validator: type[BaseModel] | None = None,
+        timeout: float = 5.0,
     ) -> BaseModel | None:
         if validator is None:
             validator = OSCMessage
