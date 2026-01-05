@@ -9,7 +9,11 @@ from pyosc.dispatcher import Dispatcher
 
 
 class Peer:
-    """An OSC Peer that can send and receive OSC messages over TCP or UDP."""
+    """A Peer represents a remote OSC endpoint that can send and receive messages.
+
+    Raises:
+        Exception: If the connection to the peer cannot be established
+    """
 
     @overload
     def __init__(
@@ -87,7 +91,7 @@ class Peer:
             self.udp_connection.sendto(encoded_message, (self.address, self.port))
 
     def listen_tcp(self):
-        """Starts a background thread listening on TCP
+        """Initiates a background TCP listener against the peer
 
         Raises:
             e: Any exceptions raised during listening are propagated upwards
@@ -114,7 +118,7 @@ class Peer:
             raise e
 
     def listen_udp(self):
-        """Starts a background thread Listening on UDP
+        """Initiates a background UDP listener against the peer
 
         Raises:
             e: Any exceptions raised during listening are propagated upwards
@@ -138,7 +142,7 @@ class Peer:
             raise e
 
     def start_listening(self):
-        """Invokes the above to methods dependant on what mode is in use"""
+        """Invokes above methods to start a connection dependant on mode."""
         if self.mode == OSCModes.TCP:
             self.background = threading.Thread(target=self.listen_tcp, daemon=True)
             self.background.start()
