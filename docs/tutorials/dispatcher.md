@@ -75,6 +75,8 @@ peer.dispatcher.add_handler("/test/ping", ping_handler) #(3)!
 2. Inside the handler, we print out the arguments of the received ping message.
 3. The `ping_handler` function is registered to handle messages sent to the `/test/ping` address using the `add_handler` method of the `dispatcher` attribute of the `peer` object.
 
+Dispatch handlers can be registered and destroyed at any time, this is because when a message is received, the dispatcher checks against it's list of handlers to see if any match the incoming message's address. As long as the handler is registered when the message arrives, it will be called.
+
 ### Validators
 When registering handlers, you can also provide an optional `validator`. A validator is a pydantic model that is used to validate incoming messages before they are passed to the handler. If the message does not conform to the validator, it will be rejected and not processed by the handler.
 
@@ -102,3 +104,47 @@ peer.dispatcher.add_handler("/test/ping", ping_handler, validator=PingResponse) 
 3. We define a property `message` that extracts the string value from the first argument of the message.
 4. The `ping_handler` function is defined to accept a `PingResponse` object, which will be validated before being passed to the handler.
 5. The `ping_handler` function is registered to handle messages sent to the `/test/ping` address, this time with the `PingResponse` model as its validator.
+
+
+## Examples
+
+Here is a complete example that demonstrates the use of a dispatcher with both a default handler and an address-specific handler with a validator:
+
+```python
+from pyosc import Peer, OSCMessage, OSCModes, OSCFraming, OSCString
+from pydantic import BaseModel
+
+peer = Peer(
+    "127.0.0.1",
+    3032,
+    mode=OSCModes.TCP,
+    framing=OSCFraming.OSC11,
+) #(1)!
+
+class PingResponse(BaseModel):
+    args: tuple[OSCString] #(2)!
+    
+    @property
+    def message(self) -> str:
+        return self.args[0].value #(3)!
+
+
+def default_handler(message):
+    with open("messages.log", "a") as log_file:
+        log_file.write(f"Received a message on address:{message.address} with args: {message.args}\n") #(4)!
+
+def ping_handler(message: PingResponse):
+    print(f"Received a ping message with response: {message.message}") #(7)
+
+peer.dispatcher.add_default_handler(default_handler)
+peer.dispatcher.add_handler("/test/ping", ping_handler, validator=PingResponse) #(5)!
+peer.start_listening() #(6)!
+```
+
+1. A `Peer` object is created to handle OSC messages over TCP on localhost at port 3032.
+2. A `PingResponse` pydantic model is defined to validate incoming ping messages.
+3. A property `message` is defined to extract the string value from the first argument of
+4. The `default_handler` function logs all received messages to a file named `messages.log`.
+5. The `ping_handler` function is registered to handle messages sent to the `/test/ping` address, with the `PingResponse` model as its validator.
+6. The `start_listening` method is called on the `Peer` object to begin receiving messages.
+7. The `ping_handler` function prints the response message when a valid ping message is received.
