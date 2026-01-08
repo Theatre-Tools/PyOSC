@@ -32,7 +32,9 @@ Example:
         UDP_bind_port=8002
     )
     ```
-    When using UDP, it is important to specify the `UDP_bind_address` and `UDP_bind_port` to bind the socket for receiving messages.
+    
+    !!! Note
+        When using UDP, it is important to specify the `UDP_bind_address` and `UDP_bind_port` to bind the socket for receiving messages.
 
 ## Sending Messages
 To send an OSC message, you must first create an [`OSCMessage`](../api_reference.md#oscmessage){ data-preview } object.
