@@ -29,4 +29,4 @@ The above example creates a [`Peer`](../api_reference.md#peer){ data-preview } o
 1. An integer with the value `42`
 2. A string with the value `Hello_World!`
 
-Finally, it sends the message using the [`send_message`](../api_reference.md#peer){ data-preview } method, of the [`Peer`](../api_reference.md#peer){ data-preview } object.
+Finally, it sends the message using the [`send_message`](../api_reference.md#method-send_message){ data-preview } method, of the [`Peer`](../api_reference.md#peer){ data-preview } object.
