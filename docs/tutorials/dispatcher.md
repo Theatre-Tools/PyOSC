@@ -16,7 +16,7 @@ dispatcher = Dispatcher()
 ### The Default Handler
 In PyOSC handlers are registed by the address for which they are handling messages for. There is only one dispatch handler that doesn't have an address assigned to it, and that is the [`default handler`](../api_reference.md#method-default_handler){ data-preview }, which is called when no other handlers match the incoming message's address.
 
-Let's make a simple example, that registers a default handler, and prints the message. The default [`validator`](../api_reference.md#method-default_validator){ data-preview } will accept all OSCMessages.
+Let's make a simple example, that registers a default handler, and prints the message. The default `validator` will accept all OSCMessages.
 
 We will assume you have already created a [`Peer`](../api_reference.md#peer){ data-preview } object called `peer`.
 
