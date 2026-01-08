@@ -1,4 +1,5 @@
-## Contributing
+# Contributing to PyOSC
+
 Contributors to this project are more than welcome, weather you have just started or are experienced in open source contributions,
 I am happy for you to contribute to this project. However, I do have some requirements.
 
