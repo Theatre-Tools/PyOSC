@@ -63,6 +63,7 @@ nav:
       - Receiving Messages: tutorials/dispatcher.md
       - Using Call Handlers: tutorials/call_handler.md
   - API Reference: api_reference.md
-
+  - Roadmap: roadmap.md
+  - Contributing: contributing.md
 watch:
   - docs
