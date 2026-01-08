@@ -1,6 +1,5 @@
 site_name: PyOSC Documentation
-#site_url: https://pyosc.morphtollon.co.uk
-site_url: http://127.0.0.1:8000
+site_url: https://theatre-tools.github.io/PyOSC/
 theme:
   name: material
   icon:
