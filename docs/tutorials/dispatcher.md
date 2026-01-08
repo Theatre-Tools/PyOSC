@@ -134,7 +134,7 @@ def default_handler(message):
         log_file.write(f"Received a message on address:{message.address} with args: {message.args}\n") #(4)!
 
 def ping_handler(message: PingResponse):
-    print(f"Received a ping message with response: {message.message}") #(7)
+    print(f"Received a ping message with response: {message.message}") #(7)!
 
 peer.dispatcher.add_default_handler(default_handler)
 peer.dispatcher.add_handler("/test/out/ping", ping_handler, validator=PingResponse) #(5)!
