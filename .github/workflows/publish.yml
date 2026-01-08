@@ -13,14 +13,13 @@ jobs:
   docs:
     uses: ./.github/workflows/docs.yml
 
-
-
   #test:
   #  uses: ./.github/workflows/test.yml
     
   release:
     needs:
       - lint
+      - docs
     #  - test
     runs-on: ubuntu-latest
     permissions:
