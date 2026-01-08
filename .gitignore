@@ -120,8 +120,6 @@ dmypy.json
 # VS Code
 .vscode/
 
-# Poetry lock file
-poetry.lock
 
 ## testing files
 testin.py
