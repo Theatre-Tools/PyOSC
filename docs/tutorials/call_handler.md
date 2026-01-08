@@ -37,7 +37,7 @@ if response:
     print(response.message)  # (2)!
 ```
 
-1. The [`call`](../api_reference.md#callhandler#call){ data-preview } method of the [`call_handler`](../api_reference.md#callhandler){ data-preview } is used to send an [`OSCMessage`](../api_reference.md#oscmessage){ data-preview } to the address `/test/ping`, with a string argument. The `return_addr` parameter specifies the address where the response is expected, and the `timeout` parameter specifies how long to wait for a response.
+1. The [`call`](../api_reference.md#method-call){ data-preview } method of the [`call_handler`](../api_reference.md#callhandler){ data-preview } is used to send an [`OSCMessage`](../api_reference.md#oscmessage){ data-preview } to the address `/test/ping`, with a string argument. The `return_addr` parameter specifies the address where the response is expected, and the `timeout` parameter specifies how long to wait for a response.
 2. If a response is received within the timeout period, it is printed to the console.
 
 In this example, we send a ping message to the `/test/ping` address, and wait for a response on the `/test/out/ping` address. If a response is received within 10 seconds, it is printed to the console.
@@ -118,4 +118,5 @@ peer.start_listening() #(7)!
 4. A `CallHandler` is created and used to send a message and wait for a response, with the `PingResponse` model as the validator.
 5. If a response is received, the message is printed to the console.
 6. The `call_handler` is registered as the default handler for the `peer`'s dispatcher.
-7. The `peer` starts listening for incoming messages.   
+7. The `peer` starts listening for incoming messages.
+
