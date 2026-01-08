@@ -3,6 +3,7 @@ The [`Peer`](../api_reference.md#peer){ data-preview } object is the central com
 
 ## Initialization
 To create a `Peer` object, you need to provide the following parameters:
+
 - `address`: The IP address or hostname of the remote peer.
 - `port`: The port number on which the remote peer is listening.
 - `mode`: The transport mode, either `OSCModes.UDP` or `OSCModes.TCP`.
