@@ -1,3 +1,4 @@
+from threading import Lock
 from typing import Generic, Protocol, TypeVar, overload
 
 from oscparser import OSCMessage
@@ -5,13 +6,16 @@ from pydantic import BaseModel, ValidationError
 
 
 class DispatcherInterface[T: BaseModel](Protocol):
-    def __call__(self, message: T) -> None:
-        ...
+    def __call__(self, message: T) -> None: ...
+
 
 T_C = TypeVar("T_C", bound=BaseModel, covariant=True)
 
-class DispatcherControler(Generic[T_C]):
-    def __init__(self, dispatcher: "DispatcherInterface[T_C]", validator: type[T_C]) -> None:
+
+class DispatcherController(Generic[T_C]):
+    def __init__(
+        self, dispatcher: "DispatcherInterface[T_C]", validator: type[T_C]
+    ) -> None:
         self.dispatcher = dispatcher
         self.validator = validator
 
@@ -22,57 +26,101 @@ class DispatcherControler(Generic[T_C]):
         except ValidationError:
             pass
 
+
+class DispatchMatcher:
+    def __init__(self, pattern: str) -> None:
+        self.pattern = pattern
+
+    def matches(self, address: str) -> bool:
+        return self.pattern == address
+
+    def __hash__(self) -> int:
+        return hash(self.pattern)
+
+
 class Dispatcher:
     """Dispatches incoming OSC messages to registered handlers based on their addresses."""
 
     def __init__(self):
-        self.handlers: dict[str, DispatcherControler[BaseModel]] = {}
+        self.handlers: list[tuple[DispatchMatcher, DispatcherController[BaseModel]]] = (
+            []
+        )
+        self.dispatch_cache: dict[str, tuple[DispatcherController[BaseModel], ...]] = {}
+        self.dispatch_lock: Lock = Lock()
 
     @overload
-    def add_handler(self, address: str, handler: DispatcherInterface[OSCMessage]) -> None: ...
+    def add_handler(
+        self, address: str, handler: DispatcherInterface[OSCMessage]
+    ) -> None: ...
 
     @overload
-    def add_handler[T: BaseModel](self, address: str, handler: DispatcherInterface[T], validator: type[T]) -> None: ...
+    def add_handler[T: BaseModel](
+        self, address: str, handler: DispatcherInterface[T], validator: type[T]
+    ) -> None: ...
 
-    def add_handler[T: BaseModel](self, address: str, handler: DispatcherInterface[T], validator: type[T] = OSCMessage):
+    def add_handler[T: BaseModel](
+        self,
+        address: str,
+        handler: DispatcherInterface[T],
+        validator: type[T] = OSCMessage,
+    ):
         """
         Add a handler for a specific OSC address.
         - ``address``: The OSC address to handle.
         - ``handler``: A callable that takes an OSCMessage as its only argument.
         """
-        if address in self.handlers:
-            raise ValueError(f"Handler already exists for address {address}")
-        if address.endswith("/") and len(address) > 1:
-            address = address[:-1]
-        self.handlers[address] = DispatcherControler(handler, validator)
+        matcher = DispatchMatcher(address)
+        print(matcher.pattern)
+        self.handlers.append((matcher, DispatcherController(handler, validator)))
+        print(f"Added handler for address: {address}")
+        print(self.handlers)
 
     def remove_handler(self, address: str):
         """
         Removes a handler for a specific OSC address.
         - ``address``: The OSC address to remove the handler for.
         """
-        if address in self.handlers:
-            del self.handlers[address]
-        else:
-            raise ValueError(f"No handler exists for address {address}")
+        removed_handlers: list[
+            tuple[DispatchMatcher, DispatcherController[BaseModel]]
+        ] = []
+        with self.dispatch_lock:
+            for item in self.handlers:
+                matcher, _ = item
+                if matcher.pattern == address:
+                    removed_handlers.append(item)
+                    return
 
-    def add_default_handler(self, handler: DispatcherInterface[OSCMessage]):
-        """
-        Adds a fallback default handler to any messages that don't have a specific handler assigned.
-        - ``handler``: A callable that takes an OSCMessage as its only argument.
-        """
-        self.handlers[""] = DispatcherControler(handler, OSCMessage)
+            for handler in removed_handlers:
+                self.handlers.remove(handler)
+
+            self.dispatch_cache = {}
 
     def dispatch(self, message: OSCMessage):
         """
         Dispatches an incoming OSC message to the appropriate handler based on its address.
         - ``message``: The incoming OSCMessage to dispatch.
         """
-        ## Split the address into it's parts
-        ## This allows us to iterate over every part of it in order to match wildcards and less specific addresses
-        parts = message.address.split("/")
-        for i in range(len(parts), 0, -1):
-            addr_to_check = "/".join(parts[:i])
-            if addr_to_check in self.handlers:
-                self.handlers[addr_to_check].run(message)
+
+        with self.dispatch_lock:
+            # print(message)
+            with open("dispatch_log.txt", "a") as f:
+                f.write(f"Dispatching message: {message.address}\n")
+
+            with open("dispatch_cache.txt", "a") as f:
+                f.write(f"Current dispatch cache: {self.dispatch_cache}\n")
+            if message.address in self.dispatch_cache:
+                for handler in self.dispatch_cache[message.address]:
+                    handler.run(message)
                 return
+
+        matched_handlers: list[DispatcherController[BaseModel]] = []
+        with self.dispatch_lock:
+            # print(self.handlers)
+            for matcher, handler in self.handlers:
+                if matcher.matches(message.address):
+                    matched_handlers.append(handler)
+            self.dispatch_cache[message.address] = tuple(matched_handlers)
+
+        for handler in matched_handlers:
+            print(matched_handlers)
+            handler.run(message)
