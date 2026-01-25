@@ -1,6 +1,6 @@
 from threading import Lock
 from typing import Generic, Protocol, TypeVar, overload
-
+import re
 from oscparser import OSCMessage
 from pydantic import BaseModel, ValidationError
 
@@ -28,11 +28,81 @@ class DispatcherController(Generic[T_C]):
 
 
 class DispatchMatcher:
-    def __init__(self, pattern: str) -> None:
+    def __init__(self, pattern: re.Pattern) -> None:
         self.pattern = pattern
 
+    @classmethod
+    def from_address(cls, address: str) -> 'DispatchMatcher':
+        reg_pattern = ''
+        i = 0
+        
+        while i < len(address):
+            char = address[i]
+            
+            if char == '?':
+                # ? matches any single character
+                reg_pattern += '.'
+                i += 1
+            elif char == '*':
+                # * matches any sequence of zero or more characters
+                reg_pattern += '.*'
+                i += 1
+            elif char == '[':
+                # Square brackets - character class
+                j = i + 1
+                # Check if it starts with !
+                if j < len(address) and address[j] == '!':
+                    # Negated character class
+                    reg_pattern += '[^'
+                    j += 1
+                else:
+                    reg_pattern += '['
+                
+                # Copy contents until closing bracket
+                while j < len(address) and address[j] != ']':
+                    reg_pattern += address[j]
+                    j += 1
+                
+                if j < len(address):
+                    reg_pattern += ']'
+                    i = j + 1
+                else:
+                    # No closing bracket found, treat as literal
+                    reg_pattern += re.escape('[')
+                    i += 1
+            elif char == '{':
+                # Curly braces - comma-separated alternatives
+                j = i + 1
+                alternatives = []
+                current = ''
+                
+                while j < len(address) and address[j] != '}':
+                    if address[j] == ',':
+                        alternatives.append(current)
+                        current = ''
+                    else:
+                        current += address[j]
+                    j += 1
+                
+                if j < len(address):
+                    alternatives.append(current)
+                    # Escape each alternative
+                    escaped_alternatives = [re.escape(alt) for alt in alternatives]
+                    reg_pattern += '(' + '|'.join(escaped_alternatives) + ')'
+                    i = j + 1
+                else:
+                    # No closing brace found, treat as literal
+                    reg_pattern += re.escape('{')
+                    i += 1
+            else:
+                # Regular character - escape it if it has special meaning in regex
+                reg_pattern += re.escape(char)
+                i += 1
+
+        return cls(re.compile(reg_pattern))
+
     def matches(self, address: str) -> bool:
-        return self.pattern == address
+        return self.pattern.fullmatch(address) is not None
 
     def __hash__(self) -> int:
         return hash(self.pattern)
@@ -69,11 +139,9 @@ class Dispatcher:
         - ``address``: The OSC address to handle.
         - ``handler``: A callable that takes an OSCMessage as its only argument.
         """
-        matcher = DispatchMatcher(address)
-        print(matcher.pattern)
+        matcher = DispatchMatcher.from_address(address)
         self.handlers.append((matcher, DispatcherController(handler, validator)))
-        print(f"Added handler for address: {address}")
-        print(self.handlers)
+
 
     def remove_handler(self, address: str):
         """
@@ -102,12 +170,6 @@ class Dispatcher:
         """
 
         with self.dispatch_lock:
-            # print(message)
-            with open("dispatch_log.txt", "a") as f:
-                f.write(f"Dispatching message: {message.address}\n")
-
-            with open("dispatch_cache.txt", "a") as f:
-                f.write(f"Current dispatch cache: {self.dispatch_cache}\n")
             if message.address in self.dispatch_cache:
                 for handler in self.dispatch_cache[message.address]:
                     handler.run(message)
@@ -115,12 +177,10 @@ class Dispatcher:
 
         matched_handlers: list[DispatcherController[BaseModel]] = []
         with self.dispatch_lock:
-            # print(self.handlers)
             for matcher, handler in self.handlers:
                 if matcher.matches(message.address):
                     matched_handlers.append(handler)
             self.dispatch_cache[message.address] = tuple(matched_handlers)
 
         for handler in matched_handlers:
-            print(matched_handlers)
             handler.run(message)
