@@ -61,6 +61,7 @@ class CallHandler:
         responseq = queue.Queue()
         with self.queue_lock:
             self.queues[return_address] = Call(responseq, validator)
+            self.peer.Dispatcher.add_handler(return_address, self)
         self.peer.send_message(message)
         try:
             response = responseq.get(timeout=timeout)
@@ -69,6 +70,10 @@ class CallHandler:
             with self.queue_lock:
                 del self.queues[return_address]
             return None
+        finally:
+            with self.queue_lock:
+                self.peer.Dispatcher.remove_handler(return_address)
+                del self.queues[return_address]
 
     def __call__(self, message: OSCMessage):
         with self.queue_lock:
