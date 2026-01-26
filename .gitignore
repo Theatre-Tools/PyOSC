@@ -123,3 +123,10 @@ dmypy.json
 
 ## testing files
 testin.py
+.idea/.gitignore
+.idea/copilot.data.migration.agent.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/PyOSC.iml
+.idea/vcs.xml
+.idea/inspectionProfiles/profiles_settings.xml

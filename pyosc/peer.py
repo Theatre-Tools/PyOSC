@@ -103,12 +103,7 @@ class Peer:
                         self.tcp_connection.close()
                         return
                     for msg in self.decoder.decode(data):
-                        ## Check if the msg is a message or a bundle
-                        if isinstance(msg, OSCMessage):
-                            self.Dispatcher.dispatch(msg)  # type: ignore
-                        elif isinstance(msg, OSCBundle):
-                            for inner_msg in msg.messages:  # type: ignore
-                                self.Dispatcher.dispatch(inner_msg)  # type: ignore
+                        self.Dispatcher.dispatch(msg)
             self.tcp_connection.close()
             print("socket closed")
         except Exception as e:
@@ -129,17 +124,16 @@ class Peer:
                     if addr[0] != self.address:
                         continue
                     for msg in self.decoder.decode(data):
-                        if isinstance(msg, OSCMessage):
-                            self.Dispatcher.dispatch(msg)  # type: ignore
-                        elif isinstance(msg, OSCBundle):
-                            for inner_msg in msg.messages:  # type: ignore
-                                self.Dispatcher.dispatch(inner_msg)  # type: ignore
+                        self.Dispatcher.dispatch(msg)
             self.udp_connection.close()
         except Exception as e:
             raise e
 
     def start_listening(self):
         """Invokes above methods to start a connection dependant on mode."""
+        # Start the dispatcher's scheduler for timestamped bundles
+        self.Dispatcher.start_scheduler()
+        
         if self.mode == OSCModes.TCP:
             self.background = threading.Thread(target=self.listen_tcp, daemon=True)
             self.background.start()
@@ -152,3 +146,5 @@ class Peer:
         self.stop_flag.set()
         if self.background.is_alive():
             self.background.join(timeout=1)
+        # Stop the scheduler as well
+        self.Dispatcher.stop_scheduler()
