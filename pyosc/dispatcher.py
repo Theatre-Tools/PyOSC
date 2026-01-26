@@ -1,9 +1,10 @@
-from threading import Lock
+from threading import RLock, Thread, Event
 from typing import Generic, Protocol, TypeVar, overload
 import re
-from oscparser import OSCMessage
+import time
+import heapq
+from oscparser import OSCMessage, OSCBundle
 from pydantic import BaseModel, ValidationError
-
 
 class DispatcherInterface[T: BaseModel](Protocol):
     def __call__(self, message: T) -> None: ...
@@ -116,7 +117,12 @@ class Dispatcher:
             []
         )
         self.dispatch_cache: dict[str, tuple[DispatcherController[BaseModel], ...]] = {}
-        self.dispatch_lock: Lock = Lock()
+        self.dispatch_lock: RLock = RLock()
+        self._scheduled_heap: list[tuple[float, int, OSCBundle]] = []
+        self._scheduler_lock: RLock = RLock()
+        self._scheduler_counter = 0
+        self._stop_scheduler = Event()
+        self._scheduler_thread: Thread | None = None
 
     @overload
     def add_handler(
@@ -142,6 +148,33 @@ class Dispatcher:
         matcher = DispatchMatcher.from_address(address)
         self.handlers.append((matcher, DispatcherController(handler, validator)))
 
+    def start_scheduler(self):
+        """Start the background thread for processing timestamped bundles."""
+        if self._scheduler_thread is None or not self._scheduler_thread.is_alive():
+            self._stop_scheduler.clear()
+            self._scheduler_thread = Thread(target=self._scheduler_worker, daemon=True)
+            self._scheduler_thread.start()
+
+    def stop_scheduler(self):
+        """Stop the background scheduler thread."""
+        self._stop_scheduler.set()
+        if self._scheduler_thread and self._scheduler_thread.is_alive():
+            self._scheduler_thread.join(timeout=1)
+
+    def _scheduler_worker(self):
+        """Background worker that processes scheduled bundles at their timetags."""
+        while not self._stop_scheduler.is_set():
+            with self._scheduler_lock:
+                if self._scheduled_heap:
+                    scheduled_time, _, bundle = self._scheduled_heap[0]
+                    current_time = time.time()
+                    if current_time >= scheduled_time:
+                        heapq.heappop(self._scheduled_heap)
+                        # Process bundle outside the lock
+                        self._process_bundle_immediate(bundle)
+                        continue
+            time.sleep(0.001)  # Small sleep to prevent busy waiting
+
 
     def remove_handler(self, address: str):
         """
@@ -163,11 +196,14 @@ class Dispatcher:
 
             self.dispatch_cache = {}
 
-    def dispatch(self, message: OSCMessage):
+    def dispatch(self, message: OSCMessage | OSCBundle):
         """
         Dispatches an incoming OSC message to the appropriate handler based on its address.
-        - ``message``: The incoming OSCMessage to dispatch.
+        - ``message``: The incoming OSCMessage or OSCBundle to dispatch.
         """
+        if not isinstance(message, OSCMessage):
+            self.dispatch_bundle(message)
+            return
 
         with self.dispatch_lock:
             if message.address in self.dispatch_cache:
@@ -184,3 +220,68 @@ class Dispatcher:
 
         for handler in matched_handlers:
             handler.run(message)
+
+    def dispatch_bundle(self, bundle: OSCBundle):
+        """
+        Dispatches an OSC bundle. If the bundle has a timetag in the future,
+        it is scheduled for later execution. Otherwise, it's processed immediately.
+        Nested bundles are supported and processed recursively.
+        - ``bundle``: The OSCBundle containing messages and/or nested bundles to dispatch.
+        """
+        # timetag is a 64-bit NTP timestamp (int)
+        # 0 means "immediately"
+        if bundle.timetag == 0:
+            # Immediate execution
+            self._process_bundle_immediate(bundle)
+        else:
+            # Convert NTP timestamp to Unix timestamp
+            # NTP epoch is 1900-01-01, Unix epoch is 1970-01-01
+            # Difference is 2208988800 seconds
+            OSC_EPOCH_OFFSET = 2208988800
+            
+            # Split 64-bit NTP timestamp into seconds and fractional seconds
+            ntp_seconds = bundle.timetag >> 32
+            ntp_fraction = bundle.timetag & 0xFFFFFFFF
+            
+            # Convert to Unix timestamp
+            bundle_time = (ntp_seconds - OSC_EPOCH_OFFSET) + (ntp_fraction / (2**32))
+            current_time = time.time()
+            
+            if bundle_time <= current_time:
+                # Time has passed or is now, process immediately
+                self._process_bundle_immediate(bundle)
+            else:
+                # Schedule for future execution
+                with self._scheduler_lock:
+                    self._scheduler_counter += 1
+                    heapq.heappush(self._scheduled_heap, 
+                                 (bundle_time, self._scheduler_counter, bundle))
+                # Ensure scheduler is running
+                self.start_scheduler()
+
+    def _process_bundle_immediate(self, bundle: OSCBundle):
+        """
+        Process bundle contents immediately and atomically.
+        Handles both messages and nested bundles recursively.
+        """
+        with self.dispatch_lock:
+            for item in bundle.elements:
+                if isinstance(item, OSCMessage):
+                    # Look up or build handler list for this address
+                    if item.address in self.dispatch_cache:
+                        handlers = self.dispatch_cache[item.address]
+                    else:
+                        matched_handlers: list[DispatcherController[BaseModel]] = []
+                        for matcher, handler in self.handlers:
+                            if matcher.matches(item.address):
+                                matched_handlers.append(handler)
+                        handlers = tuple(matched_handlers)
+                        self.dispatch_cache[item.address] = handlers
+                    
+                    # Execute all handlers for this message
+                    for handler in handlers:
+                        handler.run(item)
+                elif isinstance(item, OSCBundle):
+                    # Nested bundle - process recursively
+                    # RLock allows the same thread to acquire the lock again
+                    self._process_bundle_immediate(item)
