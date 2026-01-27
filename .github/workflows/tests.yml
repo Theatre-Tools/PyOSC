@@ -30,12 +30,9 @@ jobs:
     - name: Install dependencies
       run: poetry install --with dev
 
-    - name: Add Poetry environment to PATH
-      run: echo "$(poetry env info --path)/bin" >> $GITHUB_PATH
-
     - name: Run tests with pytest
       run: |
-        pytest --cov=pyosc --cov-report=xml --cov-report=term
+        poetry run pytest --cov=pyosc --cov-report=xml --cov-report=term
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
@@ -62,13 +59,10 @@ jobs:
     - name: Install dependencies
       run: poetry install --with dev
 
-    - name: Add Poetry environment to PATH
-      run: echo "$(poetry env info --path)/bin" >> $GITHUB_PATH
-
     - name: Run ruff
       run: |
-        ruff check .
+        poetry run ruff check .
 
     - name: Run pyright
       run: |
-        pyright
+        poetry run pyright
