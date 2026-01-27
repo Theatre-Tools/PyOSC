@@ -74,13 +74,12 @@ class CallHandler:
             response = responseq.get(timeout=timeout)
             return response
         except queue.Empty:
-            with self.queue_lock:
-                del self.queues[return_address]
             return None
         finally:
             with self.queue_lock:
                 self.peer.Dispatcher.remove_handler(return_address)
-                del self.queues[return_address]
+                if return_address in self.queues:
+                    del self.queues[return_address]
 
     def __call__(self, message: OSCMessage):
         with self.queue_lock:

@@ -148,6 +148,8 @@ class Dispatcher:
             self._stop_scheduler.clear()
             self._scheduler_thread = Thread(target=self._scheduler_worker, daemon=True)
             self._scheduler_thread.start()
+            # Give the thread a moment to start
+            time.sleep(0.001)
 
     def stop_scheduler(self):
         """Stop the background scheduler thread."""
@@ -158,16 +160,20 @@ class Dispatcher:
     def _scheduler_worker(self):
         """Background worker that processes scheduled bundles at their timetags."""
         while not self._stop_scheduler.is_set():
+            bundle_to_process = None
             with self._scheduler_lock:
                 if self._scheduled_heap:
                     scheduled_time, _, bundle = self._scheduled_heap[0]
                     current_time = time.time()
                     if current_time >= scheduled_time:
                         heapq.heappop(self._scheduled_heap)
-                        # Process bundle outside the lock
-                        self._process_bundle_immediate(bundle)
-                        continue
-            time.sleep(0.001)  # Small sleep to prevent busy waiting
+                        bundle_to_process = bundle
+
+            # Process bundle outside the lock to avoid deadlock
+            if bundle_to_process:
+                self._process_bundle_immediate(bundle_to_process)
+            else:
+                time.sleep(0.001)  # Small sleep to prevent busy waiting
 
     def remove_handler(self, address: str):
         """
@@ -178,9 +184,8 @@ class Dispatcher:
         with self.dispatch_lock:
             for item in self.handlers:
                 matcher, _ = item
-                if matcher.pattern == address:
+                if matcher.pattern.pattern == address:
                     removed_handlers.append(item)
-                    return
 
             for handler in removed_handlers:
                 self.handlers.remove(handler)
@@ -243,14 +248,14 @@ class Dispatcher:
                 self._process_bundle_immediate(bundle)
             else:
                 # Schedule for future execution
+                # Ensure scheduler is running BEFORE adding to heap
+                self.start_scheduler()
                 with self._scheduler_lock:
                     self._scheduler_counter += 1
                     heapq.heappush(
                         self._scheduled_heap,
                         (bundle_time, self._scheduler_counter, bundle),
                     )
-                # Ensure scheduler is running
-                self.start_scheduler()
 
     def _process_bundle_immediate(self, bundle: OSCBundle):
         """
