@@ -18,15 +18,20 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Install Poetry
+      run: pipx install poetry
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
+        cache: 'poetry'
 
     - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -e ".[dev]"
+      run: poetry install --with dev
+
+    - name: Add Poetry environment to PATH
+      run: echo "$(poetry env info --path)/bin" >> $GITHUB_PATH
 
     - name: Run tests with pytest
       run: |
@@ -45,15 +50,20 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Install Poetry
+      run: pipx install poetry
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: "3.13"
+        cache: 'poetry'
 
     - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -e ".[dev]"
+      run: poetry install --with dev
+
+    - name: Add Poetry environment to PATH
+      run: echo "$(poetry env info --path)/bin" >> $GITHUB_PATH
 
     - name: Run ruff
       run: |
