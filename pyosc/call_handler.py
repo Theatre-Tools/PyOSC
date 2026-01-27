@@ -4,6 +4,7 @@ from typing import overload
 
 from oscparser import OSCMessage
 from pydantic import BaseModel, ValidationError
+
 from .peer import Peer
 
 
@@ -22,7 +23,13 @@ class CallHandler:
         self.queue_lock = threading.Lock()
 
     @overload
-    def call(self, message: OSCMessage, *, return_address: str | None = None, timeout: float = 5.0) -> OSCMessage | None: ...
+    def call(
+        self,
+        message: OSCMessage,
+        *,
+        return_address: str | None = None,
+        timeout: float = 5.0,
+    ) -> OSCMessage | None: ...
 
     @overload
     def call[T: BaseModel](
@@ -83,4 +90,3 @@ class CallHandler:
                     self.queues[message.address].queue.put(validated_msg)
                 except ValidationError as e:
                     print("CallHandler validation error:", e)
-        # print("CallHandler received message:", msg.address, msg.args)

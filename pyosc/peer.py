@@ -3,7 +3,13 @@ import threading
 from select import select
 from typing import Literal, overload
 
-from oscparser import OSCBundle, OSCDecoder, OSCEncoder, OSCFraming, OSCMessage, OSCModes
+from oscparser import (
+    OSCDecoder,
+    OSCEncoder,
+    OSCFraming,
+    OSCMessage,
+    OSCModes,
+)
 
 from pyosc.dispatcher import Dispatcher
 
@@ -133,7 +139,7 @@ class Peer:
         """Invokes above methods to start a connection dependant on mode."""
         # Start the dispatcher's scheduler for timestamped bundles
         self.Dispatcher.start_scheduler()
-        
+
         if self.mode == OSCModes.TCP:
             self.background = threading.Thread(target=self.listen_tcp, daemon=True)
             self.background.start()
