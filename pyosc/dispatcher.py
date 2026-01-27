@@ -1,10 +1,12 @@
-from threading import RLock, Thread, Event
-from typing import Generic, Protocol, TypeVar, overload
+import heapq
 import re
 import time
-import heapq
-from oscparser import OSCMessage, OSCBundle
+from threading import Event, RLock, Thread
+from typing import Generic, Protocol, TypeVar, overload
+
+from oscparser import OSCBundle, OSCMessage
 from pydantic import BaseModel, ValidationError
+
 
 class DispatcherInterface[T: BaseModel](Protocol):
     def __call__(self, message: T) -> None: ...
@@ -14,9 +16,7 @@ T_C = TypeVar("T_C", bound=BaseModel, covariant=True)
 
 
 class DispatcherController(Generic[T_C]):
-    def __init__(
-        self, dispatcher: "DispatcherInterface[T_C]", validator: type[T_C]
-    ) -> None:
+    def __init__(self, dispatcher: "DispatcherInterface[T_C]", validator: type[T_C]) -> None:
         self.dispatcher = dispatcher
         self.validator = validator
 
@@ -33,67 +33,67 @@ class DispatchMatcher:
         self.pattern = pattern
 
     @classmethod
-    def from_address(cls, address: str) -> 'DispatchMatcher':
-        reg_pattern = ''
+    def from_address(cls, address: str) -> "DispatchMatcher":
+        reg_pattern = ""
         i = 0
-        
+
         while i < len(address):
             char = address[i]
-            
-            if char == '?':
+
+            if char == "?":
                 # ? matches any single character
-                reg_pattern += '.'
+                reg_pattern += "."
                 i += 1
-            elif char == '*':
+            elif char == "*":
                 # * matches any sequence of zero or more characters
-                reg_pattern += '.*'
+                reg_pattern += ".*"
                 i += 1
-            elif char == '[':
+            elif char == "[":
                 # Square brackets - character class
                 j = i + 1
                 # Check if it starts with !
-                if j < len(address) and address[j] == '!':
+                if j < len(address) and address[j] == "!":
                     # Negated character class
-                    reg_pattern += '[^'
+                    reg_pattern += "[^"
                     j += 1
                 else:
-                    reg_pattern += '['
-                
+                    reg_pattern += "["
+
                 # Copy contents until closing bracket
-                while j < len(address) and address[j] != ']':
+                while j < len(address) and address[j] != "]":
                     reg_pattern += address[j]
                     j += 1
-                
+
                 if j < len(address):
-                    reg_pattern += ']'
+                    reg_pattern += "]"
                     i = j + 1
                 else:
                     # No closing bracket found, treat as literal
-                    reg_pattern += re.escape('[')
+                    reg_pattern += re.escape("[")
                     i += 1
-            elif char == '{':
+            elif char == "{":
                 # Curly braces - comma-separated alternatives
                 j = i + 1
                 alternatives = []
-                current = ''
-                
-                while j < len(address) and address[j] != '}':
-                    if address[j] == ',':
+                current = ""
+
+                while j < len(address) and address[j] != "}":
+                    if address[j] == ",":
                         alternatives.append(current)
-                        current = ''
+                        current = ""
                     else:
                         current += address[j]
                     j += 1
-                
+
                 if j < len(address):
                     alternatives.append(current)
                     # Escape each alternative
                     escaped_alternatives = [re.escape(alt) for alt in alternatives]
-                    reg_pattern += '(' + '|'.join(escaped_alternatives) + ')'
+                    reg_pattern += "(" + "|".join(escaped_alternatives) + ")"
                     i = j + 1
                 else:
                     # No closing brace found, treat as literal
-                    reg_pattern += re.escape('{')
+                    reg_pattern += re.escape("{")
                     i += 1
             else:
                 # Regular character - escape it if it has special meaning in regex
@@ -113,9 +113,7 @@ class Dispatcher:
     """Dispatches incoming OSC messages to registered handlers based on their addresses."""
 
     def __init__(self):
-        self.handlers: list[tuple[DispatchMatcher, DispatcherController[BaseModel]]] = (
-            []
-        )
+        self.handlers: list[tuple[DispatchMatcher, DispatcherController[BaseModel]]] = []
         self.dispatch_cache: dict[str, tuple[DispatcherController[BaseModel], ...]] = {}
         self.dispatch_lock: RLock = RLock()
         self._scheduled_heap: list[tuple[float, int, OSCBundle]] = []
@@ -125,14 +123,10 @@ class Dispatcher:
         self._scheduler_thread: Thread | None = None
 
     @overload
-    def add_handler(
-        self, address: str, handler: DispatcherInterface[OSCMessage]
-    ) -> None: ...
+    def add_handler(self, address: str, handler: DispatcherInterface[OSCMessage]) -> None: ...
 
     @overload
-    def add_handler[T: BaseModel](
-        self, address: str, handler: DispatcherInterface[T], validator: type[T]
-    ) -> None: ...
+    def add_handler[T: BaseModel](self, address: str, handler: DispatcherInterface[T], validator: type[T]) -> None: ...
 
     def add_handler[T: BaseModel](
         self,
@@ -175,15 +169,12 @@ class Dispatcher:
                         continue
             time.sleep(0.001)  # Small sleep to prevent busy waiting
 
-
     def remove_handler(self, address: str):
         """
         Removes a handler for a specific OSC address.
         - ``address``: The OSC address to remove the handler for.
         """
-        removed_handlers: list[
-            tuple[DispatchMatcher, DispatcherController[BaseModel]]
-        ] = []
+        removed_handlers: list[tuple[DispatchMatcher, DispatcherController[BaseModel]]] = []
         with self.dispatch_lock:
             for item in self.handlers:
                 matcher, _ = item
@@ -238,15 +229,15 @@ class Dispatcher:
             # NTP epoch is 1900-01-01, Unix epoch is 1970-01-01
             # Difference is 2208988800 seconds
             OSC_EPOCH_OFFSET = 2208988800
-            
+
             # Split 64-bit NTP timestamp into seconds and fractional seconds
             ntp_seconds = bundle.timetag >> 32
             ntp_fraction = bundle.timetag & 0xFFFFFFFF
-            
+
             # Convert to Unix timestamp
             bundle_time = (ntp_seconds - OSC_EPOCH_OFFSET) + (ntp_fraction / (2**32))
             current_time = time.time()
-            
+
             if bundle_time <= current_time:
                 # Time has passed or is now, process immediately
                 self._process_bundle_immediate(bundle)
@@ -254,8 +245,10 @@ class Dispatcher:
                 # Schedule for future execution
                 with self._scheduler_lock:
                     self._scheduler_counter += 1
-                    heapq.heappush(self._scheduled_heap, 
-                                 (bundle_time, self._scheduler_counter, bundle))
+                    heapq.heappush(
+                        self._scheduled_heap,
+                        (bundle_time, self._scheduler_counter, bundle),
+                    )
                 # Ensure scheduler is running
                 self.start_scheduler()
 
@@ -277,7 +270,7 @@ class Dispatcher:
                                 matched_handlers.append(handler)
                         handlers = tuple(matched_handlers)
                         self.dispatch_cache[item.address] = handlers
-                    
+
                     # Execute all handlers for this message
                     for handler in handlers:
                         handler.run(item)

@@ -5,7 +5,7 @@ from typing import overload
 from oscparser import OSCMessage
 from pydantic import BaseModel, ValidationError
 
-from pyosc.peer import Peer
+from .peer import Peer
 
 
 class Call:
@@ -23,59 +23,70 @@ class CallHandler:
         self.queue_lock = threading.Lock()
 
     @overload
-    def call(self, msg: OSCMessage, *, return_addr: str | None = None, timeout: float = 5.0) -> OSCMessage | None: ...
+    def call(
+        self,
+        message: OSCMessage,
+        *,
+        return_address: str | None = None,
+        timeout: float = 5.0,
+    ) -> OSCMessage | None: ...
 
     @overload
     def call[T: BaseModel](
         self,
-        msg: OSCMessage,
+        message: OSCMessage,
         *,
-        return_addr: str | None = None,
+        return_address: str | None = None,
         validator: type[T],
         timeout: float = 5.0,
     ) -> T | None: ...
 
     def call(
         self,
-        msg: OSCMessage,
+        message: OSCMessage,
         *,
-        return_addr: str | None = None,
+        return_address: str | None = None,
         validator: type[BaseModel] | None = None,
         timeout: float = 5.0,
     ) -> BaseModel | None:
         """Calling a call handler will send a message to the peer, and await a response that meets the critieria.
 
         Args:
-            ``msg (OSCMessage)``: An OSCMessage to send to the peer.
-            ``return_addr (str | None, optional)``: The address to listen for a response on. Defaults to None.
+            ``message (OSCMessage)``: An OSCMessage to send to the peer.
+            ``return_address (str | None, optional)``: The address to listen for a response on. Defaults to None.
             ``validator (type[BaseModel] | None, optional)``: A Pydantic model to validate the response against. Defaults to None.
             ``timeout (float, optional)``: How long to wait for a response before timing out. Defaults to 5.0.
 
         Returns:
             BaseModel | None: The validated response model if received within the timeout period, otherwise None.
         """
+
         if validator is None:
             validator = OSCMessage
-        if not return_addr:
-            return_addr = msg.address
+        if not return_address:
+            return_address = message.address
         responseq = queue.Queue()
         with self.queue_lock:
-            self.queues[return_addr] = Call(responseq, validator)
-        self.peer.send_message(msg)
+            self.queues[return_address] = Call(responseq, validator)
+            self.peer.Dispatcher.add_handler(return_address, self)
+        self.peer.send_message(message)
         try:
             response = responseq.get(timeout=timeout)
             return response
         except queue.Empty:
             with self.queue_lock:
-                del self.queues[return_addr]
+                del self.queues[return_address]
             return None
+        finally:
+            with self.queue_lock:
+                self.peer.Dispatcher.remove_handler(return_address)
+                del self.queues[return_address]
 
-    def __call__(self, msg: OSCMessage):
+    def __call__(self, message: OSCMessage):
         with self.queue_lock:
-            if msg.address in self.queues:
+            if message.address in self.queues:
                 try:
-                    validated_msg = self.queues[msg.address].validator.model_validate(msg.model_dump())
-                    self.queues[msg.address].queue.put(validated_msg)
+                    validated_msg = self.queues[message.address].validator.model_validate(message.model_dump())
+                    self.queues[message.address].queue.put(validated_msg)
                 except ValidationError as e:
                     print("CallHandler validation error:", e)
-        # print("CallHandler received message:", msg.address, msg.args)
