@@ -32,15 +32,25 @@ jobs:
 
     - name: Run tests with pytest
       run: |
-        poetry run pytest --cov=pyosc --cov-report=xml --cov-report=term
+        poetry run pytest --cov=pyosc --cov-report=xml --cov-report=term --cov-report=html
 
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
+    - name: Upload coverage report as artifact
+      if: always()
+      uses: actions/upload-artifact@v4
       with:
-        file: ./coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
+        name: coverage-report-${{ matrix.os }}-${{ matrix.python-version }}
+        path: |
+          coverage.xml
+          htmlcov/
+        retention-days: 30
+
+    - name: Add coverage summary to job summary
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        echo "## Coverage Report" >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        poetry run pytest --cov=pyosc --cov-report=term | tail -n 20 >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
 
   lint:
     runs-on: ubuntu-latest
