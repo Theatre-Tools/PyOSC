@@ -12,7 +12,7 @@ message = OSCMessage(
     address="/test/message",
     args=(
         OSCInt(value=42),
-        OSCString(value="Hello"),
+        OSCString(value="Hello_world!"),
     ),
 )
 peer.send_message(message)
