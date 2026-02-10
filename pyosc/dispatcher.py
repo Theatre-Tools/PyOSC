@@ -24,8 +24,13 @@ class DispatcherController(Generic[T_C]):
         try:
             validated_message = self.validator.model_validate(message.model_dump())
             self.dispatcher(validated_message)
-        except ValidationError:
-            pass
+        except ValidationError as e:
+            if ValidationError.errors(e)[0]["type"] == "missing":
+                raise ValueError(f"Validation error: Missing required fields {e.errors()[0]['loc']} in message {message}")
+        except Exception as e:
+            raise Exception(f"Error in handler: {e}")
+
+
 
 
 class DispatchMatcher:
