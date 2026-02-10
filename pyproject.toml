@@ -1,5 +1,5 @@
 [project]
-name = "pyosc"
+name = "pyopensoundcontrol"
 version = "1.0.0"
 description = "A package to add fully featured OSC support to python"
 authors = [
