@@ -141,6 +141,7 @@ class Dispatcher:
         """
         matcher = DispatchMatcher.from_address(address)
         self.handlers.append((matcher, DispatcherController(handler, validator)))
+        self.dispatch_cache = {}
 
     def start_scheduler(self):
         """Start the background thread for processing timestamped bundles."""
