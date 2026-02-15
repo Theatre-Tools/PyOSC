@@ -1165,14 +1165,14 @@ files = [
 
 [[package]]
 name = "oscparser"
-version = "2.0.3"
+version = "2.0.4"
 description = "Library for parsing and building Open Sound Control (OSC) messages and bundles."
 optional = false
-python-versions = "<3.14,>=3.13"
+python-versions = ">=3.13"
 groups = ["main"]
 files = [
-    {file = "oscparser-2.0.3-py3-none-any.whl", hash = "sha256:4e71d90396bbb166af55912bd9a081ac456ca1dd2b52a8cdfaed5946ac52e1b8"},
-    {file = "oscparser-2.0.3.tar.gz", hash = "sha256:8cdcde8b95a4672d699789565250b3b5ec71c876b2cd05d20595b143c5199963"},
+    {file = "oscparser-2.0.4-py3-none-any.whl", hash = "sha256:c335276e2928895bcc82fc408fd2cff85699ef766ec91e1b4ec12609741a9c4c"},
+    {file = "oscparser-2.0.4.tar.gz", hash = "sha256:76e8c8b6e685fe46d614bd1808ade2c88240ccee9974d96feeec7ef10f8553a0"},
 ]
 
 [package.dependencies]
@@ -2015,5 +2015,5 @@ type = ["pytest-mypy"]
 
 [metadata]
 lock-version = "2.1"
-python-versions = "<3.14,>=3.13"
-content-hash = "c6ee855d07ac32c33decc09e0982a06a0260b99f818a3d6ab62cebd103b43845"
+python-versions = ">=3.13,<4.0.0"
+content-hash = "d7e1779f8b010d0f29c707bd8e857c9ea7261f74bacddcec3281df52cca0e58c"
