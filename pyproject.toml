@@ -14,7 +14,6 @@ license = "MIT"
 readme = "README.md"
 requires-python = ">=3.13,<4.0.0"
 dependencies = [
-    "sockets (>=1.0.0,<2.0.0)",
     "oscparser (>=2.0.3,<3.0.0)",    
 ]
 [project.urls]
@@ -26,8 +25,10 @@ Issues = "https://github.com/Theatre-Tools/PyOSC/issues"
 pydantic = "^2.12.5"
 
 [tool.poetry]
-packages = [{ include = "pyosc" }]
+packages = [{ include = "pyosc"}]
 
+[tool.setuptools]
+py-modules = []
 
 [build-system]
 requires = ["setuptools"]
