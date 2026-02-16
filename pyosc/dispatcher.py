@@ -15,6 +15,18 @@ class DispatcherInterface[T: BaseModel](Protocol):
 T_C = TypeVar("T_C", bound=BaseModel, covariant=True)
 
 
+class DispatcherValidationError(ValueError):
+    pass
+
+
+class DispatcherMissingFieldError(DispatcherValidationError):
+    pass
+
+
+class DispatcherTypeMismatchError(DispatcherValidationError):
+    pass
+
+
 class DispatcherController(Generic[T_C]):
     def __init__(self, dispatcher: "DispatcherInterface[T_C]", validator: type[T_C]) -> None:
         self.dispatcher = dispatcher
@@ -25,12 +37,17 @@ class DispatcherController(Generic[T_C]):
             validated_message = self.validator.model_validate(message.model_dump())
             self.dispatcher(validated_message)
         except ValidationError as e:
-            if ValidationError.errors(e)[0]["type"] == "missing":
-                raise ValueError(f"Validation error: Missing required fields {e.errors()[0]['loc']} in message {message}")
+            errors = e.errors()
+            formatted_errors = "; ".join(f"{error['loc']}: {error['msg']} ({error['type']})" for error in errors)
+            if any(error["type"] == "missing" for error in errors):
+                raise DispatcherMissingFieldError(
+                    f"Validation error: Missing required fields in message {message}. {formatted_errors}"
+                )
+            if any(error["type"].endswith("_type") for error in errors):
+                raise DispatcherTypeMismatchError(f"Validation error: Type mismatch in message {message}. {formatted_errors}")
+            raise DispatcherValidationError(f"Validation error: Invalid message {message}. {formatted_errors}")
         except Exception as e:
             raise Exception(f"Error in handler: {e}")
-
-
 
 
 class DispatchMatcher:

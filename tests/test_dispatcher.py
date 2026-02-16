@@ -7,7 +7,12 @@ from unittest.mock import MagicMock
 from oscparser import OSCBundle, OSCInt, OSCMessage
 from pydantic import BaseModel
 
-from pyosc.dispatcher import Dispatcher, DispatcherController, DispatchMatcher
+from pyosc.dispatcher import (
+    Dispatcher,
+    DispatcherController,
+    DispatcherMissingFieldError,
+    DispatchMatcher,
+)
 
 
 class CustomModel(BaseModel):
@@ -96,8 +101,8 @@ class TestDispatcherController(unittest.TestCase):
         self.assertIsInstance(called_with, OSCMessage)
         self.assertEqual(called_with.address, "/test")
 
-    def test_validation_error_silenced(self):
-        """Test that validation errors don't raise exceptions."""
+    def test_validation_error_missing_field(self):
+        """Test that missing fields raise a specific validation error."""
         mock_dispatcher = MagicMock()
 
         class StrictModel(BaseModel):
@@ -106,8 +111,8 @@ class TestDispatcherController(unittest.TestCase):
         controller = DispatcherController(mock_dispatcher, StrictModel)
 
         message = OSCMessage(address="/test", args=())
-        # Should not raise exception even though validation fails
-        controller.run(message)
+        with self.assertRaises(DispatcherMissingFieldError):
+            controller.run(message)
 
         # Dispatcher should not be called when validation fails
         mock_dispatcher.assert_not_called()
