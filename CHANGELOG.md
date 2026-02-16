@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.11] - 2026-02-16
+### :bug: Bug Fixes
+- [`0b43e11`](https://github.com/Theatre-Tools/PyOSC/commit/0b43e11ae914933bf3890919eb4cb7920b96c3e6) - introduce CallHandlerValidationError for improved error handling in CallHandler *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
+- [`365c937`](https://github.com/Theatre-Tools/PyOSC/commit/365c937aa6e9e26ac8ec87b2cecd9b6a191c6488) - add CallHandlerValidationError to CallHandler tests for improved validation handling *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
+
+### :wrench: Chores
+- [`74f7451`](https://github.com/Theatre-Tools/PyOSC/commit/74f74518e4e1cc8435f628154e6a4bea80c2d8ed) - bump! *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
+
+
 ## [1.0.8] - 2026-02-16
 ### :wrench: Chores
 - [`1738141`](https://github.com/Theatre-Tools/PyOSC/commit/1738141478c696fc05e3e160f59d9250a97ad486) - If I have to bump this one more time to get it published there will be backlash. (1.0.7) *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
@@ -20,3 +29,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [1.0.6]: https://github.com/Theatre-Tools/PyOSC/compare/1.0.5...1.0.6
 [1.0.8]: https://github.com/Theatre-Tools/PyOSC/compare/1.0.7...1.0.8
+[1.0.11]: https://github.com/Theatre-Tools/PyOSC/compare/1.0.10...1.0.11
