@@ -14,6 +14,10 @@ class Call:
         self.validator = validator
 
 
+class CallHandlerValidationError(ValueError):
+    pass
+
+
 class CallHandler:
     """A call handler is a way of communicating with a peer that is more akin to a restuful API from the user point of view. You send a request, it gives you a response."""
 
@@ -88,4 +92,4 @@ class CallHandler:
                     validated_msg = self.queues[message.address].validator.model_validate(message.model_dump())
                     self.queues[message.address].queue.put(validated_msg)
                 except ValidationError as e:
-                    raise ValueError(f"CallHandler validation error: {e}") from e
+                    raise CallHandlerValidationError(f"CallHandler validation error: {e}") from e
