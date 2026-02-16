@@ -1,6 +1,6 @@
 [project]
 name = "pyopensoundcontrol"
-version = "1.0.9"
+version = "1.0.10"
 description = "A package to add fully featured OSC support to python"
 authors = [
     {name = "Morph Tollon",email = "code@morphtollon.co.uk"}
@@ -20,6 +20,7 @@ dependencies = [
 Repository = "https://github.com/Theatre-Tools/PyOSC"
 Homepage = "https://github.com/Theatre-Tools/PyOSC"
 Issues = "https://github.com/Theatre-Tools/PyOSC/issues"
+Documentation = "https://theatre-tools.github.io/PyOSC/latest/"
 
 [tool.poetry.dependencies]
 pydantic = "^2.12.5"
