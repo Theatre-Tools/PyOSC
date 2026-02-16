@@ -17,11 +17,29 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    outputs:
+      tag_matches_version: ${{ steps.version_check.outputs.tag_matches_version }}
     steps:
       - uses: actions/checkout@v4
         with:
           ref: main
-          fetch-depth: 0
+      - name: Check tag matches pyproject version
+        id: version_check
+        run: |
+          python - <<'PY'
+          import tomllib
+          import os
+
+          with open("pyproject.toml", "rb") as handle:
+              data = tomllib.load(handle)
+
+          version = data["project"]["version"]
+          tag = os.environ["GITHUB_REF_NAME"]
+          match = str(version == tag).lower()
+          print(f"tag_matches_version={match}")
+          PY
+        env:
+          PYTHONUTF8: "1"
 
       - name: Parse tags
         id: parse_tags
@@ -56,6 +74,7 @@ jobs:
 
   publish:
     needs: release
+    if: needs.release.outputs.tag_matches_version == 'true'
     runs-on: ubuntu-latest
     permissions:
       id-token: write

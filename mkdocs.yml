@@ -36,7 +36,7 @@ plugins:
 extra:
   version:
     provider: mike
-    default: stable
+    default: latest
 
 markdown_extensions:
   - pymdownx.superfences
