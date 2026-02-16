@@ -27,8 +27,8 @@ jobs:
         id: version_check
         run: |
           python - <<'PY'
-          import tomllib
           import os
+          import tomllib
 
           with open("pyproject.toml", "rb") as handle:
               data = tomllib.load(handle)
@@ -36,7 +36,9 @@ jobs:
           version = data["project"]["version"]
           tag = os.environ["GITHUB_REF_NAME"]
           match = str(version == tag).lower()
-          print(f"tag_matches_version={match}")
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"tag_matches_version={match}\n")
           PY
         env:
           PYTHONUTF8: "1"
