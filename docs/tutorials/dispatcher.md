@@ -60,7 +60,7 @@ peer.start_listening()
 ```
 
 !!! danger
-    Default handlers like this no longer exist in the latest version of this library. The same functionality can be achieved by registering a handler with the address of `/*`. This is to achieve a more consistent and intuitive API, as well as to allow formultiple handlers that match all addresses. UDP, it is important to specify the `UDP_bind_address` and `UDP_bind_port` to bind the socket for receiving messages. I left this part of the documentation in because it makes it easier to understand how the libruary works. This section however will be removed in a future version of the documentation, to reflect the changes in the library.
+    Default handlers like this no longer exist in the latest version of this library. The same functionality can be achieved by registering a handler with the address of `/*`. This is to achieve a more consistent and intuitive API, as well as to allow for multiple handlers that match all addresses. I left this part of the documentation in because it makes it easier to understand how the libruary works. This section however will be removed in a future version of the documentation, to reflect the changes in the library.
 
 ### Registering Address-Specific Handlers {#handlers}
 
