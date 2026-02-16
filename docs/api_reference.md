@@ -114,9 +114,9 @@ Registers a default handler function that will be invoked when no other register
 
 - `handler`: A callable function that will be invoked for unmatched messages.
 
-!!! warning
+!!! danger
 
-    It is likely the default handler will be deprecated in a future version of PyOSC, to be replaced with a default CallHandler that can be customized or overwritten.
+    The default handler no longer exists in PyOSC as of version 1.0.8. See [`Default Handler`](./tutorials/dispatcher.md#default-handler){ data-preview } for more information.
 
 #### `Dispatch(message: OSCMessage)` {#method-dispatch}
 ```python
