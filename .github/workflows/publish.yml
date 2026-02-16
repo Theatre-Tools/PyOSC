@@ -7,20 +7,13 @@ on:
   workflow_dispatch:
 
 jobs:
-  lint:
-    uses: ./.github/workflows/lint.yml
 
-  docs:
-    uses: ./.github/workflows/docs.yml
-
-  #test:
-  #  uses: ./.github/workflows/test.yml
+  test:
+    uses: ./.github/workflows/tests.yml
     
   release:
     needs:
-      - lint
-      - docs
-    #  - test
+      - test
     runs-on: ubuntu-latest
     permissions:
       contents: write
