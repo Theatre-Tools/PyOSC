@@ -3,12 +3,12 @@
 import queue
 import time
 import unittest
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, Mock
 
 from oscparser import OSCInt, OSCMessage, OSCString
 from pydantic import BaseModel, Field
 
-from pyosc.call_handler import Call, CallHandler
+from pyosc.call_handler import Call, CallHandler, CallHandlerValidationError
 from pyosc.dispatcher import Dispatcher
 from pyosc.peer import Peer
 
@@ -189,11 +189,8 @@ class TestCallHandler(unittest.TestCase):
         # Send message that won't validate
         message = OSCMessage(address="/test", args=())
 
-        # Should not raise exception
-        with patch("builtins.print") as mock_print:
+        with self.assertRaises(CallHandlerValidationError):
             self.call_handler(message)
-            # Should print validation error
-            mock_print.assert_called()
 
         # Queue should remain empty
         self.assertTrue(test_queue.empty())
