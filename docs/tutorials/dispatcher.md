@@ -3,6 +3,7 @@
 The [`Dispatcher`](../api_reference.md#dispatcher){ data-preview } object in PyOSC is what routes incoming OSC messages based on their address. It's implementation is simple and efficient, allowing you to easily register handler based on methods, addresses and pydanntic models.
 
 ## Creating a Dispatcher
+
 Dispatchers no longer need to be explicitly created, as they are now automatically initialized when you create a [`Peer`](../api_reference.md#peer){ data-preview } object. However, if you need to create one manually, you can do so like this:
 
 ```python
@@ -13,7 +14,8 @@ dispatcher = Dispatcher()
 
 ## Registering Handlers
 
-### The Default Handler
+### The Default Handler {#default-handler}
+
 In PyOSC handlers are registed by the address for which they are handling messages for. There is only one dispatch handler that doesn't have an address assigned to it, and that is the [`default handler`](../api_reference.md#method-default_handler){ data-preview }, which is called when no other handlers match the incoming message's address.
 
 Let's make a simple example, that registers a default handler, and prints the message. The default `validator` will accept all OSCMessages.
@@ -57,7 +59,11 @@ peer.dispatcher.add_default_handler(default_handler)
 peer.start_listening()
 ```
 
-### Registering Address-Specific Handlers
+!!! danger
+    Default handlers like this no longer exist in the latest version of this library. The same functionality can be achieved by registering a handler with the address of `/*`. This is to achieve a more consistent and intuitive API, as well as to allow formultiple handlers that match all addresses. UDP, it is important to specify the `UDP_bind_address` and `UDP_bind_port` to bind the socket for receiving messages. I left this part of the documentation in because it makes it easier to understand how the libruary works. This section however will be removed in a future version of the documentation, to reflect the changes in the library.
+
+### Registering Address-Specific Handlers {#handlers}
+
 In addition to the default handler, you can register handlers for specific OSC addresses. This allows you to drop or ignore messages from certain addresses, as well as process information from others.
 
 Here's an example of what a handler specific addresss might look like:
@@ -77,7 +83,8 @@ peer.dispatcher.add_handler("/test/out/ping", ping_handler) #(3)!
 
 Dispatch handlers can be registered and destroyed at any time, this is because when a message is received, the dispatcher checks against it's list of handlers to see if any match the incoming message's address. As long as the handler is registered when the message arrives, it will be called.
 
-### Validators
+### Validators {#validators}
+
 When registering handlers, you can also provide an optional `validator`. A validator is a pydantic model that is used to validate incoming messages before they are passed to the handler. If the message does not conform to the validator, it will be rejected and not processed by the handler.
 
 Here's an example of registering a handler with a validator:
@@ -87,7 +94,7 @@ from pydantic import BaseModel #(1)!
 
 class PingResponse(BaseModel): #(2)!
     args: tuple[OSCString]
-    
+
     @property
     def message(self) -> str:
         return self.args[0].value #(3)!
@@ -104,7 +111,6 @@ peer.dispatcher.add_handler("/test/out/ping", ping_handler, validator=PingRespon
 3. We define a property `message` that extracts the string value from the first argument of the message.
 4. The `ping_handler` function is defined to accept a `PingResponse` object, which will be validated before being passed to the handler.
 5. The `ping_handler` function is registered to handle messages sent to the `/test/out/ping` address, this time with the `PingResponse` model as its validator.
-
 
 ## Examples
 
@@ -123,7 +129,7 @@ peer = Peer(
 
 class PingResponse(BaseModel):
     args: tuple[OSCString] #(2)!
-    
+
     @property
     def message(self) -> str:
         return self.args[0].value #(3)!
