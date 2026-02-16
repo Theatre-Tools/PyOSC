@@ -31,6 +31,9 @@ packages = [{ include = "pyosc"}]
 [tool.setuptools]
 py-modules = []
 
+[tool.setuptools.packages.find]
+include = ["pyosc*"]
+
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
