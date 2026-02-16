@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.8] - 2026-02-16
+### :wrench: Chores
+- [`1738141`](https://github.com/Theatre-Tools/PyOSC/commit/1738141478c696fc05e3e160f59d9250a97ad486) - If I have to bump this one more time to get it published there will be backlash. (1.0.7) *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
+- [`5165cee`](https://github.com/Theatre-Tools/PyOSC/commit/5165cee06431b48d1d99a76960946184a97b2528) - ensure checkout step fetches main branch with full history *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
+- [`2f1ea52`](https://github.com/Theatre-Tools/PyOSC/commit/2f1ea52063882f24e7f303ee2cc80fb0ce54ba25) - sad bumping noises... 1.0.8 *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
+
+
 ## [1.0.6] - 2026-02-16
 ### :recycle: Refactors
 - [`e69e861`](https://github.com/Theatre-Tools/PyOSC/commit/e69e861870da0bb0e2e48e0aa935e8d0100eb5d5) - streamline workflow by removing unused lint and docs jobs, and update test job reference *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
@@ -12,3 +19,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [`22ca380`](https://github.com/Theatre-Tools/PyOSC/commit/22ca3808ad00814ae514e970b8f6e48681340b80) - BUMPY MC BUMP FACE 1.0.6! *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
 
 [1.0.6]: https://github.com/Theatre-Tools/PyOSC/compare/1.0.5...1.0.6
+[1.0.8]: https://github.com/Theatre-Tools/PyOSC/compare/1.0.7...1.0.8
