@@ -1,6 +1,6 @@
 [project]
 name = "pyopensoundcontrol"
-version = "1.0.8"
+version = "1.0.9"
 description = "A package to add fully featured OSC support to python"
 authors = [
     {name = "Morph Tollon",email = "code@morphtollon.co.uk"}
