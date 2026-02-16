@@ -44,11 +44,13 @@ Example:
 ```python
 from pyosc import OSCMessage, OSCInt, OSCString
 message = OSCMessage(
-    address="/test/ping", #The address to send the message to
+    address="/test/ping", #(1)!
     args=(
-        OSCString(value="Hello, World!"), ## Arguments take a value
-  )# A tuple of `OSCArgs`
+        OSCString(value="Hello, World!"), #(2)!
+  ) #(3)!
  )
 ```
 
-
+1. The OSC address to send the message to.
+2. Arguments contain a `value` attribute, which is where the actual value of the argument is stored.
+3. The `args` parameter is a tuple of OSC argument objects, which can be of various types (e.g., `OSCInt`, `OSCString`, etc.).
