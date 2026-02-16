@@ -111,7 +111,7 @@ class Peer:
                     for msg in self.decoder.decode(data):
                         self.Dispatcher.dispatch(msg)
             self.tcp_connection.close()
-            print("socket closed")
+            print("Stopped listening on TCP \n")
         except Exception as e:
             raise e
 

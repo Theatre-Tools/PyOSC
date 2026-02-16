@@ -88,4 +88,4 @@ class CallHandler:
                     validated_msg = self.queues[message.address].validator.model_validate(message.model_dump())
                     self.queues[message.address].queue.put(validated_msg)
                 except ValidationError as e:
-                    print("CallHandler validation error:", e)
+                    raise ValueError(f"CallHandler validation error: {e}") from e
