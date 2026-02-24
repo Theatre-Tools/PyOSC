@@ -1,6 +1,6 @@
 # Roadmap
 
-## Version 1.0 (Current)
+## Version 1.0.15 (Current)
 The initial release covers the core functionality needed for OSC communication in Python.
 
 **What's included:**
@@ -12,8 +12,10 @@ The initial release covers the core functionality needed for OSC communication i
 - Error handling and logging
 - API documentation and tutorials
 - Unit tests for critical components
+- Time-tagged message scheduling
 
-## Upcomoing Features (May include breaking changes)
+
+## Upcoming Features (May include breaking changes)
 
 **Handler improvements**
 
@@ -23,6 +25,10 @@ The initial release covers the core functionality needed for OSC communication i
 **Dispatcher enhancements**
 
 - Add support for exclusions in dispatch handlers, so we don't need hacky solutions with subsequent handlers that do nothing.
+
+**Improved Error Handling**
+- Implement more robust error handling and logging throughout the library, especially in network communication and message parsing.
+- Provide clearer errors on validation failures to make it easier to diagnose issues with message formats and
 
 ## Future
 
@@ -34,7 +40,6 @@ The initial release covers the core functionality needed for OSC communication i
 **Other potential features**
 
 - Bundle support for batched messages
-- Time-tagged message scheduling
 - Connection pooling and multiplexing
 - Better debugging and introspection tools
 

@@ -39,5 +39,17 @@ Contributions are welcome! If you would like to contribute to the project, pleas
 4. The maintainers will review your pull request and provide feedback or merge it if it meets the project's standards.
 5. Please read the [CONTRIBUTING.md](docs/contributing.md) file for more detailed guidelines on contributing to the project.
 
+## Roadmap
+See [ROADMAP.md](docs/roadmap.md) for the current roadmap and upcoming features
+
+## Dependencies and Thank yous
+- [oscparser](https://github.com/Theatre-Tools/python-osc-parser) - A pure Python OSC message parser that supports both OSC 1.0 and 1.1 formats. This library was written by a friend of mine specifically for this project to ensure we have a reliable and flexible OSC parsing solution that meets our needs.
+- [pytest](https://docs.pytest.org/en/stable/) - A testing framework for Python that makes it easy to write simple and scalable test cases.
+- [socket](https://docs.python.org/3/library/socket.html) - A built-in Python library for low-level network communication, used for sending and receiving OSC messages over UDP and TCP.
+- [threading](https://docs.python.org/3/library/threading.html) - A built-in Python library for creating and managing threads, used to handle incoming OSC messages without blocking the main thread.
+- [typing](https://docs.python.org/3/library/typing.html) - A built-in Python library that provides support for type hints, used to improve code readability and maintainability.
+- [select](https://docs.python.org/3/library/select.html) - A built-in Python library that provides access to the select() function, used for monitoring multiple file descriptors (sockets) for events such as incoming data.
+- [Material for MKDocs](https://squidfunk.github.io/mkdocs-material/) - A modern and responsive theme for MkDocs, used to create the documentation for this project.
+
 ## License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. 
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
