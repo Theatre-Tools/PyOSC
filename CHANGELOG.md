@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [docs-1.0.15] - 2026-02-24
+### :wrench: Chores
+- [`0338f1e`](https://github.com/Theatre-Tools/PyOSC/commit/0338f1e28b218b74c864c52ff205a210b1e0fd72) - remove outdated roadmap.md file *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
+
+
 ## [1.0.15] - 2026-02-16
 ### :bug: Bug Fixes
 - [`3808c58`](https://github.com/Theatre-Tools/PyOSC/commit/3808c58dbb3b09e4a114eddb5e5cce2487707ea3) - update version to 1.0.15 in pyproject.toml *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
@@ -45,3 +50,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [1.0.11]: https://github.com/Theatre-Tools/PyOSC/compare/1.0.10...1.0.11
 [1.0.12]: https://github.com/Theatre-Tools/PyOSC/compare/1.0.11...1.0.12
 [1.0.15]: https://github.com/Theatre-Tools/PyOSC/compare/1.0.14...1.0.15
+[docs-1.0.15]: https://github.com/Theatre-Tools/PyOSC/compare/1.0.15...docs-1.0.15
