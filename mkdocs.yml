@@ -64,6 +64,7 @@ nav:
   - API Reference: api_reference.md
   - Roadmap: roadmap.md
   - Contributing: contributing.md
-  - Changelog: ../CHANGELOG.md
+  - Changelog: changelog.md
 watch:
   - docs
+  - CHANGELOG.md
