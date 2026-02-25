@@ -1,7 +1,7 @@
 import socket
 import threading
 from select import select
-from typing import Literal, overload
+from typing import Callable, Literal, overload
 
 from oscparser import (
     OSCDecoder,
@@ -12,6 +12,22 @@ from oscparser import (
 )
 
 from pyosc.dispatcher import Dispatcher
+
+
+class PeerError(Exception):
+    """Base exception for peer-related errors."""
+
+
+class PeerConfigurationError(PeerError):
+    """Raised when a peer is configured with invalid arguments."""
+
+
+class PeerConnectionError(PeerError):
+    """Raised when a peer cannot establish or use its transport connection."""
+
+
+class PeerListenerError(PeerError):
+    """Raised when a background listener fails."""
 
 
 class Peer:
@@ -62,21 +78,44 @@ class Peer:
         self.decoder = OSCDecoder(mode=self.mode, framing=self.framing)
         self.udp_rx_port = udp_rx_port
         self.udp_rx_address = udp_rx_address
+        self.connected = threading.Event()
+        self.last_error: Exception | None = None
+        self.background: threading.Thread | None = None
+        self._error_handlers: list[Callable[[Exception], None]] = []
+        self._connection_handlers: list[Callable[[bool], None]] = []
         if self.mode == OSCModes.TCP:
             try:
                 self.tcp_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 self.tcp_connection.connect((self.address, self.port))
             except OSError as e:
-                raise Exception(f"Could not connect to TCP Peer at {self.address}:{self.port} - {e}")
+                raise PeerConnectionError(f"Could not connect to TCP Peer at {self.address}:{self.port} - {e}") from e
+            self._emit_connection_state(True)
         elif self.mode == OSCModes.UDP:
             try:
                 if self.udp_rx_address is None:
-                    raise Exception("UDP RX address must be specified for UDP Peers")
+                    raise PeerConfigurationError("UDP RX address must be specified for UDP Peers")
+                if self.udp_rx_port is None:
+                    raise PeerConfigurationError("UDP RX port must be specified for UDP Peers")
                 self.udp_connection = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 self.udp_connection.bind((self.udp_rx_address, self.udp_rx_port))
             except OSError as e:
-                raise Exception(f"Could not bind UDP Peer at localhost:{self.udp_rx_port} - {e}")
+                raise PeerConnectionError(f"Could not bind UDP Peer at localhost:{self.udp_rx_port} - {e}") from e
+            self._emit_connection_state(True)
         self.Dispatcher = Dispatcher()
+
+    def _emit_error(self, error: Exception):
+        self.last_error = error
+        for handler in self._error_handlers:
+            handler(error)
+
+    def _emit_connection_state(self, is_connected: bool):
+        if is_connected:
+            self.connected.set()
+        else:
+            self.connected.clear()
+
+        for handler in self._connection_handlers:
+            handler(is_connected)
 
     def send_message(self, message: OSCMessage):
         """
@@ -86,12 +125,16 @@ class Peer:
             e: Any exceptions raised during sending are propagated upwards
 
         """
-        if self.mode == OSCModes.TCP:
+        try:
             encoded_message = self.encoder.encode(message)
-            self.tcp_connection.sendall(encoded_message)
-        elif self.mode == OSCModes.UDP:
-            encoded_message = self.encoder.encode(message)
-            self.udp_connection.sendto(encoded_message, (self.address, self.port))
+            if self.mode == OSCModes.TCP:
+                self.tcp_connection.sendall(encoded_message)
+            elif self.mode == OSCModes.UDP:
+                self.udp_connection.sendto(encoded_message, (self.address, self.port))
+        except OSError as e:
+            peer_error = PeerConnectionError(f"Failed to send OSC message to {self.address}:{self.port} - {e}")
+            self._emit_error(peer_error)
+            raise peer_error from e
 
     def listen_tcp(self):
         """Initiates a background TCP listener against the peer
@@ -99,7 +142,6 @@ class Peer:
         Raises:
             e: Any exceptions raised during listening are propagated upwards
         """
-        print("Listening on TCP \n")
         try:
             while self.stop_flag.is_set() is False:
                 read, _write, _exec = select([self.tcp_connection], [], [], 0.01)
@@ -107,13 +149,15 @@ class Peer:
                     data = sock.recv(2**16)
                     if data == b"":
                         self.tcp_connection.close()
+                        self._emit_connection_state(False)
                         return
                     for msg in self.decoder.decode(data):
                         self.Dispatcher.dispatch(msg)
             self.tcp_connection.close()
-            print("Stopped listening on TCP \n")
         except Exception as e:
-            raise e
+            listener_error = PeerListenerError(f"TCP listener failed for {self.address}:{self.port} - {e}")
+            self._emit_error(listener_error)
+            self._emit_connection_state(False)
 
     def listen_udp(self):
         """Initiates a background UDP listener against the peer
@@ -121,7 +165,6 @@ class Peer:
         Raises:
             e: Any exceptions raised during listening are propagated upwards
         """
-        print("Listening on UDP \n")
         try:
             while self.stop_flag.is_set() is False:
                 read, _write, _exec = select([self.udp_connection], [], [], 0.01)
@@ -132,8 +175,11 @@ class Peer:
                     for msg in self.decoder.decode(data):
                         self.Dispatcher.dispatch(msg)
             self.udp_connection.close()
+            self._emit_connection_state(False)
         except Exception as e:
-            raise e
+            listener_error = PeerListenerError(f"UDP listener failed for {self.address}:{self.port} - {e}")
+            self._emit_error(listener_error)
+            self._emit_connection_state(False)
 
     def start_listening(self):
         """Invokes above methods to start a connection dependant on mode."""
@@ -150,7 +196,8 @@ class Peer:
     def stop_listening(self):
         """Stops listening to incoming messages by terminating the background thread"""
         self.stop_flag.set()
-        if self.background.is_alive():
+        if self.background is not None and self.background.is_alive():
             self.background.join(timeout=1)
+        self._emit_connection_state(False)
         # Stop the scheduler as well
         self.Dispatcher.stop_scheduler()
