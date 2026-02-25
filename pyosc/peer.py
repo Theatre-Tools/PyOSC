@@ -1,3 +1,4 @@
+import inspect
 import socket
 import threading
 from select import select
@@ -58,7 +59,6 @@ class Peer:
         mode: Literal[OSCModes.UDP],
         framing: OSCFraming = OSCFraming.OSC10,
     ): ...
-
     def __init__(
         self,
         address: str,
@@ -81,8 +81,11 @@ class Peer:
         self.connected = threading.Event()
         self.last_error: Exception | None = None
         self.background: threading.Thread | None = None
-        self._error_handlers: list[Callable[[Exception], None]] = []
-        self._connection_handlers: list[Callable[[bool], None]] = []
+        self._event_handlers: dict[str, list[Callable[..., None]]] = {
+            "connect": [],
+            "disconnect": [],
+            "error": [],
+        }
         if self.mode == OSCModes.TCP:
             try:
                 self.tcp_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -104,19 +107,85 @@ class Peer:
             self._emit_connection_state(True)
         self.Dispatcher = Dispatcher()
 
+    @property
+    def connection(self) -> socket.socket:
+        """Returns the active transport socket for this peer."""
+        if self.mode == OSCModes.TCP:
+            return self.tcp_connection
+        return self.udp_connection
+
+    def _normalize_event_name(self, raw_name: str) -> str:
+        aliases = {
+            "connect": "connect",
+            "connection": "connect",
+            "disconnect": "disconnect",
+            "disconnection": "disconnect",
+            "error": "error",
+            "exception": "error",
+        }
+        normalized = aliases.get(raw_name)
+        if normalized is None:
+            raise ValueError(f"Unsupported event type: {raw_name}")
+        return normalized
+
+    def event(self, func: Callable[..., None]):
+        """Decorator event registration inferred from function name.
+
+        Supported handler names:
+        - ``on_connect`` / ``on_connection``
+        - ``on_disconnect`` / ``on_disconnection``
+        - ``on_error`` / ``on_exception``
+        """
+        name = func.__name__
+        params = len(inspect.signature(func).parameters)
+        if not name.startswith("on_"):
+            raise ValueError("Event handler name must start with 'on_'")
+
+        event_name = self._normalize_event_name(name[3:])
+        if name[3:] not in {
+            "connect",
+            "connection",
+            "disconnect",
+            "disconnection",
+            "error",
+            "exception",
+        }:
+            raise ValueError(f"Unsupported event type in handler name: {name}")
+
+        if event_name in {"connect", "disconnect"}:
+            if params == 0:
+
+                def callback(_peer):
+                    func()
+            else:
+                callback = func
+
+            self._event_handlers[event_name].append(callback)
+            if event_name == "connect" and self.connected.is_set():
+                callback(self)
+        elif event_name == "error":
+            if params == 1:
+                self._event_handlers[event_name].append(lambda _peer, error: func(error))
+            else:
+                self._event_handlers[event_name].append(func)
+        return func
+
+    def _emit(self, event_name: str, *args):
+        handlers = self._event_handlers.get(event_name, [])
+        for handler in handlers:
+            handler(*args)
+
     def _emit_error(self, error: Exception):
         self.last_error = error
-        for handler in self._error_handlers:
-            handler(error)
+        self._emit("error", self, error)
 
     def _emit_connection_state(self, is_connected: bool):
         if is_connected:
             self.connected.set()
+            self._emit("connect", self)
         else:
             self.connected.clear()
-
-        for handler in self._connection_handlers:
-            handler(is_connected)
+            self._emit("disconnect", self)
 
     def send_message(self, message: OSCMessage):
         """
