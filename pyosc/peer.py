@@ -86,6 +86,7 @@ class Peer:
         if self.mode == OSCModes.TCP:
             try:
                 self.tcp_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.tcp_connection.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
                 self.tcp_connection.connect((self.address, self.port))
             except OSError as e:
                 raise PeerConnectionError(f"Could not connect to TCP Peer at {self.address}:{self.port} - {e}") from e
