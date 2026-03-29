@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.19] - 2026-03-29
+### :wrench: Chores
+- [`379b437`](https://github.com/Theatre-Tools/PyOSC/commit/379b4370764e20648250fc55a2b25cc8e883f3c5) - bump 1.0.18 *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
+- [`c171f69`](https://github.com/Theatre-Tools/PyOSC/commit/c171f698b6a8052cbf5ddc53d96a73205db85c9c) - Bump! 1.0.19 *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
+
+
 ## [1.0.18] - 2026-03-29
 ### :wrench: Chores
 - [`29e7f31`](https://github.com/Theatre-Tools/PyOSC/commit/29e7f3122185937476d21d6768c4b17bcc7a16be) - 1.0.17 *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
@@ -57,3 +63,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [1.0.15]: https://github.com/Theatre-Tools/PyOSC/compare/1.0.14...1.0.15
 [docs-1.0.15]: https://github.com/Theatre-Tools/PyOSC/compare/1.0.15...docs-1.0.15
 [1.0.18]: https://github.com/Theatre-Tools/PyOSC/compare/1.0.17...1.0.18
+[1.0.19]: https://github.com/Theatre-Tools/PyOSC/compare/1.0.18...1.0.19
