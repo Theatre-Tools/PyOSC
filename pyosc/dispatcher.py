@@ -1,12 +1,18 @@
 import heapq
 import re
 import time
+import warnings
 from threading import Event, RLock, Thread
 from typing import Generic, Protocol, TypeVar, overload
 
 from oscparser import OSCBundle, OSCMessage
 from pydantic import BaseModel, ValidationError
 
+
+def custom_format(message, category, filename, lineno, line=None):
+    return f'Line {lineno}: {category.__name__}: {message}\n'
+
+warnings.formatwarning = custom_format
 
 class DispatcherInterface[T: BaseModel](Protocol):
     def __call__(self, message: T) -> None: ...
@@ -161,6 +167,8 @@ class Dispatcher:
         - ``address``: The OSC address to handle.
         - ``handler``: A callable that takes an OSCMessage as its only argument.
         """
+        if address == '/*':
+            warnings.warn('Using /* a replacement for the deprecated default handler. This workaround will be removed in release 2.0.0', category=DeprecationWarning, stacklevel=2)
         matcher = DispatchMatcher.from_address(address)
         self.handlers.append((matcher, DispatcherController(handler, validator)))
         self.dispatch_cache = {}
