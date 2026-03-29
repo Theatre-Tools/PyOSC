@@ -738,17 +738,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#method-default_handler" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        add_default_handler(handler: Callable)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#method-dispatch" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1149,17 +1138,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#method-default_handler" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        add_default_handler(handler: Callable)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#method-dispatch" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1419,17 +1397,6 @@ Unregisters the handler function for a specific OSC address pattern.</p>
 <ul>
 <li><code>address</code>: The OSC address pattern whose handler should be removed.</li>
 </ul>
-<h4 id="method-default_handler"><code>add_default_handler(handler: Callable)</code><a class="headerlink" href="#method-default_handler" title="Permanent link">&para;</a></h4>
-<p><div class="highlight"><pre><span></span><code><span class="n">dispatcher</span><span class="o">.</span><span class="n">add_default_handler</span><span class="p">(</span><span class="n">handler</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span>
-</code></pre></div>
-Registers a default handler function that will be invoked when no other registered handlers match the incoming message's address.</p>
-<ul>
-<li><code>handler</code>: A callable function that will be invoked for unmatched messages.</li>
-</ul>
-<div class="admonition danger">
-<p class="admonition-title">Danger</p>
-<p>The default handler no longer exists in PyOSC as of version 1.0.8. See <a data-preview="data-preview" href="../tutorials/dispatcher/#default-handler"><code>Default Handler</code></a> for more information.</p>
-</div>
 <h4 id="method-dispatch"><code>Dispatch(message: OSCMessage)</code><a class="headerlink" href="#method-dispatch" title="Permanent link">&para;</a></h4>
 <p><div class="highlight"><pre><span></span><code><span class="n">dispatcher</span><span class="o">.</span><span class="n">dispatch</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">OSCMessage</span><span class="p">)</span>
 </code></pre></div>
@@ -1525,7 +1492,7 @@ Sends an OSC message and waits for a response on a specified return address.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="February 16, 2026 02:24:38 UTC">February 16, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="March 29, 2026 01:37:07 UTC">March 29, 2026</span>
   </span>
 
     

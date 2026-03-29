@@ -559,21 +559,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#default-handler" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The Default Handler
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#handlers" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Registering Address-Specific Handlers
+        Registering Handlers
       
     </span>
   </a>
@@ -809,21 +798,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#default-handler" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The Default Handler
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#handlers" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Registering Address-Specific Handlers
+        Registering Handlers
       
     </span>
   </a>
@@ -899,44 +877,11 @@
 <span class="n">dispatcher</span> <span class="o">=</span> <span class="n">Dispatcher</span><span class="p">()</span>
 </code></pre></div>
 <h2 id="registering-handlers">Registering Handlers<a class="headerlink" href="#registering-handlers" title="Permanent link">&para;</a></h2>
-<h3 id="default-handler">The Default Handler<a class="headerlink" href="#default-handler" title="Permanent link">&para;</a></h3>
-<p>In PyOSC handlers are registed by the address for which they are handling messages for. There is only one dispatch handler that doesn't have an address assigned to it, and that is the <a data-preview="data-preview" href="../../api_reference/#method-default_handler"><code>default handler</code></a>, which is called when no other handlers match the incoming message's address.</p>
-<p>Let's make a simple example, that registers a default handler, and prints the message. The default <code>validator</code> will accept all OSCMessages.</p>
-<p>We will assume you have already created a <a data-preview="data-preview" href="../../api_reference/#peer"><code>Peer</code></a> object called <code>peer</code>.</p>
-<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">default_handler</span><span class="p">(</span><span class="n">message</span><span class="p">):</span><span class="c1">#(1)!</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Received a message on address:</span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">address</span><span class="si">}</span><span class="s2"> with args: </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">args</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="c1">#(2)!</span>
-
-<span class="n">peer</span><span class="o">.</span><span class="n">dispatcher</span><span class="o">.</span><span class="n">add_default_handler</span><span class="p">(</span><span class="n">default_handler</span><span class="p">)</span> <span class="c1">#(3)!</span>
-</code></pre></div>
-<ol>
-<li>The <code>default_handler</code> function is defined to be parsed a single parameter, <code>message</code>, which is expected to be an <a data-preview="data-preview" href="../../api_reference/#oscmessage"><code>OSCMessage</code></a> object.</li>
-<li>Inside the handler, we print out the address and arguments of the received message.</li>
-<li>The <code>default_handler</code> function is registered as the default handler using the <code>add_default_handler</code> method of the <code>dispatcher</code> attribute of the <code>peer</code> object.</li>
-</ol>
-<p>To receive messages, simply call the <code>start_listening</code> method on the <code>Peer</code> object:</p>
-<div class="highlight"><pre><span></span><code><span class="n">peer</span><span class="o">.</span><span class="n">start_listening</span><span class="p">()</span>
-</code></pre></div>
-<p>Here is a full example:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pyosc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Peer</span><span class="p">,</span> <span class="n">OSCMessage</span><span class="p">,</span> <span class="n">OSCModes</span><span class="p">,</span> <span class="n">OSCFraming</span>
-
-<span class="n">peer</span> <span class="o">=</span> <span class="n">Peer</span><span class="p">(</span>
-    <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
-    <span class="mi">3032</span><span class="p">,</span>
-    <span class="n">mode</span><span class="o">=</span><span class="n">OSCModes</span><span class="o">.</span><span class="n">TCP</span><span class="p">,</span>
-    <span class="n">framing</span><span class="o">=</span><span class="n">OSCFraming</span><span class="o">.</span><span class="n">OSC11</span><span class="p">,</span>
-<span class="p">)</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">default_handler</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Received a message on address:</span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">address</span><span class="si">}</span><span class="s2"> with args: </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">args</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-<span class="n">peer</span><span class="o">.</span><span class="n">dispatcher</span><span class="o">.</span><span class="n">add_default_handler</span><span class="p">(</span><span class="n">default_handler</span><span class="p">)</span>
-<span class="n">peer</span><span class="o">.</span><span class="n">start_listening</span><span class="p">()</span>
-</code></pre></div>
 <div class="admonition danger">
-<p class="admonition-title">Danger</p>
-<p>Default handlers like this no longer exist in the latest version of this library. The same functionality can be achieved by registering a handler with the address of <code>/*</code>. This is to achieve a more consistent and intuitive API, as well as to allow for multiple handlers that match all addresses. I left this part of the documentation in because it makes it easier to understand how the libruary works. This section however will be removed in a future version of the documentation, to reflect the changes in the library.</p>
+<p class="admonition-title">The default handler</p>
+<p>The concept of a default handler hasn't existed for a few versions at this point, so I think it is appropriate to remove it from the documentation. However, I will at this time reccomend against using the <code>/*</code> wildcard as a replacement, as it is against specification and this workaround will be removed in version 2.0.0. If you do need this functionality, I will be implementing a replacement method for this functionality in a comming release pre 2.0.0, as 2.0.0 will contain multiple Major breaking changes.</p>
 </div>
-<h3 id="handlers">Registering Address-Specific Handlers<a class="headerlink" href="#handlers" title="Permanent link">&para;</a></h3>
+<h3 id="handlers">Registering Handlers<a class="headerlink" href="#handlers" title="Permanent link">&para;</a></h3>
 <p>In addition to the default handler, you can register handlers for specific OSC addresses. This allows you to drop or ignore messages from certain addresses, as well as process information from others.</p>
 <p>Here's an example of what a handler specific addresss might look like:</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">ping_handler</span><span class="p">(</span><span class="n">message</span><span class="p">):</span> <span class="c1">#(1)!</span>
@@ -1036,7 +981,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="February 16, 2026 03:37:47 UTC">February 16, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="March 29, 2026 01:37:07 UTC">March 29, 2026</span>
   </span>
 
     
