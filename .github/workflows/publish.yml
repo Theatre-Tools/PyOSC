@@ -12,6 +12,7 @@ jobs:
     uses: ./.github/workflows/tests.yml
     
   release:
+    if: startsWith(github.ref, 'refs/tags/')
     needs:
       - test
     runs-on: ubuntu-latest
@@ -21,8 +22,6 @@ jobs:
       tag_matches_version: ${{ steps.version_check.outputs.tag_matches_version }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: main
       - name: Check tag matches pyproject version
         id: version_check
         run: |
@@ -75,8 +74,8 @@ jobs:
           file_pattern: CHANGELOG.md
 
   publish:
+    if: startsWith(github.ref, 'refs/tags/') && needs.release.outputs.tag_matches_version == 'true'
     needs: release
-    if: needs.release.outputs.tag_matches_version == 'true'
     runs-on: ubuntu-latest
     permissions:
       id-token: write
