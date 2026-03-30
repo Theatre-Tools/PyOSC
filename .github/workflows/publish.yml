@@ -48,8 +48,26 @@ jobs:
           git fetch -a
           echo "tag_count=$(git tag -l | wc -l)" >> $GITHUB_OUTPUT
 
+      - name: Check if tag commit is on main
+        id: branch_check
+        run: |
+          git fetch origin main --depth=1
+          if git branch -r --contains "$GITHUB_SHA" | grep -q 'origin/main'; then
+            echo "on_main=true" >> $GITHUB_OUTPUT
+          else
+            echo "on_main=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout main for changelog commit
+        if: steps.branch_check.outputs.on_main == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
       - name: Update CHANGELOG
         id: changelog
+        if: steps.branch_check.outputs.on_main == 'true'
         uses: requarks/changelog-action@v1
         continue-on-error: ${{ steps.parse_tags.outputs.tag_count == '1' }}
         with:
@@ -63,13 +81,13 @@ jobs:
           draft: false
           makeLatest: true
           name: ${{ github.ref_name }}
-          body: ${{ steps.changelog.outputs.changes }}
+          body: ${{ steps.changelog.outputs.changes || format('Release {0}', github.ref_name) }}
           token: ${{ github.token }}
 
       - name: Commit CHANGELOG.md
+        if: steps.branch_check.outputs.on_main == 'true'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          branch: main
           commit_message: 'docs: update CHANGELOG.md for ${{ github.ref_name }}'
           file_pattern: CHANGELOG.md
 
