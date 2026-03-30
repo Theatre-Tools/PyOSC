@@ -67,7 +67,7 @@ class Peer:
         mode: OSCModes = OSCModes.TCP,
         udp_rx_port: int | None = None,
         udp_rx_address: str | None = None,
-        framing: OSCFraming = OSCFraming.OSC11,
+        framing: OSCFraming = OSCFraming.OSC10,
     ):
         self.address = address
         self.port = port
