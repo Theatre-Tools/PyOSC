@@ -15,6 +15,9 @@ I had issues getting the support I needed out of any of the other packages, so I
 - Simple API for sending OSC messages to remote hosts
 
 ## Installation
+![PyPI - Version](https://img.shields.io/pypi/v/pyopensoundcontrol)
+<br>
+
 You can install PyOSC using pip:
 
 ```bash
