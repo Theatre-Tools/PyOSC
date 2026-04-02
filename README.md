@@ -1,5 +1,5 @@
 # PyOSC
-
+[![Tests](https://github.com/Theatre-Tools/PyOSC/actions/workflows/tests.yml/badge.svg)](https://github.com/Theatre-Tools/PyOSC/actions/workflows/tests.yml)
 Python library to support OSC (Open Sound Control).
 
 ## About the Project
