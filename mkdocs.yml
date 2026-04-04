@@ -35,6 +35,7 @@ plugins:
 
 
 extra:
+  pre_release: !ENV [MKDOCS_PRE_RELEASE, false]
   version:
     provider: mike
     default: stable
