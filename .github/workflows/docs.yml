@@ -54,7 +54,7 @@ jobs:
             mkdocs-material-
 
       - run: pipx install poetry
-      - run: poetry install --with docs
+      - run: poetry install --only docs
 
       - name: Configure Git Credentials
         run: |
