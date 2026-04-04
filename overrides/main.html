@@ -7,41 +7,14 @@ You're not viewing the latest version.
 </a>
 {% endblock %}
 
+{% if config.extra.pre_release %}
 {% block announce %}
-<div id="prerelease-banner" class="admonition note" style="display: none;">
+<div class="admonition note">
     <p class="admonition-title">Prerelease</p>
     <p>This is a <strong>pre-release</strong> version. Some features may change before the final release.</p>
     <a href="{{ '../' ~ base_url }}">
         <strong>Click here if you are here by mistake.</strong>
     </a>
 </div>
-<script>
-window.addEventListener("DOMContentLoaded", function() {
-    var ex = new RegExp("/?css/version-select.css$");
-    var sheet = document.querySelector('link[href$="version-select.css"]');
-    if (!sheet) {
-        return;
-    }
-
-    var absBaseUrl = sheet.href.replace(ex, "");
-    var currentVersion = absBaseUrl.split("/").pop();
-
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", absBaseUrl + "/../versions.json");
-    xhr.onload = function() {
-        var versions = JSON.parse(this.responseText);
-        var info = versions.find(function(i) {
-            return i.version === currentVersion || (Array.isArray(i.aliases) && i.aliases.includes(currentVersion));
-        });
-
-        if (info && info.properties && info.properties.pre_release === true) {
-            var banner = document.getElementById("prerelease-banner");
-            if (banner) {
-                banner.style.display = "block";
-            }
-        }
-    };
-    xhr.send();
-});
-</script>
 {% endblock %}
+{% endif %}
