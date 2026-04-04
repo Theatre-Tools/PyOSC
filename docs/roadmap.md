@@ -16,7 +16,7 @@
 
 ## Upcoming Versions (May include breaking changes)
 
-### 1.1.0 <br>
+### 1.1.0
 Version 1.1.0 will bring a varity of feature updates, inclding:
   - Implemented TCP connection flags for increased speed and lower latency
   - Enhanced event and error handling using decorators for cleaner code and easier debugging
@@ -36,7 +36,7 @@ If you are interested in testing the current release candidate for 1.1.0, it can
     ```
 
 
-### 2.0.0 <br>
+### 2.0.0
 Version 2.0.0 will be a major release that includes breaking changes to align more closely with the OSC specification and to improve the overall design of the library. Some of the planned changes include:
 
 - Implement proper address pattern matching in the dispatcher, including matching the address length
