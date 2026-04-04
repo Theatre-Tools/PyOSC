@@ -4,26 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.19docfix] - 2026-04-04
-### :bug: Bug Fixes
-- [`116b0e0`](https://github.com/Theatre-Tools/PyOSC/commit/116b0e03d9575cde592e8c2920e55c96403c156e) - Made the dispatcher handle nexted timetagged bundles correctly, and updated the pytests to reflect this *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
-
-### :wrench: Chores
-- [`822331a`](https://github.com/Theatre-Tools/PyOSC/commit/822331aee752d0f9091e8e75e10943e95cba6d2d) - added deprecation warning for using `/*` as a replacement for the default handler. *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
-- [`29e7f31`](https://github.com/Theatre-Tools/PyOSC/commit/29e7f3122185937476d21d6768c4b17bcc7a16be) - 1.0.17 *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
-- [`379b437`](https://github.com/Theatre-Tools/PyOSC/commit/379b4370764e20648250fc55a2b25cc8e883f3c5) - bump 1.0.18 *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
-- [`c171f69`](https://github.com/Theatre-Tools/PyOSC/commit/c171f698b6a8052cbf5ddc53d96a73205db85c9c) - Bump! 1.0.19 *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
 
 
 ## [1.0.19] - 2026-03-29
 ### :wrench: Chores
 - [`379b437`](https://github.com/Theatre-Tools/PyOSC/commit/379b4370764e20648250fc55a2b25cc8e883f3c5) - bump 1.0.18 *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
 - [`c171f69`](https://github.com/Theatre-Tools/PyOSC/commit/c171f698b6a8052cbf5ddc53d96a73205db85c9c) - Bump! 1.0.19 *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
-
-
-## [1.0.18] - 2026-03-29
-### :wrench: Chores
-- [`29e7f31`](https://github.com/Theatre-Tools/PyOSC/commit/29e7f3122185937476d21d6768c4b17bcc7a16be) - 1.0.17 *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
+- - [`29e7f31`](https://github.com/Theatre-Tools/PyOSC/commit/29e7f3122185937476d21d6768c4b17bcc7a16be) - 1.0.17 *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
 
 
 ## [docs-1.0.15] - 2026-02-24
