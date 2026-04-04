@@ -1,4 +1,5 @@
 
+  
 <!doctype html>
 <html lang="en" class="no-js">
   <head>
@@ -72,42 +73,7 @@
           <div class="md-banner__inner md-grid md-typeset">
             
             
-<div id="prerelease-banner" class="admonition note" style="display: none;">
-    <p class="admonition-title">Prerelease</p>
-    <p>This is a <strong>pre-release</strong> version. Some features may change before the final release.</p>
-    <a href="..//PyOSC/1.1.0rc4">
-        <strong>Click here if you are here by mistake.</strong>
-    </a>
-</div>
-<script>
-window.addEventListener("DOMContentLoaded", function() {
-    var ex = new RegExp("/?css/version-select.css$");
-    var sheet = document.querySelector('link[href$="version-select.css"]');
-    if (!sheet) {
-        return;
-    }
-
-    var absBaseUrl = sheet.href.replace(ex, "");
-    var currentVersion = absBaseUrl.split("/").pop();
-
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", absBaseUrl + "/../versions.json");
-    xhr.onload = function() {
-        var versions = JSON.parse(this.responseText);
-        var info = versions.find(function(i) {
-            return i.version === currentVersion || (Array.isArray(i.aliases) && i.aliases.includes(currentVersion));
-        });
-
-        if (info && info.properties && info.properties.pre_release === true) {
-            var banner = document.getElementById("prerelease-banner");
-            if (banner) {
-                banner.style.display = "block";
-            }
-        }
-    };
-    xhr.send();
-});
-</script>
+  You are currently viewing <strong>pre-release</strong> documentation. This may contain features that have not yet been packaged. For the most accurate information, please <strong><a href="..//PyOSC/1.1.0rc4">refer to the latest release</a></strong>.
 
           </div>
           
@@ -116,18 +82,6 @@ window.addEventListener("DOMContentLoaded", function() {
     </div>
     
       <div data-md-color-scheme="default" data-md-component="outdated" hidden>
-        
-          <aside class="md-banner md-banner--warning">
-            <div class="md-banner__inner md-grid md-typeset">
-              
-You're not viewing the latest version.
-<a href="..//PyOSC/1.1.0rc4">
-    <strong>Click here to go to latest.</strong>
-</a>
-
-            </div>
-            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("/PyOSC/1.1.0rc4"),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
-          </aside>
         
       </div>
     
@@ -741,8 +695,26 @@ You're not viewing the latest version.
               
               <article class="md-content__inner md-typeset">
                 
-  <h1>404 - Not found</h1>
+                  
 
+
+
+  <h1>PyOSC Documentation</h1>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
               </article>
             </div>
           
