@@ -33,7 +33,6 @@ plugins:
       branch: main
   - search
 
-
 extra:
   show_pre_release_warning: !ENV [MKDOCS_SHOW_PRE_RELEASE_WARNING, false]
   version:
