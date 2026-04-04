@@ -17,10 +17,49 @@ The initial release covers the core functionality needed for OSC communication i
 
 ## Upcoming Features (May include breaking changes)
 
+<<<<<<< HEAD
 **Handler improvements**
 
 - Streamline CallHandler so it's created as the default handler when Peer is initialized. This will reduce boilerplate but may require some refactoring of the Peer object.
 - Replace the current default handler with a default CallHandler that can be customized or overwritten.
+=======
+### 1.1.0
+Version 1.1.0 will bring a varity of feature updates, inclding:
+  - Implemented TCP connection flags for increased speed and lower latency
+  - Enhanced event and error handling using decorators for cleaner code and easier debugging
+  - Added Deprecation warning to ```add_handler('/*')``` to warn users of it's deprecation in it's current form. This is due to an oversight in the original dispatcher that ignored address lengths when dispatching messages. This will be fixed in 2.0.0 and we will then be more closely aligned with the OSC Specification.
+
+If you are interested in testing the current release candidate for 1.1.0, it can be installed using the following commands:
+
+=== "Pip"
+
+    ```bash
+    pip install pyopensoundcontrol=1.1.0rc4
+    ```
+=== "Poetry"
+
+    ```bash
+    poetry add pyopensoundcontrol=1.1.0rc4
+    ```
+
+
+### 2.0.0
+Version 2.0.0 will be a major release that includes breaking changes to align more closely with the OSC specification and to improve the overall design of the library. Some of the planned changes include:
+
+- Implement proper address pattern matching in the dispatcher, including matching the address length
+- Rework the method by which handlers are registered. Moving away from the current method of registering handlers individually to registering them at definition, by using decorators. This will reduce clutter and make it easier to pick up the library, especially for users who are used to HTTP frameworks like fastapi and flask. This was trialled in the event handlers coming to version 1.1.0
+- Refactor the Call Handler to make it a bit more streamlined.
+
+There is also space in this release to add more features, as it is likely a month off release candiadates, so if there is anything you would like implemented, please create an issue or submit a pull request with your proposed changes.
+
+
+
+
+
+## Future
+
+These are things I'd like to have implemented at some point, but haven't yet been prioritized for a planned release.
+>>>>>>> 1a90e9e (docs: remove unnecessary line breaks in version headings in roadmap)
 
 **Dispatcher enhancements**
 
