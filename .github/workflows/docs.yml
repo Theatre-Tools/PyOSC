@@ -63,11 +63,11 @@ jobs:
 
       - name: Deploy prerelease docs
         if: env.IS_PRERELEASE == 'true'
-        run: poetry run mike deploy --push --update-aliases $VERSION next
+        run: poetry run mike deploy --push --update-aliases --prop-set pre_release=true $VERSION next
 
       - name: Deploy stable docs
         if: env.IS_PRERELEASE == 'false'
-        run: poetry run mike deploy --push --update-aliases $VERSION stable latest
+        run: poetry run mike deploy --push --update-aliases --prop-set pre_release=false $VERSION stable latest
 
       - name: Set default docs version
         if: env.IS_PRERELEASE == 'false'
