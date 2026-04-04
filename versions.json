@@ -4,14 +4,17 @@
     "title": "1.1.0rc4",
     "aliases": [
       "next"
-    ]
+    ],
+    "properties": {
+      "pre_release": true
+    }
   },
   {
     "version": "1.0.19",
     "title": "1.0.19",
     "aliases": [
-      "latest",
-      "stable"
+      "stable",
+      "latest"
     ],
     "properties": {
       "pre_release": false
