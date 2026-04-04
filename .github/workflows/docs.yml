@@ -1,56 +1,76 @@
 name: Deploy Documentation
+
 on:
   push:
     tags: ["*"]
   workflow_call:
+
 permissions:
   contents: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - uses: actions/setup-python@v5
         with:
           python-version: 3.x
+
       - name: Extract version from pyproject
         run: |
           python - <<'PY'
           import os
           import re
           import tomllib
+          from packaging.version import Version
 
           with open("pyproject.toml", "rb") as handle:
               data = tomllib.load(handle)
 
           version = data["project"]["version"]
+          parsed = Version(version)
 
-          # Detect PEP 440 prerelease markers like a1, b2, rc4
-          is_prerelease = bool(re.search(r"(a|b|rc)\d+$", version, re.IGNORECASE))
+          is_prerelease = str(parsed.is_prerelease).lower()
+          docs_version = parsed.public
 
           with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env:
-              env.write(f"VERSION={version}\n")
-              env.write(f"IS_PRERELEASE={str(is_prerelease).lower()}\n")
+              env.write(f"VERSION={docs_version}\n")
+              env.write(f"IS_PRERELEASE={is_prerelease}\n")
           PY
         shell: bash
         env:
           PYTHONUTF8: "1"
-      - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV 
+
+      - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
+
       - uses: actions/cache@v4
         with:
           key: mkdocs-material-${{ env.cache_id }}
-          path: ~/.cache 
+          path: ~/.cache
           restore-keys: |
             mkdocs-material-
+
       - run: pipx install poetry
       - run: poetry install --with docs
+
       - name: Configure Git Credentials
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-      - name: Deploy with mike
-        run: poetry run mike deploy --push --update-aliases $VERSION latest
+
+      - name: Deploy prerelease docs
+        if: env.IS_PRERELEASE == 'true'
+        run: poetry run mike deploy --push --update-aliases $VERSION next
+
+      - name: Deploy stable docs
+        if: env.IS_PRERELEASE == 'false'
+        run: poetry run mike deploy --push --update-aliases $VERSION stable latest
+
       - name: Set default docs version
-        run: poetry run mike set-default latest --push
+        if: env.IS_PRERELEASE == 'false'
+        run: poetry run mike set-default stable --push
