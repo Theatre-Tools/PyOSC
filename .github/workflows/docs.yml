@@ -25,21 +25,20 @@ jobs:
         run: |
           python - <<'PY'
           import os
+          import re
           import tomllib
-          from packaging.version import Version
 
           with open("pyproject.toml", "rb") as handle:
               data = tomllib.load(handle)
 
           version = data["project"]["version"]
-          parsed = Version(version)
 
-          is_prerelease = str(parsed.is_prerelease).lower()
-          docs_version = parsed.public
+          # Detect PEP 440 prerelease markers like a1, b2, rc4
+          is_prerelease = bool(re.search(r"(a|b|rc)\d+$", version, re.IGNORECASE))
 
           with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env:
-              env.write(f"VERSION={docs_version}\n")
-              env.write(f"IS_PRERELEASE={is_prerelease}\n")
+              env.write(f"VERSION={version}\n")
+              env.write(f"IS_PRERELEASE={str(is_prerelease).lower()}\n")
           PY
         shell: bash
         env:
