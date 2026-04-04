@@ -1,7 +1,6 @@
 # Roadmap
 
-## Version 1.0.15 (Current)
-The initial release covers the core functionality needed for OSC communication in Python.
+## Version 1.0.19 (Current)
 
 **What's included:**
 
