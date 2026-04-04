@@ -17,12 +17,6 @@ The initial release covers the core functionality needed for OSC communication i
 
 ## Upcoming Features (May include breaking changes)
 
-<<<<<<< HEAD
-**Handler improvements**
-
-- Streamline CallHandler so it's created as the default handler when Peer is initialized. This will reduce boilerplate but may require some refactoring of the Peer object.
-- Replace the current default handler with a default CallHandler that can be customized or overwritten.
-=======
 ### 1.1.0
 Version 1.1.0 will bring a varity of feature updates, inclding:
   - Implemented TCP connection flags for increased speed and lower latency
@@ -59,7 +53,6 @@ There is also space in this release to add more features, as it is likely a mont
 ## Future
 
 These are things I'd like to have implemented at some point, but haven't yet been prioritized for a planned release.
->>>>>>> 1a90e9e (docs: remove unnecessary line breaks in version headings in roadmap)
 
 **Dispatcher enhancements**
 
