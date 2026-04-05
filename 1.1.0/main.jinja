@@ -1,0 +1,5 @@
+{% if config.extra.show_pre_release_warning %}
+  {% include "pre-release-warning.jinja" %}
+{% else %}
+  {% include "outdated-warning.jinja" %}
+{% endif %}
