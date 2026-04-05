@@ -4,19 +4,19 @@ This is the documentation for PyOSC, a library for Pytthon to handle the transpo
 
 ## Prerequisites
 
-PyOSC requires Python 3.13 or greater, earlier versions of Python are not supported and will not work.
+PyOSC requires Python 3.13 or greater, earlier versions of Python are not supported.
 
 ## Installation
 PyOSC is available on PyPI, so installation is simple using the following commands:
 === "Pip"
 
     ```bash
-    pip install pyopensoundcontrol=1.1.0rc4
+    pip install pyopensoundcontrol
     ```
 === "Poetry"
 
     ```bash
-    poetry add pyopensoundcontrol=1.1.0rc4
+    poetry add pyopensoundcontrol
     ```
 
 ## Basic Usage

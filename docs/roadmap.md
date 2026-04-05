@@ -1,6 +1,6 @@
 # Roadmap
 
-## Version 1.1.0rc4 (Release Candidate)
+## Version 1.1.0 (Latest Release)
 The initial release covers the core functionality needed for OSC communication in Python.
 
 **What's included:**
