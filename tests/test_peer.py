@@ -15,7 +15,7 @@ from oscparser import (
     OSCString,
 )
 
-from pyosc.peer import Peer
+from pyosc.peer import Peer, PeerConfigurationError, PeerConnectionError
 
 
 class TestPeerTCP(unittest.TestCase):
@@ -68,10 +68,44 @@ class TestPeerTCP(unittest.TestCase):
     def test_tcp_peer_connection_failure(self):
         """Test TCP peer raises exception on connection failure."""
         # Try to connect to a port that's not listening
-        with self.assertRaises(Exception) as ctx:
+        with self.assertRaises(PeerConnectionError) as ctx:
             Peer("127.0.0.1", 65534, mode=OSCModes.TCP)
 
         self.assertIn("Could not connect to TCP Peer", str(ctx.exception))
+
+    def test_event_exception_fires_on_send_failure(self):
+        """Test on_exception handler is called when send_message fails."""
+
+        def accept_connection():
+            conn, _ = self.server_socket.accept()
+            time.sleep(0.3)
+            conn.close()
+
+        threading.Thread(target=accept_connection, daemon=True).start()
+
+        self.peer = Peer(
+            "127.0.0.1",
+            self.server_port,
+            mode=OSCModes.TCP,
+            framing=OSCFraming.OSC10,
+        )
+
+        received_errors = []
+
+        @self.peer.event
+        def on_exception(peer, error):
+            received_errors.append((peer, error))
+
+        self.peer.connection.close()
+        message = OSCMessage(address="/test/tcp", args=(OSCInt(value=1),))
+
+        with self.assertRaises(PeerConnectionError):
+            self.peer.send_message(message)
+
+        self.assertEqual(len(received_errors), 1)
+        self.assertIs(received_errors[0][0], self.peer)
+        self.assertIsInstance(received_errors[0][1], PeerConnectionError)
+        self.assertIsInstance(self.peer.last_error, PeerConnectionError)
 
     def test_tcp_send_message(self):
         """Test sending a message over TCP."""
@@ -162,7 +196,10 @@ class TestPeerTCP(unittest.TestCase):
         )
 
         self.peer.start_listening()
-        self.assertTrue(self.peer.background.is_alive())
+        background = self.peer.background
+        self.assertIsNotNone(background)
+        assert background is not None
+        self.assertTrue(background.is_alive())
 
         self.peer.stop_listening()
         time.sleep(0.1)
@@ -218,9 +255,29 @@ class TestPeerUDP(unittest.TestCase):
         self.assertIsNotNone(self.peer.encoder)
         self.assertIsNotNone(self.peer.decoder)
 
+    def test_event_connect_replays_when_already_connected(self):
+        """Test on_connect handler fires immediately when UDP peer is already connected."""
+        self.peer = Peer(
+            "127.0.0.1",
+            self.server_port,
+            mode=OSCModes.UDP,
+            udp_rx_port=self.client_port,
+            udp_rx_address="127.0.0.1",
+            framing=OSCFraming.OSC10,
+        )
+
+        connect_events = []
+
+        @self.peer.event
+        def on_connect(peer):
+            connect_events.append(peer)
+
+        self.assertEqual(len(connect_events), 1)
+        self.assertIs(connect_events[0], self.peer)
+
     def test_udp_peer_missing_rx_address(self):
         """Test UDP peer raises exception when rx address is missing."""
-        with self.assertRaises(Exception) as ctx:
+        with self.assertRaises(PeerConfigurationError) as ctx:
             Peer(  # type: ignore[call-overload]
                 "127.0.0.1",
                 self.server_port,
@@ -320,7 +377,10 @@ class TestPeerUDP(unittest.TestCase):
 
         # Normally would send from wrong address, but that's complex to set up
         # For now, just verify the peer is listening
-        self.assertTrue(self.peer.background.is_alive())  # type: ignore[union-attr]
+        background = self.peer.background
+        self.assertIsNotNone(background)
+        assert background is not None
+        self.assertTrue(background.is_alive())
 
     def test_udp_stop_listening(self):
         """Test stopping UDP listener."""
@@ -333,7 +393,10 @@ class TestPeerUDP(unittest.TestCase):
         )
 
         self.peer.start_listening()
-        self.assertTrue(self.peer.background.is_alive())
+        background = self.peer.background
+        self.assertIsNotNone(background)
+        assert background is not None
+        self.assertTrue(background.is_alive())
 
         self.peer.stop_listening()
         time.sleep(0.1)
@@ -474,7 +537,10 @@ class TestPeerEdgeCases(unittest.TestCase):
         time.sleep(0.3)
 
         # Background thread should have exited
-        self.assertFalse(peer.background.is_alive())
+        background = peer.background
+        self.assertIsNotNone(background)
+        assert background is not None
+        self.assertFalse(background.is_alive())
 
         peer.stop_listening()
         server_socket.close()

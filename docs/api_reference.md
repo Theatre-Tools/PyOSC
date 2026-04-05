@@ -18,6 +18,12 @@ The `Peer` object also returns the following attributes:
 
 - `dispatcher`: A [`Dispatcher`](#dispatcher){ data-preview } object responsible for routing incoming messages to the appropriate handlers.
 
+### Decorators {#peer-decorators}
+The `Peer` class provides a decorator for defining event handlers that respond to specific events within the library, such as when a connection is established or when an error occurs. See [Event Handlers](./tutorials/event_handler.md){ data-preview } for more information on how to use this feature.
+
+```python
+@peer.event
+```
 ### Methods {#peer-methods}
 
 #### `start_listening()` {#method-start_listening}
