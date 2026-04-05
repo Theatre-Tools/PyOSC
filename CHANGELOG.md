@@ -6,6 +6,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.1.0] - 2026-04-05
+### :bug: Bug Fixes
+- [`116b0e0`](https://github.com/Theatre-Tools/PyOSC/commit/116b0e03d9575cde592e8c2920e55c96403c156e) - Made the dispatcher handle nexted timetagged bundles correctly, and updated the pytests to reflect this *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
+- [`612d93c`](https://github.com/Theatre-Tools/PyOSC/commit/612d93c41d51ea440b5a9882e03ec52fbddb160e) - update prerelease documentation deployment and cleanup HTML template *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
+- [`5cabf98`](https://github.com/Theatre-Tools/PyOSC/commit/5cabf9878d58875e345320b6ab9ef7a3fdfd079a) - update prerelease documentation deployment and cleanup HTML template *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
+
+### :wrench: Chores
+- [`822331a`](https://github.com/Theatre-Tools/PyOSC/commit/822331aee752d0f9091e8e75e10943e95cba6d2d) - added deprecation warning for using `/*` as a replacement for the default handler. *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
+- [`29e7f31`](https://github.com/Theatre-Tools/PyOSC/commit/29e7f3122185937476d21d6768c4b17bcc7a16be) - 1.0.17 *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
+- [`379b437`](https://github.com/Theatre-Tools/PyOSC/commit/379b4370764e20648250fc55a2b25cc8e883f3c5) - bump 1.0.18 *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
+- [`c171f69`](https://github.com/Theatre-Tools/PyOSC/commit/c171f698b6a8052cbf5ddc53d96a73205db85c9c) - Bump! 1.0.19 *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
+- [`28245a9`](https://github.com/Theatre-Tools/PyOSC/commit/28245a992fe9a973f03cf4154b27facd36561dcb) - update version to 1.1.0 in pyproject.toml *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
+
+
 ## [1.0.19] - 2026-03-29
 ### :wrench: Chores
 - [`379b437`](https://github.com/Theatre-Tools/PyOSC/commit/379b4370764e20648250fc55a2b25cc8e883f3c5) - bump 1.0.18 *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
@@ -63,3 +77,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [1.0.18]: https://github.com/Theatre-Tools/PyOSC/compare/1.0.17...1.0.18
 [1.0.19]: https://github.com/Theatre-Tools/PyOSC/compare/1.0.18...1.0.19
 [1.0.19docfix]: https://github.com/Theatre-Tools/PyOSC/compare/1.1.0rc4...1.0.19docfix
+[1.1.0]: https://github.com/Theatre-Tools/PyOSC/compare/1.1.0rc7...1.1.0
