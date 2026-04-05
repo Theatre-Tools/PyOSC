@@ -1,12 +1,18 @@
 import heapq
 import re
 import time
+import warnings
 from threading import Event, RLock, Thread
 from typing import Generic, Protocol, TypeVar, overload
 
 from oscparser import OSCBundle, OSCMessage
 from pydantic import BaseModel, ValidationError
 
+
+def custom_format(message, category, filename, lineno, line=None):
+    return f'Line {lineno}: {category.__name__}: {message}\n'
+
+warnings.formatwarning = custom_format
 
 class DispatcherInterface[T: BaseModel](Protocol):
     def __call__(self, message: T) -> None: ...
@@ -161,6 +167,8 @@ class Dispatcher:
         - ``address``: The OSC address to handle.
         - ``handler``: A callable that takes an OSCMessage as its only argument.
         """
+        if address == '/*':
+            warnings.warn('Using /* a replacement for the deprecated default handler. This workaround will be removed in release 2.0.0', category=DeprecationWarning, stacklevel=2)
         matcher = DispatchMatcher.from_address(address)
         self.handlers.append((matcher, DispatcherController(handler, validator)))
         self.dispatch_cache = {}
@@ -303,6 +311,28 @@ class Dispatcher:
                     for handler in handlers:
                         handler.run(item)
                 elif isinstance(item, OSCBundle):
-                    # Nested bundle - process recursively
+                    # Nested bundle - check its timetag and either process or schedule
                     # RLock allows the same thread to acquire the lock again
-                    self._process_bundle_immediate(item)
+                    if item.timetag == 0:
+                        # Immediate nested bundle
+                        self._process_bundle_immediate(item)
+                    else:
+                        # Convert NTP timestamp to Unix timestamp
+                        OSC_EPOCH_OFFSET = 2208988800
+                        ntp_seconds = item.timetag >> 32
+                        ntp_fraction = item.timetag & 0xFFFFFFFF
+                        bundle_time = (ntp_seconds - OSC_EPOCH_OFFSET) + (ntp_fraction / (2**32))
+                        current_time = time.time()
+
+                        if bundle_time <= current_time:
+                            # Time has passed or is now, process immediately
+                            self._process_bundle_immediate(item)
+                        else:
+                            # Schedule nested bundle for future execution
+                            self.start_scheduler()
+                            with self._scheduler_lock:
+                                self._scheduler_counter += 1
+                                heapq.heappush(
+                                    self._scheduled_heap,
+                                    (bundle_time, self._scheduler_counter, item),
+                                )

@@ -33,7 +33,7 @@ If you are interested in testing the current release candidate for 1.1.0, it can
     poetry add pyopensoundcontrol=1.1.0rc4
     ```
 
-## Upcoming Features (May include breaking changes)
+## Upcoming Versions (May include breaking changes)
 
 ### 2.0.0
 Version 2.0.0 will be a major release that includes breaking changes to align more closely with the OSC specification and to improve the overall design of the library. Some of the planned changes include:
@@ -60,7 +60,6 @@ These are things I'd like to have implemented at some point, but haven't yet bee
 - Implement more robust error handling and logging throughout the library, especially in network communication and message parsing.
 - Provide clearer errors on validation failures to make it easier to diagnose issues with message formats and
 
-## Future
 
 **Subscription system**
 

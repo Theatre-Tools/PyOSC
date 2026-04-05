@@ -325,6 +325,59 @@ class TestDispatcher(unittest.TestCase):
         # Should now be called
         mock_handler.assert_called_once()
 
+    def test_dispatch_bundle_nested_future_timetag(self):
+        """Test nested bundle with future timetag is scheduled, not immediate."""
+        mock_handler = MagicMock()
+        self.dispatcher.add_handler("/test", mock_handler)
+
+        OSC_EPOCH_OFFSET = 2208988800
+        target_time = time.time() + 0.5
+        ntp_seconds = int(target_time) + OSC_EPOCH_OFFSET
+        ntp_fraction = int((target_time % 1) * (2**32))
+        ntp_timetag = (ntp_seconds << 32) | ntp_fraction
+
+        nested_bundle = OSCBundle(
+            timetag=ntp_timetag,
+            elements=(OSCMessage(address="/test", args=()),),
+        )
+        outer_bundle = OSCBundle(
+            timetag=0,
+            elements=(nested_bundle,),
+        )
+
+        self.dispatcher.dispatch(outer_bundle)
+
+        # Nested future bundle should not dispatch immediately
+        time.sleep(0.01)
+        mock_handler.assert_not_called()
+
+        # Should be scheduled and dispatched later
+        self.assertEqual(len(self.dispatcher._scheduled_heap), 1)
+        time.sleep(0.7)
+        mock_handler.assert_called_once()
+
+    def test_dispatch_bundle_nested_past_timetag(self):
+        """Test nested bundle with past timetag is processed immediately."""
+        mock_handler = MagicMock()
+        self.dispatcher.add_handler("/test", mock_handler)
+
+        OSC_EPOCH_OFFSET = 2208988800
+        past_time = int(time.time() - 1) + OSC_EPOCH_OFFSET
+        ntp_timetag = past_time << 32
+
+        nested_bundle = OSCBundle(
+            timetag=ntp_timetag,
+            elements=(OSCMessage(address="/test", args=()),),
+        )
+        outer_bundle = OSCBundle(
+            timetag=0,
+            elements=(nested_bundle,),
+        )
+
+        self.dispatcher.dispatch(outer_bundle)
+
+        mock_handler.assert_called_once()
+
     def test_scheduler_start_stop(self):
         """Test scheduler thread lifecycle."""
         self.dispatcher.start_scheduler()

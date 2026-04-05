@@ -14,55 +14,10 @@ dispatcher = Dispatcher()
 
 ## Registering Handlers
 
-### The Default Handler {#default-handler}
+!!! Danger "The default handler"
+    The concept of a default handler hasn't existed for a few versions at this point, so I think it is appropriate to remove it from the documentation. However, I will at this time reccomend against using the `/*` wildcard as a replacement, as it is against specification and this workaround will be removed in version 2.0.0. If you do need this functionality, I will be implementing a replacement method for this functionality in a comming release pre 2.0.0, as 2.0.0 will contain multiple Major breaking changes.
 
-In PyOSC handlers are registed by the address for which they are handling messages for. There is only one dispatch handler that doesn't have an address assigned to it, and that is the [`default handler`](../api_reference.md#method-default_handler){ data-preview }, which is called when no other handlers match the incoming message's address.
-
-Let's make a simple example, that registers a default handler, and prints the message. The default `validator` will accept all OSCMessages.
-
-We will assume you have already created a [`Peer`](../api_reference.md#peer){ data-preview } object called `peer`.
-
-```python
-
-def default_handler(message):#(1)!
-    print(f"Received a message on address:{message.address} with args: {message.args}") #(2)!
-
-peer.dispatcher.add_default_handler(default_handler) #(3)!
-```
-
-1. The `default_handler` function is defined to be parsed a single parameter, `message`, which is expected to be an [`OSCMessage`](../api_reference.md#oscmessage){ data-preview } object.
-2. Inside the handler, we print out the address and arguments of the received message.
-3. The `default_handler` function is registered as the default handler using the `add_default_handler` method of the `dispatcher` attribute of the `peer` object.
-
-To receive messages, simply call the `start_listening` method on the `Peer` object:
-
-```python
-peer.start_listening()
-```
-
-Here is a full example:
-
-```python
-from pyosc import Peer, OSCMessage, OSCModes, OSCFraming
-
-peer = Peer(
-    "127.0.0.1",
-    3032,
-    mode=OSCModes.TCP,
-    framing=OSCFraming.OSC11,
-)
-
-def default_handler(message):
-    print(f"Received a message on address:{message.address} with args: {message.args}")
-
-peer.dispatcher.add_default_handler(default_handler)
-peer.start_listening()
-```
-
-!!! danger
-    Default handlers like this no longer exist in the latest version of this library. The same functionality can be achieved by registering a handler with the address of `/*`. This is to achieve a more consistent and intuitive API, as well as to allow for multiple handlers that match all addresses. I left this part of the documentation in because it makes it easier to understand how the libruary works. This section however will be removed in a future version of the documentation, to reflect the changes in the library.
-
-### Registering Address-Specific Handlers {#handlers}
+### Registering Handlers {#handlers}
 
 In addition to the default handler, you can register handlers for specific OSC addresses. This allows you to drop or ignore messages from certain addresses, as well as process information from others.
 
