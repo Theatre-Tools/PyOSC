@@ -15,7 +15,7 @@ jobs:
         with:
           python-version: '3.13'
           cache: 'poetry'
-      - run: poetry install
+      - run: poetry install --only ci
       - run: echo "$(poetry env info --path)/bin" >> $GITHUB_PATH
       - uses: astral-sh/ruff-action@v3
         with:
@@ -30,6 +30,6 @@ jobs:
         with:
           python-version: '3.13'
           cache: 'poetry'
-      - run: poetry install
+      - run: poetry install --only ci
       - run: echo "$(poetry env info --path)/bin" >> $GITHUB_PATH
       - uses: jakebailey/pyright-action@v2
