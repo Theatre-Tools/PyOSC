@@ -185,7 +185,6 @@ class Dispatcher:
             matcher = DispatchMatcher.from_address(address)
             self.handlers.append((matcher, DispatcherController(func, validator)))
             self.dispatch_cache = {}
-            print(self.handlers)
             return func
 
         return handler_decorator
