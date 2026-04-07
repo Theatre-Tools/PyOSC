@@ -174,6 +174,13 @@ class Dispatcher:
     #    self.dispatch_cache = {}
 
     def handler(self, address: str, validator: type[BaseModel] = OSCMessage):
+        """Decorator to add a handler for a specfic OSC address pattern.
+
+        Args:
+            address (str): The OSC address pattern to match for this handler.
+            validator: Add a pydantic validator.
+        """
+
         def handler_decorator(func: Callable[..., None]):
             matcher = DispatchMatcher.from_address(address)
             self.handlers.append((matcher, DispatcherController(func, validator)))
