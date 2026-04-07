@@ -22,10 +22,13 @@ class DispatcherInterface[T: BaseModel](Protocol):
 
 ## Define a type variable for the controller that is covariant, allowing it to accept subclasses of BaseModel
 T_C = TypeVar("T_C", bound=BaseModel, covariant=True)
+
+## Define a ParamSpec for the handler function parameters
 P = ParamSpec("P")
 R_co = TypeVar("R_co", covariant=True)
 
-
+# Define a protocol for the decorated handler that includes the additional methods for unregistering, pausing, and unpausing.
+# This allows the decorated function to be used as a normal callable while also providing the extra functionality needed for handler management.
 class DecoratedHandler(Protocol[P, R_co]):
     def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R_co: ...
 
@@ -36,6 +39,8 @@ class DecoratedHandler(Protocol[P, R_co]):
     def unpause(self) -> None: ...
 
 
+
+## Define custom exceptions for the dispatcher to provide more specific error handling capabilities.
 class DispatcherValidationError(ValueError):
     pass
 
@@ -172,7 +177,9 @@ class Handler:
 
 
 class Dispatcher:
-    """Dispatches incoming OSC messages to registered handlers based on their addresses."""
+    """The Dispatcher Object contains all the information and logic necessary to route incoming OSC messages to the correct handler functions based on their addresses.
+    It supports dynamic registration and deregistration of handlers, as well as scheduling of messages in bundles based on their timetags.
+    """
 
     def __init__(self):
         self.handlers: list[Handler] = []
@@ -184,26 +191,6 @@ class Dispatcher:
         self._stop_scheduler = Event()
         self._scheduler_thread: Thread | None = None
 
-    ##@overload
-    ##def add_handler(self, address: str, handler: DispatcherInterface[OSCMessage]) -> None: ...
-
-    ##@overload
-    ##def add_handler[T: BaseModel](self, address: str, handler: DispatcherInterface[T], validator: type[T]) -> None: ...
-
-    # def add_handler[T: BaseModel](
-    #    self,
-    #    address: str,
-    #    handler: DispatcherInterface[T],
-    #    validator: type[T] = OSCMessage,
-    # ):
-    #    """
-    #    Add a handler for a specific OSC address.
-    #    - ``address``: The OSC address to handle.
-    #    - ``handler``: A callable that takes an OSCMessage as its only argument.
-    #    """
-    #    matcher = DispatchMatcher.from_address(address)
-    #    self.handlers.append((matcher, DispatcherController(handler, validator)))
-    #    self.dispatch_cache = {}
 
     def handler(
         self, address: str, validator: type[BaseModel] = OSCMessage
