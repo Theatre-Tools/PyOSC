@@ -158,12 +158,12 @@ class Dispatcher:
     ##@overload
     ##def add_handler[T: BaseModel](self, address: str, handler: DispatcherInterface[T], validator: type[T]) -> None: ...
 
-    #def add_handler[T: BaseModel](
+    # def add_handler[T: BaseModel](
     #    self,
     #    address: str,
     #    handler: DispatcherInterface[T],
     #    validator: type[T] = OSCMessage,
-    #):
+    # ):
     #    """
     #    Add a handler for a specific OSC address.
     #    - ``address``: The OSC address to handle.
@@ -174,15 +174,14 @@ class Dispatcher:
     #    self.dispatch_cache = {}
 
     def handler(self, address: str, validator: type[BaseModel] = OSCMessage):
-        def decorator(func: Callable[..., None]):
+        def handler_decorator(func: Callable[..., None]):
             matcher = DispatchMatcher.from_address(address)
             self.handlers.append((matcher, DispatcherController(func, validator)))
             self.dispatch_cache = {}
             print(self.handlers)
             return func
-        return decorator
 
-
+        return handler_decorator
 
     def start_scheduler(self):
         """Start the background thread for processing timestamped bundles."""
