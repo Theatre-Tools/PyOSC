@@ -3,7 +3,7 @@ import re
 import time
 import warnings
 from threading import Event, RLock, Thread
-from typing import Generic, Protocol, TypeVar, overload
+from typing import Callable, Generic, Protocol, TypeVar
 
 from oscparser import OSCBundle, OSCMessage
 from pydantic import BaseModel, ValidationError
@@ -152,26 +152,37 @@ class Dispatcher:
         self._stop_scheduler = Event()
         self._scheduler_thread: Thread | None = None
 
-    @overload
-    def add_handler(self, address: str, handler: DispatcherInterface[OSCMessage]) -> None: ...
+    ##@overload
+    ##def add_handler(self, address: str, handler: DispatcherInterface[OSCMessage]) -> None: ...
 
-    @overload
-    def add_handler[T: BaseModel](self, address: str, handler: DispatcherInterface[T], validator: type[T]) -> None: ...
+    ##@overload
+    ##def add_handler[T: BaseModel](self, address: str, handler: DispatcherInterface[T], validator: type[T]) -> None: ...
 
-    def add_handler[T: BaseModel](
-        self,
-        address: str,
-        handler: DispatcherInterface[T],
-        validator: type[T] = OSCMessage,
-    ):
-        """
-        Add a handler for a specific OSC address.
-        - ``address``: The OSC address to handle.
-        - ``handler``: A callable that takes an OSCMessage as its only argument.
-        """
-        matcher = DispatchMatcher.from_address(address)
-        self.handlers.append((matcher, DispatcherController(handler, validator)))
-        self.dispatch_cache = {}
+    #def add_handler[T: BaseModel](
+    #    self,
+    #    address: str,
+    #    handler: DispatcherInterface[T],
+    #    validator: type[T] = OSCMessage,
+    #):
+    #    """
+    #    Add a handler for a specific OSC address.
+    #    - ``address``: The OSC address to handle.
+    #    - ``handler``: A callable that takes an OSCMessage as its only argument.
+    #    """
+    #    matcher = DispatchMatcher.from_address(address)
+    #    self.handlers.append((matcher, DispatcherController(handler, validator)))
+    #    self.dispatch_cache = {}
+
+    def handler(self, address: str, validator: type[BaseModel] = OSCMessage):
+        def decorator(func: Callable[..., None]):
+            matcher = DispatchMatcher.from_address(address)
+            self.handlers.append((matcher, DispatcherController(func, validator)))
+            self.dispatch_cache = {}
+            print(self.handlers)
+            return func
+        return decorator
+
+
 
     def start_scheduler(self):
         """Start the background thread for processing timestamped bundles."""
