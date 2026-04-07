@@ -100,7 +100,7 @@ class TestEndToEndUDP(unittest.TestCase):
         )
 
         # Set up handler
-        self.server.Dispatcher.add_handler("/udp/test", handle_message)
+        self.server.Dispatcher.register_handler("/udp/test", handle_message, OSCMessage)
         self.server.start_listening()
 
         time.sleep(0.1)
@@ -172,9 +172,9 @@ class TestComplexPatterns(unittest.TestCase):
             received["all"].append(message)
 
         dispatcher = Dispatcher()
-        dispatcher.add_handler("/mixer/channel1/*", handle_channel1)
-        dispatcher.add_handler("/mixer/channel2/*", handle_channel2)
-        dispatcher.add_handler("/mixer/*/fader", handle_all)
+        dispatcher.register_handler("/mixer/channel1/*", handle_channel1, OSCMessage)
+        dispatcher.register_handler("/mixer/channel2/*", handle_channel2, OSCMessage)
+        dispatcher.register_handler("/mixer/*/fader", handle_all, OSCMessage)
 
         # Dispatch messages
         msg1 = OSCMessage(address="/mixer/channel1/fader", args=())

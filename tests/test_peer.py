@@ -169,7 +169,7 @@ class TestPeerTCP(unittest.TestCase):
             framing=OSCFraming.OSC10,
         )
 
-        self.peer.Dispatcher.add_handler("/test/receive", message_handler)
+        self.peer.Dispatcher.register_handler("/test/receive", message_handler, OSCMessage)
         self.peer.start_listening()
 
         # Wait for message to be received
@@ -333,7 +333,7 @@ class TestPeerUDP(unittest.TestCase):
             udp_rx_address="127.0.0.1",
         )
 
-        self.peer.Dispatcher.add_handler("/test/udp/receive", message_handler)
+        self.peer.Dispatcher.register_handler("/test/udp/receive", message_handler, OSCMessage)
         self.peer.start_listening()
 
         # Create a sender socket
@@ -368,7 +368,7 @@ class TestPeerUDP(unittest.TestCase):
             udp_rx_address="127.0.0.1",
         )
 
-        self.peer.Dispatcher.add_handler("/test", message_handler)
+        self.peer.Dispatcher.register_handler("/test", message_handler, OSCMessage)
         self.peer.start_listening()
 
         # Send from a different address (using 127.0.0.2 if available, or skip)
@@ -504,7 +504,7 @@ class TestPeerEdgeCases(unittest.TestCase):
         threading.Thread(target=accept_and_send_multiple, daemon=True).start()
 
         peer = Peer("127.0.0.1", server_port, mode=OSCModes.TCP)
-        peer.Dispatcher.add_handler("/test/*", message_handler)
+        peer.Dispatcher.register_handler("/test/*", message_handler, OSCMessage)
         peer.start_listening()
 
         time.sleep(0.3)

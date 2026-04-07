@@ -40,6 +40,20 @@ class TestCallHandler(unittest.TestCase):
         """Set up test fixtures."""
         self.mock_peer = Mock(spec=Peer)
         self.mock_peer.Dispatcher = Dispatcher()
+        dispatcher = self.mock_peer.Dispatcher
+        original_remove_handler = dispatcher.remove_handler
+
+        def add_handler(address, handler, validator=OSCMessage):
+            return dispatcher.register_handler(address, handler, validator)
+
+        def remove_handler(address_or_handler):
+            if isinstance(address_or_handler, str):
+                dispatcher.remove_handler_by_address(address_or_handler)
+            else:
+                original_remove_handler(address_or_handler)
+
+        dispatcher.add_handler = add_handler  # type: ignore[attr-defined]
+        dispatcher.remove_handler = remove_handler  # type: ignore[attr-defined]
         self.call_handler = CallHandler(self.mock_peer)
 
     def tearDown(self):
@@ -118,7 +132,7 @@ class TestCallHandler(unittest.TestCase):
         responseq = queue.Queue()
         with self.call_handler.queue_lock:
             self.call_handler.queues["/test/validated"] = Call(responseq, ResponseModel)
-            self.mock_peer.Dispatcher.add_handler("/test/validated", self.call_handler)
+            self.mock_peer.Dispatcher.register_handler("/test/validated", self.call_handler, ResponseModel)
 
         # Send message and get from queue
         self.mock_peer.send_message(message)

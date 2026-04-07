@@ -133,23 +133,25 @@ class TestDispatcher(unittest.TestCase):
     def test_add_handler(self):
         """Test adding a message handler."""
         mock_handler = MagicMock()
-        self.dispatcher.add_handler("/test", mock_handler)
+        handler = self.dispatcher.register_handler("/test", mock_handler, OSCMessage)
 
         self.assertEqual(len(self.dispatcher.handlers), 1)
-        matcher, _ = self.dispatcher.handlers[0]
+        matcher = self.dispatcher.handlers[0].matcher
         self.assertTrue(matcher.matches("/test"))
+        self.assertIs(handler, self.dispatcher.handlers[0])
 
     def test_add_handler_with_validator(self):
         """Test adding a handler with custom validator."""
         mock_handler = MagicMock()
-        self.dispatcher.add_handler("/test", mock_handler, CustomModel)
+        handler = self.dispatcher.register_handler("/test", mock_handler, CustomModel)
 
         self.assertEqual(len(self.dispatcher.handlers), 1)
+        self.assertIs(handler.controller.validator, CustomModel)
 
     def test_dispatch_exact_match(self):
         """Test dispatching to exact matching handler."""
         mock_handler = MagicMock()
-        self.dispatcher.add_handler("/test/message", mock_handler)
+        self.dispatcher.register_handler("/test/message", mock_handler, OSCMessage)
 
         message = OSCMessage(address="/test/message", args=())
         self.dispatcher.dispatch(message)
@@ -159,7 +161,7 @@ class TestDispatcher(unittest.TestCase):
     def test_dispatch_wildcard_match(self):
         """Test dispatching with wildcard patterns."""
         mock_handler = MagicMock()
-        self.dispatcher.add_handler("/test/*", mock_handler)
+        self.dispatcher.register_handler("/test/*", mock_handler, OSCMessage)
 
         message = OSCMessage(address="/test/anything", args=())
         self.dispatcher.dispatch(message)
@@ -169,7 +171,7 @@ class TestDispatcher(unittest.TestCase):
     def test_dispatch_wildcard_does_not_match_extra_parts(self):
         """Test that * wildcard does not cross slash-delimited address parts."""
         mock_handler = MagicMock()
-        self.dispatcher.add_handler("/test/*", mock_handler)
+        self.dispatcher.register_handler("/test/*", mock_handler, OSCMessage)
 
         message = OSCMessage(address="/test/one/two", args=())
         self.dispatcher.dispatch(message)
@@ -181,8 +183,8 @@ class TestDispatcher(unittest.TestCase):
         mock_handler1 = MagicMock()
         mock_handler2 = MagicMock()
 
-        self.dispatcher.add_handler("/test/*", mock_handler1)
-        self.dispatcher.add_handler("/test/message", mock_handler2)
+        self.dispatcher.register_handler("/test/*", mock_handler1, OSCMessage)
+        self.dispatcher.register_handler("/test/message", mock_handler2, OSCMessage)
 
         message = OSCMessage(address="/test/message", args=())
         self.dispatcher.dispatch(message)
@@ -193,7 +195,7 @@ class TestDispatcher(unittest.TestCase):
     def test_dispatch_no_match(self):
         """Test dispatching with no matching handlers."""
         mock_handler = MagicMock()
-        self.dispatcher.add_handler("/other", mock_handler)
+        self.dispatcher.register_handler("/other", mock_handler, OSCMessage)
 
         message = OSCMessage(address="/test/message", args=())
         self.dispatcher.dispatch(message)
@@ -203,7 +205,7 @@ class TestDispatcher(unittest.TestCase):
     def test_dispatch_cache(self):
         """Test that dispatch cache is used for repeated messages."""
         mock_handler = MagicMock()
-        self.dispatcher.add_handler("/test", mock_handler)
+        self.dispatcher.register_handler("/test", mock_handler, OSCMessage)
 
         message = OSCMessage(address="/test", args=())
 
@@ -215,23 +217,23 @@ class TestDispatcher(unittest.TestCase):
         self.dispatcher.dispatch(message)
         self.assertEqual(mock_handler.call_count, 2)
 
-    def test_remove_handler(self):
-        """Test removing a handler."""
+    def test_unregister_handler(self):
+        """Test unregistering a handler."""
         mock_handler = MagicMock()
-        self.dispatcher.add_handler("/test", mock_handler)
+        handler = self.dispatcher.register_handler("/test", mock_handler, OSCMessage)
 
         # Remove the handler
-        self.dispatcher.remove_handler("/test")
+        handler.unregister()
 
         message = OSCMessage(address="/test", args=())
         self.dispatcher.dispatch(message)
 
         mock_handler.assert_not_called()
 
-    def test_remove_handler_clears_cache(self):
-        """Test that removing a handler clears the dispatch cache."""
+    def test_unregister_handler_clears_cache(self):
+        """Test that unregistering a handler clears the dispatch cache."""
         mock_handler = MagicMock()
-        self.dispatcher.add_handler("/test", mock_handler)
+        handler = self.dispatcher.register_handler("/test", mock_handler, OSCMessage)
 
         # Populate cache
         message = OSCMessage(address="/test", args=())
@@ -239,13 +241,31 @@ class TestDispatcher(unittest.TestCase):
         self.assertIn("/test", self.dispatcher.dispatch_cache)
 
         # Remove handler should clear cache
-        self.dispatcher.remove_handler("/test")
+        handler.unregister()
         self.assertEqual(len(self.dispatcher.dispatch_cache), 0)
+
+    def test_pause_and_unpause_handler(self):
+        """Test pausing and unpausing a handler."""
+        mock_handler = MagicMock()
+        handler = self.dispatcher.register_handler("/test", mock_handler, OSCMessage)
+
+        handler.pause()
+        self.assertFalse(handler.enabled)
+
+        message = OSCMessage(address="/test", args=())
+        self.dispatcher.dispatch(message)
+        mock_handler.assert_not_called()
+
+        handler.unpause()
+        self.assertTrue(handler.enabled)
+
+        self.dispatcher.dispatch(message)
+        mock_handler.assert_called_once()
 
     def test_dispatch_bundle_immediate(self):
         """Test dispatching bundle with immediate timetag (0)."""
         mock_handler = MagicMock()
-        self.dispatcher.add_handler("/test", mock_handler)
+        self.dispatcher.register_handler("/test", mock_handler, OSCMessage)
 
         bundle = OSCBundle(
             timetag=0,
@@ -262,7 +282,7 @@ class TestDispatcher(unittest.TestCase):
     def test_dispatch_bundle_nested(self):
         """Test dispatching nested bundles."""
         mock_handler = MagicMock()
-        self.dispatcher.add_handler("/test", mock_handler)
+        self.dispatcher.register_handler("/test", mock_handler, OSCMessage)
 
         inner_bundle = OSCBundle(
             timetag=0,
@@ -284,7 +304,7 @@ class TestDispatcher(unittest.TestCase):
     def test_dispatch_bundle_past_timetag(self):
         """Test bundle with past timetag is processed immediately."""
         mock_handler = MagicMock()
-        self.dispatcher.add_handler("/test", mock_handler)
+        self.dispatcher.register_handler("/test", mock_handler, OSCMessage)
 
         # Create a timetag for 1 second in the past
         # NTP timestamp format: (seconds << 32) | fraction
@@ -305,7 +325,7 @@ class TestDispatcher(unittest.TestCase):
     def test_dispatch_bundle_future_timetag(self):
         """Test bundle with future timetag is scheduled."""
         mock_handler = MagicMock()
-        self.dispatcher.add_handler("/test", mock_handler)
+        self.dispatcher.register_handler("/test", mock_handler, OSCMessage)
 
         # Create a timetag for 1.0 seconds in the future (more generous timing)
         OSC_EPOCH_OFFSET = 2208988800
@@ -339,7 +359,7 @@ class TestDispatcher(unittest.TestCase):
     def test_dispatch_bundle_nested_future_timetag(self):
         """Test nested bundle with future timetag is scheduled, not immediate."""
         mock_handler = MagicMock()
-        self.dispatcher.add_handler("/test", mock_handler)
+        self.dispatcher.register_handler("/test", mock_handler, OSCMessage)
 
         OSC_EPOCH_OFFSET = 2208988800
         target_time = time.time() + 0.5
@@ -370,7 +390,7 @@ class TestDispatcher(unittest.TestCase):
     def test_dispatch_bundle_nested_past_timetag(self):
         """Test nested bundle with past timetag is processed immediately."""
         mock_handler = MagicMock()
-        self.dispatcher.add_handler("/test", mock_handler)
+        self.dispatcher.register_handler("/test", mock_handler, OSCMessage)
 
         OSC_EPOCH_OFFSET = 2208988800
         past_time = int(time.time() - 1) + OSC_EPOCH_OFFSET
@@ -404,7 +424,7 @@ class TestDispatcher(unittest.TestCase):
     def test_multiple_scheduled_bundles(self):
         """Test multiple scheduled bundles are processed in order."""
         mock_handler = MagicMock()
-        self.dispatcher.add_handler("/test", mock_handler)
+        self.dispatcher.register_handler("/test", mock_handler, OSCMessage)
 
         OSC_EPOCH_OFFSET = 2208988800
         # Use time.time() directly with fractional seconds for more precision
