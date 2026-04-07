@@ -148,12 +148,23 @@ class DispatchMatcher:
         return hash(self.pattern)
 
 
+class Handler:
+    def __init__(self, matcher: DispatchMatcher, controller: DispatcherController, enabled: bool = True):
+        self.matcher = matcher
+        self.controller = controller
+        self.enabled = enabled
+
+    @classmethod
+    def from_address(cls, address: str, func: Callable, validator: type[BaseModel]) -> "Handler":
+        return cls(DispatchMatcher.from_address(address), DispatcherController(func, validator), enabled=True)
+
+
 class Dispatcher:
     """Dispatches incoming OSC messages to registered handlers based on their addresses."""
 
     def __init__(self):
-        self.handlers: list[tuple[DispatchMatcher, DispatcherController[BaseModel]]] = []
-        self.dispatch_cache: dict[str, tuple[DispatcherController[BaseModel], ...]] = {}
+        self.handlers: list[Handler] = []
+        self.dispatch_cache: dict[str, tuple[Handler, ...]] = {}
         self.dispatch_lock: RLock = RLock()
         self._scheduled_heap: list[tuple[float, int, OSCBundle]] = []
         self._scheduler_lock: RLock = RLock()
@@ -191,12 +202,35 @@ class Dispatcher:
         """
 
         def handler_decorator(func: Callable[..., None]):
-            matcher = DispatchMatcher.from_address(address)
-            self.handlers.append((matcher, DispatcherController(func, validator)))
+            handler = Handler.from_address(address, func, validator)
+            self.handlers.append(handler)
             self.dispatch_cache = {}
             return func
 
         return handler_decorator
+
+    def toggle_handler(self, address: str, enabled: bool | None = None):
+        """Enable or disable a handler for a specific OSC address pattern.
+
+        Args:
+            address (str): The OSC address pattern of the handler to toggle.
+            enabled (bool): Whether to enable (True) or disable (False) the handler. If None, it will toggle the current state.
+        """
+        changed_handlers = 0
+        with self.dispatch_lock:
+            for handler in self.handlers:
+                if handler.matcher.pattern.pattern == address:
+                    changed_handlers += 1
+                    if enabled is None:
+                        if not handler.enabled:
+                            handler.enabled = True
+                        else:
+                            handler.enabled = False
+                    else:
+                        handler.enabled = enabled
+            self.dispatch_cache = {}
+            if changed_handlers == 0:
+                raise ValueError(f"No handlers found for address pattern: {address}")
 
     def start_scheduler(self):
         """Start the background thread for processing timestamped bundles."""
@@ -236,12 +270,11 @@ class Dispatcher:
         Removes a handler for a specific OSC address.
         - ``address``: The OSC address to remove the handler for.
         """
-        removed_handlers: list[tuple[DispatchMatcher, DispatcherController[BaseModel]]] = []
+        removed_handlers: list[Handler] = []
         with self.dispatch_lock:
-            for item in self.handlers:
-                matcher, _ = item
-                if matcher.pattern.pattern == address:
-                    removed_handlers.append(item)
+            for handler in self.handlers:
+                if handler.matcher.pattern.pattern == address:
+                    removed_handlers.append(handler)
 
             for handler in removed_handlers:
                 self.handlers.remove(handler)
@@ -260,18 +293,20 @@ class Dispatcher:
         with self.dispatch_lock:
             if message.address in self.dispatch_cache:
                 for handler in self.dispatch_cache[message.address]:
-                    handler.run(message)
+                    if handler.enabled:
+                        handler.controller.run(message)
                 return
 
-        matched_handlers: list[DispatcherController[BaseModel]] = []
+        matched_handlers: list[Handler] = []
         with self.dispatch_lock:
-            for matcher, handler in self.handlers:
-                if matcher.matches(message.address):
+            for handler in self.handlers:
+                if handler.matcher.matches(message.address):
                     matched_handlers.append(handler)
             self.dispatch_cache[message.address] = tuple(matched_handlers)
 
         for handler in matched_handlers:
-            handler.run(message)
+            if handler.enabled:
+                handler.controller.run(message)
 
     def dispatch_bundle(self, bundle: OSCBundle):
         """
@@ -325,16 +360,17 @@ class Dispatcher:
                     if item.address in self.dispatch_cache:
                         handlers = self.dispatch_cache[item.address]
                     else:
-                        matched_handlers: list[DispatcherController[BaseModel]] = []
-                        for matcher, handler in self.handlers:
-                            if matcher.matches(item.address):
+                        matched_handlers: list[Handler] = []
+                        for handler in self.handlers:
+                            if handler.matcher.matches(item.address):
                                 matched_handlers.append(handler)
                         handlers = tuple(matched_handlers)
                         self.dispatch_cache[item.address] = handlers
 
                     # Execute all handlers for this message
                     for handler in handlers:
-                        handler.run(item)
+                        if handler.enabled:
+                            handler.controller.run(item)
                 elif isinstance(item, OSCBundle):
                     # Nested bundle - check its timetag and either process or schedule
                     # RLock allows the same thread to acquire the lock again
