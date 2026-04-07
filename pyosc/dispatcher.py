@@ -3,7 +3,7 @@ import re
 import time
 import warnings
 from threading import Event, RLock, Thread
-from typing import Callable, Generic, Protocol, TypeVar
+from typing import Callable, Generic, ParamSpec, Protocol, TypeVar, cast
 
 from oscparser import OSCBundle, OSCMessage
 from pydantic import BaseModel, ValidationError
@@ -22,6 +22,18 @@ class DispatcherInterface[T: BaseModel](Protocol):
 
 ## Define a type variable for the controller that is covariant, allowing it to accept subclasses of BaseModel
 T_C = TypeVar("T_C", bound=BaseModel, covariant=True)
+P = ParamSpec("P")
+R_co = TypeVar("R_co", covariant=True)
+
+
+class DecoratedHandler(Protocol[P, R_co]):
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R_co: ...
+
+    def unregister(self) -> None: ...
+
+    def pause(self) -> None: ...
+
+    def unpause(self) -> None: ...
 
 
 class DispatcherValidationError(ValueError):
@@ -193,7 +205,9 @@ class Dispatcher:
     #    self.handlers.append((matcher, DispatcherController(handler, validator)))
     #    self.dispatch_cache = {}
 
-    def handler(self, address: str, validator: type[BaseModel] = OSCMessage):
+    def handler(
+        self, address: str, validator: type[BaseModel] = OSCMessage
+    ) -> Callable[[Callable[P, R_co]], DecoratedHandler[P, R_co]]:
         """Decorator to add a handler for a specfic OSC address pattern.
 
         Args:
@@ -201,11 +215,35 @@ class Dispatcher:
             validator: Add a pydantic validator.
         """
 
-        def handler_decorator(func: Callable[..., None]):
+        def handler_decorator(func: Callable[P, R_co]) -> DecoratedHandler[P, R_co]:
             handler = Handler.from_address(address, func, validator)
             self.handlers.append(handler)
             self.dispatch_cache = {}
-            return func
+
+            def unregister() -> None:
+                with self.dispatch_lock:
+                    if handler in self.handlers:
+                        self.handlers.remove(handler)
+                        self.dispatch_cache = {}
+            def pause() -> None:
+                with self.dispatch_lock:
+                    if handler.enabled:
+                        handler.enabled = False
+                    else:
+                        warnings.warn(f"Handler for address pattern '{address}' is already paused.")
+
+            def unpause() -> None:
+                with self.dispatch_lock:
+                    if not handler.enabled:
+                        handler.enabled = True
+                    else:
+                        warnings.warn(f"Handler for address pattern '{address}' is already unpaused.")
+
+            setattr(func, "unregister", unregister)
+            setattr(func, "pause", pause)
+            setattr(func, "unpause", unpause)
+
+            return cast(DecoratedHandler[P, R_co], func)
 
         return handler_decorator
 
