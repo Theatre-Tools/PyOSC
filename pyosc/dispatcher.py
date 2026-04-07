@@ -20,6 +20,7 @@ class DispatcherInterface[T: BaseModel](Protocol):
     def __call__(self, message: T) -> None: ...
 
 
+## Define a type variable for the controller that is covariant, allowing it to accept subclasses of BaseModel
 T_C = TypeVar("T_C", bound=BaseModel, covariant=True)
 
 
@@ -36,6 +37,12 @@ class DispatcherTypeMismatchError(DispatcherValidationError):
 
 
 class DispatcherController(Generic[T_C]):
+    """Controller that wraps a handler function and validates incoming messages against a pydantic model before dispatching
+
+    Args:
+        Generic (_type_): The type of message this controller handles, must be a pydantic BaseModel subclass.
+    """
+
     def __init__(self, dispatcher: "DispatcherInterface[T_C]", validator: type[T_C]) -> None:
         self.dispatcher = dispatcher
         self.validator = validator
@@ -59,6 +66,8 @@ class DispatcherController(Generic[T_C]):
 
 
 class DispatchMatcher:
+    """Utility class to convert OSC address patterns into regular expressions for matching incoming messages."""
+
     def __init__(self, pattern: re.Pattern) -> None:
         self.pattern = pattern
 
