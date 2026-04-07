@@ -3,17 +3,10 @@ import re
 import time
 import warnings
 from threading import Event, RLock, Thread
-from typing import Callable, Generic, ParamSpec, Protocol, TypeVar, cast
+from typing import Callable, Generic, Optional, ParamSpec, Protocol, TypeVar, cast
 
 from oscparser import OSCBundle, OSCMessage
 from pydantic import BaseModel, ValidationError
-
-
-def custom_format(message, category, filename, lineno, line=None):
-    return f"Line {lineno}: {category.__name__}: {message}\n"
-
-
-warnings.formatwarning = custom_format
 
 
 class DispatcherInterface[T: BaseModel](Protocol):
@@ -27,6 +20,7 @@ T_C = TypeVar("T_C", bound=BaseModel, covariant=True)
 P = ParamSpec("P")
 R_co = TypeVar("R_co", covariant=True)
 
+
 # Define a protocol for the decorated handler that includes the additional methods for unregistering, pausing, and unpausing.
 # This allows the decorated function to be used as a normal callable while also providing the extra functionality needed for handler management.
 class DecoratedHandler(Protocol[P, R_co]):
@@ -37,7 +31,6 @@ class DecoratedHandler(Protocol[P, R_co]):
     def pause(self) -> None: ...
 
     def unpause(self) -> None: ...
-
 
 
 ## Define custom exceptions for the dispatcher to provide more specific error handling capabilities.
@@ -60,7 +53,9 @@ class DispatcherController(Generic[T_C]):
         Generic (_type_): The type of message this controller handles, must be a pydantic BaseModel subclass.
     """
 
-    def __init__(self, dispatcher: "DispatcherInterface[T_C]", validator: type[T_C]) -> None:
+    def __init__(
+        self, dispatcher: "DispatcherInterface[T_C]", validator: type[T_C]
+    ) -> None:
         self.dispatcher = dispatcher
         self.validator = validator
 
@@ -70,14 +65,20 @@ class DispatcherController(Generic[T_C]):
             self.dispatcher(validated_message)
         except ValidationError as e:
             errors = e.errors()
-            formatted_errors = "; ".join(f"{error['loc']}: {error['msg']} ({error['type']})" for error in errors)
+            formatted_errors = "; ".join(
+                f"{error['loc']}: {error['msg']} ({error['type']})" for error in errors
+            )
             if any(error["type"] == "missing" for error in errors):
                 raise DispatcherMissingFieldError(
                     f"Validation error: Missing required fields in message {message}. {formatted_errors}"
                 )
             if any(error["type"].endswith("_type") for error in errors):
-                raise DispatcherTypeMismatchError(f"Validation error: Type mismatch in message {message}. {formatted_errors}")
-            raise DispatcherValidationError(f"Validation error: Invalid message {message}. {formatted_errors}")
+                raise DispatcherTypeMismatchError(
+                    f"Validation error: Type mismatch in message {message}. {formatted_errors}"
+                )
+            raise DispatcherValidationError(
+                f"Validation error: Invalid message {message}. {formatted_errors}"
+            )
         except Exception as e:
             raise Exception(f"Error in handler: {e}")
 
@@ -166,14 +167,57 @@ class DispatchMatcher:
 
 
 class Handler:
-    def __init__(self, matcher: DispatchMatcher, controller: DispatcherController, enabled: bool = True):
+    def __init__(
+        self,
+        matcher: DispatchMatcher,
+        controller: DispatcherController,
+        enabled: bool = True,
+    ):
         self.matcher = matcher
         self.controller = controller
         self.enabled = enabled
+        self._unregister_action: Callable
+        self._pause_action: Callable
+        self._unpause_action: Callable
+
+    def bind_controls(
+        self,
+        unregister_action: Callable[[], None],
+        pause_action: Callable[[], None],
+        unpause_action: Callable[[], None],
+    ) -> None:
+        self._unregister_action = unregister_action
+        self._pause_action = pause_action
+        self._unpause_action = unpause_action
 
     @classmethod
-    def from_address(cls, address: str, func: Callable, validator: type[BaseModel]) -> "Handler":
-        return cls(DispatchMatcher.from_address(address), DispatcherController(func, validator), enabled=True)
+    def from_address(
+        cls,
+        address: str,
+        func: Callable,
+        validator: type[BaseModel],
+        enabled: Optional[bool] = True,
+    ) -> "Handler":
+        return cls(
+            DispatchMatcher.from_address(address),
+            DispatcherController(func, validator),
+            enabled=True,
+        )
+
+    def unregister(self) -> None:
+        if not self._unregister_action:
+            raise ValueError("Unregister action not bound for this handler.")
+        self._unregister_action()
+
+    def pause(self) -> None:
+        if not self._pause_action:
+            raise ValueError("Pause action not bound for this handler.")
+        self._pause_action()
+
+    def unpause(self) -> None:
+        if not self._unpause_action:
+            raise ValueError("Unpause action not bound for this handler.")
+        self._unpause_action()
 
 
 class Dispatcher:
@@ -191,6 +235,50 @@ class Dispatcher:
         self._stop_scheduler = Event()
         self._scheduler_thread: Thread | None = None
 
+    def register_handler(
+        self, address: str, func: Callable, validator: type[BaseModel]
+    ) -> Handler:
+        """Registers a Dispatch Handler for a specific OSC address pattern with an optional pydantic validator.
+
+        Args:
+            address (str): The OSC address pattern to match for this handler.
+            func (Callable): The function to call when a message matching the address pattern is received.
+            validator (type[BaseModel]): The pydantic validator to use for validating incoming messages.
+
+        Returns:
+            Handler: The registered handler.
+        """
+        try:
+            handler = Handler.from_address(address, func, validator)
+        except Exception as e:
+            raise ValueError(
+                f"Error registering handler for address pattern '{address}': {e}"
+            ) from e
+
+        def unregister() -> None:
+            with self.dispatch_lock:
+                if handler in self.handlers:
+                    self.handlers.remove(handler)
+                    self.dispatch_cache = {}
+                else:
+                    warnings.warn("Handler not found in dispatcher, cannot unregister.", stacklevel=2)
+
+        def pause() -> None:
+            with self.dispatch_lock:
+                handler.enabled = False
+                self.dispatch_cache = {}
+
+
+        def unpause() -> None:
+            with self.dispatch_lock:
+                handler.enabled = True
+                self.dispatch_cache = {}
+
+        handler.bind_controls(unregister, pause, unpause)
+        if handler:
+            self.handlers.append(handler)
+            self.dispatch_cache = {}
+        return handler
 
     def handler(
         self, address: str, validator: type[BaseModel] = OSCMessage
@@ -212,19 +300,26 @@ class Dispatcher:
                     if handler in self.handlers:
                         self.handlers.remove(handler)
                         self.dispatch_cache = {}
+
             def pause() -> None:
                 with self.dispatch_lock:
                     if handler.enabled:
                         handler.enabled = False
                     else:
-                        warnings.warn(f"Handler for address pattern '{address}' is already paused.")
+                        warnings.warn(
+                            f"Handler for address pattern '{address}' is already paused.",
+                            stacklevel=2
+                        )
 
             def unpause() -> None:
                 with self.dispatch_lock:
                     if not handler.enabled:
                         handler.enabled = True
                     else:
-                        warnings.warn(f"Handler for address pattern '{address}' is already unpaused.")
+                        warnings.warn(
+                            f"Handler for address pattern '{address}' is already unpaused.",
+                            stacklevel=2
+                        )
 
             setattr(func, "unregister", unregister)
             setattr(func, "pause", pause)
@@ -290,7 +385,20 @@ class Dispatcher:
             else:
                 time.sleep(0.001)  # Small sleep to prevent busy waiting
 
-    def remove_handler(self, address: str):
+    def remove_handler(self, handler: Handler):
+        """Removes a specific handler from the dispatcher.
+
+        Args:
+            handler (Handler): The handler instance to remove.
+        """
+        with self.dispatch_lock:
+            if handler in self.handlers:
+                self.handlers.remove(handler)
+                self.dispatch_cache = {}
+            else:
+                warnings.warn("Handler not found in dispatcher, cannot remove.", stacklevel=2)
+
+    def remove_handler_by_address(self, address: str):
         """
         Removes a handler for a specific OSC address.
         - ``address``: The OSC address to remove the handler for.
@@ -407,7 +515,9 @@ class Dispatcher:
                         OSC_EPOCH_OFFSET = 2208988800
                         ntp_seconds = item.timetag >> 32
                         ntp_fraction = item.timetag & 0xFFFFFFFF
-                        bundle_time = (ntp_seconds - OSC_EPOCH_OFFSET) + (ntp_fraction / (2**32))
+                        bundle_time = (ntp_seconds - OSC_EPOCH_OFFSET) + (
+                            ntp_fraction / (2**32)
+                        )
                         current_time = time.time()
 
                         if bundle_time <= current_time:
