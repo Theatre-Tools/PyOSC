@@ -53,9 +53,7 @@ class DispatcherController(Generic[T_C]):
         Generic (_type_): The type of message this controller handles, must be a pydantic BaseModel subclass.
     """
 
-    def __init__(
-        self, dispatcher: "DispatcherInterface[T_C]", validator: type[T_C]
-    ) -> None:
+    def __init__(self, dispatcher: "DispatcherInterface[T_C]", validator: type[T_C]) -> None:
         self.dispatcher = dispatcher
         self.validator = validator
 
@@ -65,20 +63,14 @@ class DispatcherController(Generic[T_C]):
             self.dispatcher(validated_message)
         except ValidationError as e:
             errors = e.errors()
-            formatted_errors = "; ".join(
-                f"{error['loc']}: {error['msg']} ({error['type']})" for error in errors
-            )
+            formatted_errors = "; ".join(f"{error['loc']}: {error['msg']} ({error['type']})" for error in errors)
             if any(error["type"] == "missing" for error in errors):
                 raise DispatcherMissingFieldError(
                     f"Validation error: Missing required fields in message {message}. {formatted_errors}"
                 )
             if any(error["type"].endswith("_type") for error in errors):
-                raise DispatcherTypeMismatchError(
-                    f"Validation error: Type mismatch in message {message}. {formatted_errors}"
-                )
-            raise DispatcherValidationError(
-                f"Validation error: Invalid message {message}. {formatted_errors}"
-            )
+                raise DispatcherTypeMismatchError(f"Validation error: Type mismatch in message {message}. {formatted_errors}")
+            raise DispatcherValidationError(f"Validation error: Invalid message {message}. {formatted_errors}")
         except Exception as e:
             raise Exception(f"Error in handler: {e}")
 
@@ -235,9 +227,7 @@ class Dispatcher:
         self._stop_scheduler = Event()
         self._scheduler_thread: Thread | None = None
 
-    def register_handler(
-        self, address: str, func: Callable, validator: type[BaseModel]
-    ) -> Handler:
+    def register_handler(self, address: str, func: Callable, validator: type[BaseModel]) -> Handler:
         """Registers a Dispatch Handler for a specific OSC address pattern with an optional pydantic validator.
 
         Args:
@@ -251,9 +241,7 @@ class Dispatcher:
         try:
             handler = Handler.from_address(address, func, validator)
         except Exception as e:
-            raise ValueError(
-                f"Error registering handler for address pattern '{address}': {e}"
-            ) from e
+            raise ValueError(f"Error registering handler for address pattern '{address}': {e}") from e
 
         def unregister() -> None:
             with self.dispatch_lock:
@@ -261,13 +249,15 @@ class Dispatcher:
                     self.handlers.remove(handler)
                     self.dispatch_cache = {}
                 else:
-                    warnings.warn("Handler not found in dispatcher, cannot unregister.", stacklevel=2)
+                    warnings.warn(
+                        "Handler not found in dispatcher, cannot unregister.",
+                        stacklevel=2,
+                    )
 
         def pause() -> None:
             with self.dispatch_lock:
                 handler.enabled = False
                 self.dispatch_cache = {}
-
 
         def unpause() -> None:
             with self.dispatch_lock:
@@ -308,7 +298,7 @@ class Dispatcher:
                     else:
                         warnings.warn(
                             f"Handler for address pattern '{address}' is already paused.",
-                            stacklevel=2
+                            stacklevel=2,
                         )
 
             def unpause() -> None:
@@ -318,7 +308,7 @@ class Dispatcher:
                     else:
                         warnings.warn(
                             f"Handler for address pattern '{address}' is already unpaused.",
-                            stacklevel=2
+                            stacklevel=2,
                         )
 
             setattr(func, "unregister", unregister)
@@ -515,9 +505,7 @@ class Dispatcher:
                         OSC_EPOCH_OFFSET = 2208988800
                         ntp_seconds = item.timetag >> 32
                         ntp_fraction = item.timetag & 0xFFFFFFFF
-                        bundle_time = (ntp_seconds - OSC_EPOCH_OFFSET) + (
-                            ntp_fraction / (2**32)
-                        )
+                        bundle_time = (ntp_seconds - OSC_EPOCH_OFFSET) + (ntp_fraction / (2**32))
                         current_time = time.time()
 
                         if bundle_time <= current_time:
