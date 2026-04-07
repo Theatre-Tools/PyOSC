@@ -46,6 +46,7 @@ class TestDispatchMatcher(unittest.TestCase):
         self.assertTrue(matcher.matches("/test/"))
         self.assertTrue(matcher.matches("/test/abc"))
         self.assertTrue(matcher.matches("/test/123"))
+        self.assertFalse(matcher.matches("/test/abc/def"))
 
     def test_character_class(self):
         """Test [abc] character class matching."""
@@ -164,6 +165,16 @@ class TestDispatcher(unittest.TestCase):
         self.dispatcher.dispatch(message)
 
         mock_handler.assert_called_once()
+
+    def test_dispatch_wildcard_does_not_match_extra_parts(self):
+        """Test that * wildcard does not cross slash-delimited address parts."""
+        mock_handler = MagicMock()
+        self.dispatcher.add_handler("/test/*", mock_handler)
+
+        message = OSCMessage(address="/test/one/two", args=())
+        self.dispatcher.dispatch(message)
+
+        mock_handler.assert_not_called()
 
     def test_dispatch_multiple_handlers(self):
         """Test dispatching to multiple matching handlers."""
