@@ -75,8 +75,8 @@ class DispatchMatcher:
                 reg_pattern += "."
                 i += 1
             elif char == "*":
-                # * matches any sequence of zero or more characters
-                reg_pattern += ".*"
+                # * matches zero or more characters within one address segment
+                reg_pattern += "[^/]*"
                 i += 1
             elif char == "[":
                 # Square brackets - character class
