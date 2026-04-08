@@ -3,7 +3,14 @@ import re
 import time
 import warnings
 from threading import Event, RLock, Thread
-from typing import Callable, Generic, Optional, ParamSpec, Protocol, TypeVar, cast, overload
+from typing import (
+    Callable,
+    ParamSpec,
+    Protocol,
+    TypeVar,
+    cast,
+    overload,
+)
 
 from oscparser import OSCBundle, OSCMessage
 from pydantic import BaseModel, ValidationError
@@ -46,43 +53,109 @@ class DispatcherTypeMismatchError(DispatcherValidationError):
     pass
 
 
-class DispatcherController(Generic[T_C]):
-    """Controller that wraps a handler function and validates incoming messages against a pydantic model before dispatching
-
-    Args:
-        Generic (_type_): The type of message this controller handles, must be a pydantic BaseModel subclass.
+class Handler:
+    """Handler object contains an address pattern, a dispatcher, and any other methods attached to handlers.
+    Makes it easier to create, destroy and edit handlers after creation.
+    Replaced previous implementation where handlers were stored as a Dispatch Controller and a Dispatch Matcher wrapped in a tuple.
     """
 
-    def __init__(self, dispatcher: "DispatcherInterface[T_C]", validator: type[T_C]) -> None:
+    def __init__(
+        self,
+        dispatcher: DispatcherInterface[T_C],
+        validator: type[T_C],
+        pattern: re.Pattern,
+        enabled: bool = True,
+    ):
+        self.pattern = pattern
+        self.enabled = enabled
+        self._unregister_action: Callable
+        self._pause_action: Callable
+        self._unpause_action: Callable
         self.dispatcher = dispatcher
         self.validator = validator
 
+    def matches(self, address: str) -> bool:
+        """This method checks if the given OSC address matches the handler's address pattern using the compiled regular expression.
+
+        Args:
+            address (str): The OSC address to check.
+
+        Returns:
+            bool: True if the address matches the handler's pattern, False otherwise.
+        """
+        return self.pattern.fullmatch(address) is not None
+
+    def __hash__(self) -> int:
+        """Hash based on the handler's address pattern, allowing handlers to be used in sets and as dictionary keys.
+
+        Returns:
+            int: The hash value of the handler.
+        """
+        return hash(self.pattern)
+
     def run(self, message: BaseModel):
+        """This method validates the incoming message using the handler's pydantic validator and then calls the dispatcher function with the validated message.
+         It also includes detailed error handling to provide specific feedback on validation issues.
+
+        Args:
+            message (BaseModel): The message to validate and dispatch.
+
+        Raises:
+            DispatcherMissingFieldError: Raised when required fields are missing from the message.
+            DispatcherTypeMismatchError: Raised when there is a type mismatch in the message.
+            DispatcherValidationError: Raised when the message fails validation for other reasons.
+            Exception: Raised for any other unexpected errors.
+        """
         try:
             validated_message = self.validator.model_validate(message.model_dump())
             self.dispatcher(validated_message)
         except ValidationError as e:
             errors = e.errors()
-            formatted_errors = "; ".join(f"{error['loc']}: {error['msg']} ({error['type']})" for error in errors)
+            formatted_errors = "; ".join(
+                f"{error['loc']}: {error['msg']} ({error['type']})" for error in errors
+            )
             if any(error["type"] == "missing" for error in errors):
                 raise DispatcherMissingFieldError(
                     f"Validation error: Missing required fields in message {message}. {formatted_errors}"
                 )
             if any(error["type"].endswith("_type") for error in errors):
-                raise DispatcherTypeMismatchError(f"Validation error: Type mismatch in message {message}. {formatted_errors}")
-            raise DispatcherValidationError(f"Validation error: Invalid message {message}. {formatted_errors}")
+                raise DispatcherTypeMismatchError(
+                    f"Validation error: Type mismatch in message {message}. {formatted_errors}"
+                )
+            raise DispatcherValidationError(
+                f"Validation error: Invalid message {message}. {formatted_errors}"
+            )
         except Exception as e:
             raise Exception(f"Error in handler: {e}")
 
-
-class DispatchMatcher:
-    """Utility class to convert OSC address patterns into regular expressions for matching incoming messages."""
-
-    def __init__(self, pattern: re.Pattern) -> None:
-        self.pattern = pattern
+    def bind_controls(
+        self,
+        unregister_action: Callable[[], None],
+        pause_action: Callable[[], None],
+        unpause_action: Callable[[], None],
+    ) -> None:
+        self._unregister_action = unregister_action
+        self._pause_action = pause_action
+        self._unpause_action = unpause_action
 
     @classmethod
-    def from_address(cls, address: str) -> "DispatchMatcher":
+    def from_address(
+        cls,
+        address: str,
+        func: Callable,
+        validator: type[BaseModel],
+    ) -> "Handler":
+        """Method by whiuch Handlers are normally created, as it handles the creation of the DispatchMatcher and DispatchController based on the provided address, function and validator.
+
+        Args:
+            address (str): The OSC address pattern to match for this handler.
+            func (Callable): The function to call when a message matching the address is received.
+            validator (type[BaseModel]): The pydantic validator to use for validating incoming messages.
+            enabled (Optional[bool], optional): Whether the handler is enabled. Defaults to True.
+
+        Returns:
+            Handler: The created handler.
+        """
         reg_pattern = ""
         i = 0
 
@@ -149,66 +222,10 @@ class DispatchMatcher:
                 reg_pattern += re.escape(char)
                 i += 1
 
-        return cls(re.compile(reg_pattern))
-
-    def matches(self, address: str) -> bool:
-        return self.pattern.fullmatch(address) is not None
-
-    def __hash__(self) -> int:
-        return hash(self.pattern)
-
-
-class Handler:
-    """Handler object to contain DispatchMatcher, DispatchController, and any other methods attatched to handlers.
-        Makes it easier to create, destroy and edit handlers after creation.
-        Replaced previous implementation where handlers were stored as a Dispatch Controller and a Dispatch Matcher wrapped in a tuple.
-    """
-    def __init__(
-        self,
-        matcher: DispatchMatcher,
-        controller: DispatcherController,
-        enabled: bool = True,
-    ):
-        self.matcher = matcher
-        self.controller = controller
-        self.enabled = enabled
-        self._unregister_action: Callable
-        self._pause_action: Callable
-        self._unpause_action: Callable
-
-    def bind_controls(
-        self,
-        unregister_action: Callable[[], None],
-        pause_action: Callable[[], None],
-        unpause_action: Callable[[], None],
-    ) -> None:
-        self._unregister_action = unregister_action
-        self._pause_action = pause_action
-        self._unpause_action = unpause_action
-
-
-    @classmethod
-    def from_address(
-        cls,
-        address: str,
-        func: Callable,
-        validator: type[BaseModel],
-        enabled: Optional[bool] = True,
-    ) -> "Handler":
-        """Method by whiuch Handlers are normally created, as it handles the creation of the DispatchMatcher and DispatchController based on the provided address, function and validator.
-
-        Args:
-            address (str): The OSC address pattern to match for this handler.
-            func (Callable): The function to call when a message matching the address is received.
-            validator (type[BaseModel]): The pydantic validator to use for validating incoming messages.
-            enabled (Optional[bool], optional): Whether the handler is enabled. Defaults to True.
-
-        Returns:
-            Handler: The created handler.
-        """
         return cls(
-            DispatchMatcher.from_address(address),
-            DispatcherController(func, validator),
+            dispatcher=func,
+            validator=validator,
+            pattern=re.compile(reg_pattern),
             enabled=True,
         )
 
@@ -259,16 +276,21 @@ class Dispatcher:
         self._scheduler_thread: Thread | None = None
 
     @overload
-    def register_handler(self, address: str, func: DispatcherInterface[OSCMessage]) -> Handler: ...
+    def register_handler(
+        self, address: str, func: DispatcherInterface[OSCMessage]
+    ) -> Handler: ...
 
     @overload
-    def register_handler[T: BaseModel](self, address: str, func: DispatcherInterface[OSCMessage], validator: type[T]) -> Handler: ...
+    def register_handler[T: BaseModel](
+        self, address: str, func: DispatcherInterface[OSCMessage], validator: type[T]
+    ) -> Handler: ...
 
     def register_handler[T: BaseModel](
         self,
         address: str,
         func: DispatcherInterface[OSCMessage],
-        validator: type[T] = OSCMessage) -> Handler:
+        validator: type[T] = OSCMessage,
+    ) -> Handler:
         """Registers a Dispatch Handler for a specific OSC address pattern with an optional pydantic validator.
 
         Args:
@@ -282,9 +304,13 @@ class Dispatcher:
         try:
             handler = Handler.from_address(address, func, validator)
         except Exception as e:
-            raise ValueError(f"Error registering handler for address pattern '{address}': {e}") from e
+            raise ValueError(
+                f"Error registering handler for address pattern '{address}': {e}"
+            ) from e
 
         def unregister() -> None:
+            """Permanently unregisters the handler from the dispatcher.
+            """
             with self.dispatch_lock:
                 if handler in self.handlers:
                     self.handlers.remove(handler)
@@ -296,15 +322,18 @@ class Dispatcher:
                     )
 
         def pause() -> None:
+            """Temporaily disables a handler
+            """
             with self.dispatch_lock:
                 handler.enabled = False
                 self.dispatch_cache = {}
 
         def unpause() -> None:
+            """Re-enables a previously disabled handler
+            """
             with self.dispatch_lock:
                 handler.enabled = True
                 self.dispatch_cache = {}
-
 
         # Bit of a hack to bind the control functions to the handler after it's created.
         # This allows the handler to have the neccessary context to unregister itself from within the control functions, while still keeping the control functions simple and stateless.
@@ -325,17 +354,29 @@ class Dispatcher:
         """
 
         def handler_decorator(func: Callable[P, R_co]) -> DecoratedHandler[P, R_co]:
+            """Registers a handler for a specific OSC address pattern using a decorator syntax, allowing for cleaner and more intuitive handler definitions.
+
+            Args:
+                func (Callable[P, R_co]): The function to call when a message matching the address is received. This function can have any signature, and the dispatcher will handle calling it with the correct arguments based on the validated message.
+
+            Returns:
+                DecoratedHandler[P, R_co]: The decorated handler function.
+            """
             handler = Handler.from_address(address, func, validator)
             self.handlers.append(handler)
             self.dispatch_cache = {}
 
             def unregister() -> None:
+                """Permanently unregisters the handler from the dispatcher.
+                """
                 with self.dispatch_lock:
                     if handler in self.handlers:
                         self.handlers.remove(handler)
                         self.dispatch_cache = {}
 
             def pause() -> None:
+                """Temporaily disables a handler
+                """
                 with self.dispatch_lock:
                     if handler.enabled:
                         handler.enabled = False
@@ -346,6 +387,8 @@ class Dispatcher:
                         )
 
             def unpause() -> None:
+                """Re-enables a previously disabled handler
+                """
                 with self.dispatch_lock:
                     if not handler.enabled:
                         handler.enabled = True
@@ -355,6 +398,7 @@ class Dispatcher:
                             stacklevel=2,
                         )
 
+            ## Attach the control functions to the decorated function, allowing users to manage their handlers directly from the decorated function reference.
             setattr(func, "unregister", unregister)
             setattr(func, "pause", pause)
             setattr(func, "unpause", unpause)
@@ -373,7 +417,7 @@ class Dispatcher:
         changed_handlers = 0
         with self.dispatch_lock:
             for handler in self.handlers:
-                if handler.matcher.pattern.pattern == address:
+                if handler.pattern.pattern == address:
                     changed_handlers += 1
                     if enabled is None:
                         if not handler.enabled:
@@ -430,7 +474,9 @@ class Dispatcher:
                 self.handlers.remove(handler)
                 self.dispatch_cache = {}
             else:
-                warnings.warn("Handler not found in dispatcher, cannot remove.", stacklevel=2)
+                warnings.warn(
+                    "Handler not found in dispatcher, cannot remove.", stacklevel=2
+                )
 
     def remove_handler_by_address(self, address: str):
         """
@@ -440,7 +486,7 @@ class Dispatcher:
         removed_handlers: list[Handler] = []
         with self.dispatch_lock:
             for handler in self.handlers:
-                if handler.matcher.pattern.pattern == address:
+                if handler.pattern.pattern == address:
                     removed_handlers.append(handler)
 
             for handler in removed_handlers:
@@ -461,19 +507,19 @@ class Dispatcher:
             if message.address in self.dispatch_cache:
                 for handler in self.dispatch_cache[message.address]:
                     if handler.enabled:
-                        handler.controller.run(message)
+                        handler.run(message)
                 return
 
         matched_handlers: list[Handler] = []
         with self.dispatch_lock:
             for handler in self.handlers:
-                if handler.matcher.matches(message.address):
+                if handler.matches(message.address):
                     matched_handlers.append(handler)
             self.dispatch_cache[message.address] = tuple(matched_handlers)
 
         for handler in matched_handlers:
             if handler.enabled:
-                handler.controller.run(message)
+                handler.run(message)
 
     def dispatch_bundle(self, bundle: OSCBundle):
         """
@@ -529,7 +575,7 @@ class Dispatcher:
                     else:
                         matched_handlers: list[Handler] = []
                         for handler in self.handlers:
-                            if handler.matcher.matches(item.address):
+                            if handler.matches(item.address):
                                 matched_handlers.append(handler)
                         handlers = tuple(matched_handlers)
                         self.dispatch_cache[item.address] = handlers
@@ -537,7 +583,7 @@ class Dispatcher:
                     # Execute all handlers for this message
                     for handler in handlers:
                         if handler.enabled:
-                            handler.controller.run(item)
+                            handler.run(item)
                 elif isinstance(item, OSCBundle):
                     # Nested bundle - check its timetag and either process or schedule
                     # RLock allows the same thread to acquire the lock again
@@ -549,7 +595,9 @@ class Dispatcher:
                         OSC_EPOCH_OFFSET = 2208988800
                         ntp_seconds = item.timetag >> 32
                         ntp_fraction = item.timetag & 0xFFFFFFFF
-                        bundle_time = (ntp_seconds - OSC_EPOCH_OFFSET) + (ntp_fraction / (2**32))
+                        bundle_time = (ntp_seconds - OSC_EPOCH_OFFSET) + (
+                            ntp_fraction / (2**32)
+                        )
                         current_time = time.time()
 
                         if bundle_time <= current_time:
