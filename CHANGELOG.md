@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.1.0docs] - 2026-04-08
+### :wrench: Chores
+- [`e81fc49`](https://github.com/Theatre-Tools/PyOSC/commit/e81fc4953a0d40480b9bc7a11988f990b523a911) - remove obsolete GitLab CI configuration file *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
+- [`6336952`](https://github.com/Theatre-Tools/PyOSC/commit/633695255f1e02b81455ac5eeddcf84dcf6668c2) - update poetry config for ci requirements. *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
+- [`ec45a07`](https://github.com/Theatre-Tools/PyOSC/commit/ec45a07ea908ef31786ae99ac36f14a9ca98ab79) - update dependencies in pyproject.toml and poetry.lock for improved stability *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
+
+
 ## [1.1.0] - 2026-04-05
 ### :bug: Bug Fixes
 - [`116b0e0`](https://github.com/Theatre-Tools/PyOSC/commit/116b0e03d9575cde592e8c2920e55c96403c156e) - Made the dispatcher handle nexted timetagged bundles correctly, and updated the pytests to reflect this *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
@@ -78,3 +85,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [1.0.19]: https://github.com/Theatre-Tools/PyOSC/compare/1.0.18...1.0.19
 [1.0.19docfix]: https://github.com/Theatre-Tools/PyOSC/compare/1.1.0rc4...1.0.19docfix
 [1.1.0]: https://github.com/Theatre-Tools/PyOSC/compare/1.1.0rc7...1.1.0
+[1.1.0docs]: https://github.com/Theatre-Tools/PyOSC/compare/1.1.0...1.1.0docs
