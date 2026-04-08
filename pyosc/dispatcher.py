@@ -111,20 +111,14 @@ class Handler:
             self.dispatcher(validated_message)
         except ValidationError as e:
             errors = e.errors()
-            formatted_errors = "; ".join(
-                f"{error['loc']}: {error['msg']} ({error['type']})" for error in errors
-            )
+            formatted_errors = "; ".join(f"{error['loc']}: {error['msg']} ({error['type']})" for error in errors)
             if any(error["type"] == "missing" for error in errors):
                 raise DispatcherMissingFieldError(
                     f"Validation error: Missing required fields in message {message}. {formatted_errors}"
                 )
             if any(error["type"].endswith("_type") for error in errors):
-                raise DispatcherTypeMismatchError(
-                    f"Validation error: Type mismatch in message {message}. {formatted_errors}"
-                )
-            raise DispatcherValidationError(
-                f"Validation error: Invalid message {message}. {formatted_errors}"
-            )
+                raise DispatcherTypeMismatchError(f"Validation error: Type mismatch in message {message}. {formatted_errors}")
+            raise DispatcherValidationError(f"Validation error: Invalid message {message}. {formatted_errors}")
         except Exception as e:
             raise Exception(f"Error in handler: {e}")
 
@@ -276,9 +270,37 @@ class Dispatcher:
         self._scheduler_thread: Thread | None = None
 
     @overload
-    def register_handler(
-        self, address: str, func: DispatcherInterface[OSCMessage]
+    def add_handler(self, address: str, func: DispatcherInterface[OSCMessage]) -> Handler: ...
+
+    @overload
+    def add_handler[T: BaseModel](
+        self, address: str, func: DispatcherInterface[OSCMessage], validator: type[T]
     ) -> Handler: ...
+
+    def add_handler[T: BaseModel](
+        self,
+        address: str,
+        func: DispatcherInterface[OSCMessage],
+        validator: type[T] = OSCMessage,
+    ) -> Handler:
+        """Registers a Dispatch Handler for a specific OSC address pattern with an optional pydantic validator.
+
+        Args:
+            address (str): The OSC address pattern to match for this handler.
+            func (DispatcherInterface[OSCMessage]): The function to call when a message matching the address is received.
+            validator (type[BaseModel]): The pydantic validator to use for validating incoming messages.
+        Returns:
+            Handler: The registered handler.
+        """
+        warnings.warn(
+            "add_handler is deprecated and will be removed in a future release. Please use the handler decorator or register_handler instead for cleaner and more intuitive handler definitions.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.register_handler(address, func, validator)
+
+    @overload
+    def register_handler(self, address: str, func: DispatcherInterface[OSCMessage]) -> Handler: ...
 
     @overload
     def register_handler[T: BaseModel](
@@ -304,13 +326,10 @@ class Dispatcher:
         try:
             handler = Handler.from_address(address, func, validator)
         except Exception as e:
-            raise ValueError(
-                f"Error registering handler for address pattern '{address}': {e}"
-            ) from e
+            raise ValueError(f"Error registering handler for address pattern '{address}': {e}") from e
 
         def unregister() -> None:
-            """Permanently unregisters the handler from the dispatcher.
-            """
+            """Permanently unregisters the handler from the dispatcher."""
             with self.dispatch_lock:
                 if handler in self.handlers:
                     self.handlers.remove(handler)
@@ -322,15 +341,13 @@ class Dispatcher:
                     )
 
         def pause() -> None:
-            """Temporaily disables a handler
-            """
+            """Temporaily disables a handler"""
             with self.dispatch_lock:
                 handler.enabled = False
                 self.dispatch_cache = {}
 
         def unpause() -> None:
-            """Re-enables a previously disabled handler
-            """
+            """Re-enables a previously disabled handler"""
             with self.dispatch_lock:
                 handler.enabled = True
                 self.dispatch_cache = {}
@@ -367,16 +384,14 @@ class Dispatcher:
             self.dispatch_cache = {}
 
             def unregister() -> None:
-                """Permanently unregisters the handler from the dispatcher.
-                """
+                """Permanently unregisters the handler from the dispatcher."""
                 with self.dispatch_lock:
                     if handler in self.handlers:
                         self.handlers.remove(handler)
                         self.dispatch_cache = {}
 
             def pause() -> None:
-                """Temporaily disables a handler
-                """
+                """Temporaily disables a handler"""
                 with self.dispatch_lock:
                     if handler.enabled:
                         handler.enabled = False
@@ -387,8 +402,7 @@ class Dispatcher:
                         )
 
             def unpause() -> None:
-                """Re-enables a previously disabled handler
-                """
+                """Re-enables a previously disabled handler"""
                 with self.dispatch_lock:
                     if not handler.enabled:
                         handler.enabled = True
@@ -474,9 +488,7 @@ class Dispatcher:
                 self.handlers.remove(handler)
                 self.dispatch_cache = {}
             else:
-                warnings.warn(
-                    "Handler not found in dispatcher, cannot remove.", stacklevel=2
-                )
+                warnings.warn("Handler not found in dispatcher, cannot remove.", stacklevel=2)
 
     def remove_handler_by_address(self, address: str):
         """
@@ -595,9 +607,7 @@ class Dispatcher:
                         OSC_EPOCH_OFFSET = 2208988800
                         ntp_seconds = item.timetag >> 32
                         ntp_fraction = item.timetag & 0xFFFFFFFF
-                        bundle_time = (ntp_seconds - OSC_EPOCH_OFFSET) + (
-                            ntp_fraction / (2**32)
-                        )
+                        bundle_time = (ntp_seconds - OSC_EPOCH_OFFSET) + (ntp_fraction / (2**32))
                         current_time = time.time()
 
                         if bundle_time <= current_time:
