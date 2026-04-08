@@ -5,8 +5,6 @@ from typing import overload
 from oscparser import OSCMessage
 from pydantic import BaseModel, ValidationError
 
-from .peer import Peer
-
 
 class Call:
     def __init__[T: BaseModel](self, queue: queue.Queue[T], validator: type[T]):
@@ -19,9 +17,9 @@ class CallHandlerValidationError(ValueError):
 
 
 class CallHandler:
-    """A call handler is a way of communicating with a peer that is more akin to a restuful API from the user point of view. You send a request, it gives you a response."""
+    """"""
 
-    def __init__(self, peer: Peer):
+    def __init__(self, peer):
         self.peer = peer
         self.queues: dict[str, Call] = {}
         self.queue_lock = threading.Lock()
@@ -72,7 +70,7 @@ class CallHandler:
         responseq = queue.Queue()
         with self.queue_lock:
             self.queues[return_address] = Call(responseq, validator)
-            self.peer.Dispatcher.add_handler(return_address, self)
+            handler = self.peer.register_handler(return_address, self)
         self.peer.send_message(message)
         try:
             response = responseq.get(timeout=timeout)
@@ -81,9 +79,7 @@ class CallHandler:
             return None
         finally:
             with self.queue_lock:
-                self.peer.Dispatcher.remove_handler(return_address)
-                if return_address in self.queues:
-                    del self.queues[return_address]
+                handler.unregister()
 
     def __call__(self, message: OSCMessage):
         with self.queue_lock:
