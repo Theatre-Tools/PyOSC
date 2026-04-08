@@ -259,15 +259,9 @@ class Peer:
             timeout (float, optional): The timeout for the call. Defaults to 5.0.
 
         Returns:
-            BaseModel | None: The validated response or None if no response is received.
+            OSCMessage | None: The response message, validated and parsed according to the provided validator if applicable. Returns None if the call times out without receiving a valid response.
         """
-        return self.CallHandler.call(
-            message,
-            return_address=return_address,
-            validator=validator,
-            timeout=timeout
-        )
-
+        return self.CallHandler.call(message, return_address=return_address, validator=validator, timeout=timeout)
 
     def listen_tcp(self):
         """Initiates a background TCP listener against the peer
