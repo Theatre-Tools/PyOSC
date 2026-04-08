@@ -159,6 +159,10 @@ class DispatchMatcher:
 
 
 class Handler:
+    """Handler object to contain DispatchMatcher, DispatchController, and any other methods attatched to handlers.
+        Makes it easier to create, destroy and edit handlers after creation.
+        Replaced previous implementation where handlers were stored as a Dispatch Controller and a Dispatch Matcher wrapped in a tuple.
+    """
     def __init__(
         self,
         matcher: DispatchMatcher,
@@ -182,6 +186,7 @@ class Handler:
         self._pause_action = pause_action
         self._unpause_action = unpause_action
 
+
     @classmethod
     def from_address(
         cls,
@@ -190,6 +195,17 @@ class Handler:
         validator: type[BaseModel],
         enabled: Optional[bool] = True,
     ) -> "Handler":
+        """Method by whiuch Handlers are normally created, as it handles the creation of the DispatchMatcher and DispatchController based on the provided address, function and validator.
+
+        Args:
+            address (str): The OSC address pattern to match for this handler.
+            func (Callable): The function to call when a message matching the address is received.
+            validator (type[BaseModel]): The pydantic validator to use for validating incoming messages.
+            enabled (Optional[bool], optional): Whether the handler is enabled. Defaults to True.
+
+        Returns:
+            Handler: The created handler.
+        """
         return cls(
             DispatchMatcher.from_address(address),
             DispatcherController(func, validator),
@@ -197,16 +213,31 @@ class Handler:
         )
 
     def unregister(self) -> None:
+        """Proxy method for unregister
+
+        Raises:
+            ValueError: If the unregister action is not bound to this handler, which should never happen if handlers are created through the Dispatcher's register_handler method or handler decorator.
+        """
         if not self._unregister_action:
             raise ValueError("Unregister action not bound for this handler.")
         self._unregister_action()
 
     def pause(self) -> None:
+        """Proxy method for pause
+
+        Raises:
+            ValueError: If the pause action is not bound to this handler, which should never happen if handlers are created through the Dispatcher's register_handler method or handler decorator.
+        """
         if not self._pause_action:
             raise ValueError("Pause action not bound for this handler.")
         self._pause_action()
 
     def unpause(self) -> None:
+        """Proxy method for unpause
+
+        Raises:
+            ValueError: If the unpause action is not bound t othis handler, which should never happen if handlers are created through the Dispatcher's register_handler method or handler decorator.
+        """
         if not self._unpause_action:
             raise ValueError("Unpause action not bound for this handler.")
         self._unpause_action()
@@ -274,6 +305,9 @@ class Dispatcher:
                 handler.enabled = True
                 self.dispatch_cache = {}
 
+
+        # Bit of a hack to bind the control functions to the handler after it's created.
+        # This allows the handler to have the neccessary context to unregister itself from within the control functions, while still keeping the control functions simple and stateless.
         handler.bind_controls(unregister, pause, unpause)
         if handler:
             self.handlers.append(handler)
