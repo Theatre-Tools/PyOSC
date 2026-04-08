@@ -11,12 +11,12 @@ PyOSC is available on PyPI, so installation is simple using the following comman
 === "Pip"
 
     ```bash
-    pip install pyopensoundcontrol
+    pip install "pyopensoundcontrol>=2.0.0b1"
     ```
 === "Poetry"
 
     ```bash
-    poetry add pyopensoundcontrol
+    poetry add "pyopensoundcontrol>=2.0.0b1"
     ```
 
 ## Basic Usage
