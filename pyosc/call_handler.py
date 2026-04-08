@@ -1,10 +1,16 @@
 import queue
 import threading
+from time import perf_counter_ns
 from typing import overload
 
 from oscparser import OSCMessage
 from pydantic import BaseModel, ValidationError
 
+
+class CallHandler_Response:
+    def __init__(self, message: OSCMessage, latency: float):
+        self.message = message
+        self.latency = latency
 
 class Call:
     def __init__[T: BaseModel](self, queue: queue.Queue[T], validator: type[T]):
@@ -31,7 +37,7 @@ class CallHandler:
         *,
         return_address: str | None = None,
         timeout: float = 5.0,
-    ) -> OSCMessage | None: ...
+    ) -> CallHandler_Response | None: ...
 
     @overload
     def call[T: BaseModel](
@@ -41,7 +47,7 @@ class CallHandler:
         return_address: str | None = None,
         validator: type[T],
         timeout: float = 5.0,
-    ) -> T | None: ...
+    ) -> CallHandler_Response | None: ...
 
     def call(
         self,
@@ -50,7 +56,7 @@ class CallHandler:
         return_address: str | None = None,
         validator: type[BaseModel] | None = None,
         timeout: float = 5.0,
-    ) -> BaseModel | None:
+    ) -> CallHandler_Response | None:
         """Calling a call handler will send a message to the peer, and await a response that meets the critieria.
 
         Args:
@@ -60,7 +66,7 @@ class CallHandler:
             ``timeout (float, optional)``: How long to wait for a response before timing out. Defaults to 5.0.
 
         Returns:
-            BaseModel | None: The validated response model if received within the timeout period, otherwise None.
+            - CallHandler_Response | None: A CallHandler_Response containing the response message and latency, or None if the call timed out.
         """
 
         if validator is None:
@@ -72,9 +78,11 @@ class CallHandler:
             self.queues[return_address] = Call(responseq, validator)
             handler = self.peer.register_handler(return_address, self)
         self.peer.send_message(message)
+        start_time = perf_counter_ns()
         try:
             response = responseq.get(timeout=timeout)
-            return response
+            latency = perf_counter_ns() - start_time
+            return CallHandler_Response(message=response, latency=latency / 1e9)
         except queue.Empty:
             return None
         finally:

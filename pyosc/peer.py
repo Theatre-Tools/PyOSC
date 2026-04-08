@@ -13,7 +13,7 @@ from oscparser import (
 )
 from pydantic import BaseModel
 
-from pyosc.call_handler import CallHandler
+from pyosc.call_handler import CallHandler, CallHandler_Response
 from pyosc.dispatcher import Dispatcher
 
 
@@ -230,7 +230,7 @@ class Peer:
         *,
         return_address: str | None = None,
         timeout: float = 5.0,
-    ) -> OSCMessage: ...
+    ) -> CallHandler_Response | None: ...
 
     @overload
     def call[T: BaseModel](
@@ -240,7 +240,7 @@ class Peer:
         return_address: str | None = None,
         validator: type[T],
         timeout: float = 5.0,
-    ) -> T: ...
+    ) -> CallHandler_Response | None: ...
 
     def call(
         self,
@@ -249,7 +249,7 @@ class Peer:
         return_address: str | None = None,
         validator: type[BaseModel] = OSCMessage,
         timeout: float = 5.0,
-    ) -> BaseModel | None:
+    ) -> CallHandler_Response | None:
         """
 
         Args:
@@ -259,7 +259,7 @@ class Peer:
             timeout (float, optional): The timeout for the call. Defaults to 5.0.
 
         Returns:
-            OSCMessage | None: The response message, validated and parsed according to the provided validator if applicable. Returns None if the call times out without receiving a valid response.
+            CallHandler_Response | None: A CallHandler_Response containing the response message and latency, or None if the call timed out.
         """
         return self.callHandler.call(message, return_address=return_address, validator=validator, timeout=timeout)
 
