@@ -206,10 +206,13 @@ class Peer:
             self._emit_error(peer_error)
             raise peer_error from e
 
-
     def handler(self, *args, **kwargs):
         """Proxy method for the dispatcher's handler decorator."""
         return self.Dispatcher.handler(*args, **kwargs)
+
+    def register_handler(self, *args, **kwargs):
+        """Proxy method for the dispatcher's register_handler method."""
+        return self.Dispatcher.register_handler(*args, **kwargs)
 
     def listen_tcp(self):
         """Initiates a background TCP listener against the peer
