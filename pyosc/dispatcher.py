@@ -3,7 +3,7 @@ import re
 import time
 import warnings
 from threading import Event, RLock, Thread
-from typing import Callable, Generic, Optional, ParamSpec, Protocol, TypeVar, cast
+from typing import Callable, Generic, Optional, ParamSpec, Protocol, TypeVar, cast, overload
 
 from oscparser import OSCBundle, OSCMessage
 from pydantic import BaseModel, ValidationError
@@ -227,12 +227,22 @@ class Dispatcher:
         self._stop_scheduler = Event()
         self._scheduler_thread: Thread | None = None
 
-    def register_handler(self, address: str, func: Callable, validator: type[BaseModel]) -> Handler:
+    @overload
+    def register_handler(self, address: str, func: DispatcherInterface[OSCMessage]) -> Handler: ...
+
+    @overload
+    def register_handler[T: BaseModel](self, address: str, func: DispatcherInterface[OSCMessage], validator: type[T]) -> Handler: ...
+
+    def register_handler[T: BaseModel](
+        self,
+        address: str,
+        func: DispatcherInterface[OSCMessage],
+        validator: type[T] = OSCMessage) -> Handler:
         """Registers a Dispatch Handler for a specific OSC address pattern with an optional pydantic validator.
 
         Args:
             address (str): The OSC address pattern to match for this handler.
-            func (Callable): The function to call when a message matching the address pattern is received.
+            func (DispatcherInterface[OSCMessage]): The function to call when a message matching the address is received.
             validator (type[BaseModel]): The pydantic validator to use for validating incoming messages.
 
         Returns:
