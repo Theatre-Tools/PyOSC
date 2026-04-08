@@ -23,7 +23,10 @@ The `Peer` class provides a decorator for defining event handlers that respond t
 
 ```python
 @peer.event
+def on_connect():
+    print("Connected to remote peer")
 ```
+
 ### Methods {#peer-methods}
 
 #### `start_listening()` {#method-start_listening}
@@ -39,13 +42,45 @@ peer.send_message(message: OSCMessage)
 
 Sends an OSC message to the remote peer.
 
-- `message`: An [`OSCMessage`](#oscmessage) object representing the message to be sent.
+- `message`: An [`OSCMessage`](#oscmessage){ data-preview } object representing the message to be sent.
 
 #### `stop_listening()` {#method-stop_listening}
 ```python
 peer.stop_listening()
 ```
 Stops the background thread that listens for incoming OSC messages.
+
+#### Proxy Methods {#peer-proxy-methods}
+
+
+##### [`Dispatcher Decorator`](#dispatcher-decorators){ data-preview } Proxy Method
+The `Peer` class provides a decorator for defining handler functions that respond to specific OSC address patterns directly from the `Peer` object. This allows you to register handlers without needing to access the `Dispatcher` object separately, and ensures that handlers are properly registered and managed within the context of the `Peer`.
+```python
+@peer.handler("/address/pattern", validator=SomePydanticModel)
+def random_handler(message: SomePydanticModel):
+    # Handle the message
+```
+
+##### [`register_handler`](#method-register_handler){ data-preview } Proxy Method
+
+The `Peer` class also provides proxy methods for the `Dispatcher` and `CallHandler`, allowing you to register handlers and make calls directly from the `Peer` object without needing to access the `Dispatcher` or `CallHandler` objects separately.
+
+```python
+peer.register_handler("/address/pattern", handler_function, validator=SomePydanticModel)
+```
+
+##### [`callHandler`](#callhandler){ data-preview } Proxy Method
+Registers a handler function for a specific OSC address pattern directly from the `Peer` object.
+
+```python
+response = peer.call(
+    message=OSCMessage(address='/test/ping', args=(OSCString(value='Hello_World!'),)),
+    return_address='/return/address',
+    validator=SomePydanticModel,
+    timeout=5
+)
+```
+Sends an OSC message and waits for a response on a specified return address directly from the `Peer` object.
 
 
 ## OSCMesssage {#oscmessage}
@@ -87,12 +122,63 @@ Subclasses include:
 
 ## Dispatcher {#dispatcher}
 
-```python
-class Dispatcher()
-```
+
 The `Dispatcher` class is responsible for routing incoming OSC messages to the appropriate handler functions based on their address patterns.
 
+### Decorators {#dispatcher-decorators}
+The `Dispatcher` class provides a decorator for defining handler functions that respond to specific OSC address patterns.
+
+```python
+@dispatcher.handler("/address/pattern", validator=SomePydanticModel)
+def handler_function(message: SomePydanticModel):
+    # Handle the message
+```
+
+!!! Warning "Method Proxies"
+    The [`Peer`](#peer){ data-preview } class provides [proxy methods](#peer-proxy-methods) for the above [`Dispatcher`](#dispatcher){ data-preview } method. It is **Highly** reccomended to use the [`Peer`](#peer){ data-preview } proxy methods instead of the [`Dispatcher`](#dispatcher){ data-preview } methods directly, as they provide better integration with the rest of the library and ensure that handlers are properly registered and managed. Using the [`Dispatcher`](#dispatcher){ data-preview } methods directly can lead to unexpected behavior and is not recommended.
+
 ### Methods {#dispatcher-methods}
+
+
+#### `register_handler(address: str, handler: Callable, validator: Optional)` {#method-register_handler}
+```python
+dispatcher.register_handler(address: str, handler: Callable, validator: Optional)
+```
+Registers a handler function for a specific OSC address pattern.
+
+- `address`: The OSC address pattern to match.
+- `handler`: A callable function that will be invoked when a message with the specified address is received.
+- `validator`: (Optional) A Pydantic model class used to validate and parse the incoming message.
+- Returns an object of type [`Handler`](#handler){ data-preview }.
+
+#### `remove_handler(handler: Handler)` {#method-remove_handler}
+
+```python
+dispatcher.remove_handler(handler: Handler)
+```
+Unregisters a handler function using the `Handler` object returned by `register_handler`.
+
+!!! Warning "Method Proxies"
+    The [`Peer`](#peer){ data-preview } class provides [proxy methods](#peer-proxy-methods) for the above [`Dispatcher`](#dispatcher){ data-preview } method. It is **Highly** reccomended to use the [`Peer`](#peer){ data-preview } proxy methods instead of the [`Dispatcher`](#dispatcher){ data-preview } methods directly, as they provide better integration with the rest of the library and ensure that handlers are properly registered and managed. Using the [`Dispatcher`](#dispatcher){ data-preview } methods directly can lead to unexpected behavior and is not recommended.
+
+### `Handler` Object {#handler}
+
+The handler object was implemented in version 2.0.0 in order to provide more control over registered handlers after they have been registered. When you register a handler using `register_handler`, it returns a `Handler` object that you can use to manage the handler, including removing it when neccessary.
+
+#### Methods {#handler-methods}
+
+`handler.unregister()`: Removes the dispatch handler from the dispatcher, perminently disabling it. This is not reversible particularly easily in the current version, so use with caution.
+
+`handler.pause()`: Pauses the dispatch handler, preventing it from being called when messages are received. The handler can be resumed later using `handler.unpause()`.
+
+`handler.unpause()`: Resumes a paused dispatch handler, allowing it to be called again when messages are received.
+
+
+
+### Deprecated Methods {#dispatcher-deprecated-methods}
+
+!!! Danger "Deprecated Methods"
+    The following methods are deprecated and should be avoided. They are still available for use, but they may be removed in future versions of the library. It is recommended to use the new `Handler` object and its associated methods for managing handlers instead of these deprecated methods.
 
 #### `add_handler(address: str, handler: Callable, validator: Optional)` {#method-add_handler}
 ```python
@@ -104,13 +190,19 @@ Registers a handler function for a specific OSC address pattern.
 - `handler`: A callable function that will be invoked when a message with the specified address is received.
 - `validator`: (Optional) A Pydantic model class used to validate and parse the incoming message.
 
-#### `remove_handler(address: str)` {#method-remove_handler}
+Returns an object of type [`Handler`](#handler){ data-preview }.
+
+
+#### `remove_handler_by_address(address: str)` {#method-remove_handler}
 ```python
-dispatcher.remove_handler(address: str)
+dispatcher.remove_handler_by_address(address: str)
 ```
 Unregisters the handler function for a specific OSC address pattern.
 
 - `address`: The OSC address pattern whose handler should be removed.
+
+!!! Danger "The `remove_handler_by_address` method"
+    The `remove_handler_by_address` method is not recommended for use, as it can lead to unexpected behavior if multiplehandlers are registered for  the same address pattern. It is better to keep track of the handler objects returned by `add_handler` and use those to remove handlers when necessary.
 
 
 #### `Dispatch(message: OSCMessage)` {#method-dispatch}
@@ -123,42 +215,42 @@ Not to be called directly, this method is called by a background thread when a m
   
 ## CallHandler {#callhandler}
 
-```python
-caller = CallHandler(peer)
-
-```
-The `CallHandler` class is a specialized handler that facilitates sending OSC messages and waiting for responses
-
-- `peer`: A [`Peer`](#peer){ data-preview } object used to send and receive messages.
-
-!!! warning
-
-    The `CallHandler` will likely change in a future version of PyOSC, and will likely be the initialized as the default handler when a [`Peer`](#peer){ data-preview } object is created.
+The Call Handler has been greatly simplified in version 2.0.0, and you can call it directly from the `Peer` object, without needing to initialize a separate `CallHandler` object. This is because the Call Handler is now initialized as the default handler for the peer, so you can just call it directly.
 
 ### Methods {#callhandler-methods}
 
 #### `call(message: OSCMessage, return_addr: str, timeout: float, validator: Optional)` {#method-call}
+
 ```python
-response = caller.call(
-    message: OSCMessage,
-    return_addr: str,
-    timeout: float,
-    validator: Optional
+response = peer.callHandler.call(
+    message=OSCMessage(address='/test/ping', args=(OSCString(value='Hello_World!'),)),
+    return_addr='/return/address',
+    validator=SomePydanticModel,
+    timeout=5
 )
 ```
+
 Sends an OSC message and waits for a response on a specified return address.
 
 - `message`: An [`OSCMessage`](#oscmessage){ data-preview } object representing the message to be sent.
 - `return_addr`: The OSC address pattern where the response is expected.
 - `timeout`: The maximum time to wait for a response, in seconds.
 - `validator`: (Optional) A Pydantic model class used to validate and parse the incoming response message.
-- Returns: A `BaseModel` object containing the response message, or `None` if the timeout is reached without receiving a response.
+- Returns: A [`CallHandler_Response`](#callhandler_response){ data-preview } object containing the response message and latency, or `None` if the call times out without receiving a valid response.
+
+!!! Warning "Method Proxies"
+    The [`Peer`](#peer){ data-preview } class provides [proxy methods](#peer-proxy-methods) for the above [`Dispatcher`](#dispatcher){ data-preview } method. It is **Highly** reccomended to use the [`Peer`](#peer){ data-preview } proxy methods instead of the [`Dispatcher`](#dispatcher){ data-preview } methods directly, as they provide better integration with the rest of the library and ensure that handlers are properly registered and managed. Using the [`Dispatcher`](#dispatcher){ data-preview } methods directly can lead to unexpected behavior and is not recommended.
 
 ##### Response
-The response returned by the `call` method is an instance of the Pydantic model specified by the `validator` parameter. This model will contain the parsed arguments of the response message, allowing for easy access to the data contained within the OSC message.
 
-If no `validator` is provided, the raw [`OSCMessage`](#oscmessage){ data-preview } object will be returned.
-
+### CallHandler_Response {#callhandler_response}
+```python
+class CallHandler_Response:
+    def __init__(self, message: OSCMessage, latency: float):
+        self.message = message
+        self.latency = latency
+```
+The `CallHandler_Response` class is a simple data structure that contains the response message and the latency of the call. The `message` attribute holds the response as an `OSCMessage` object, while the `latency` attribute indicates the time taken for the call to receive a response, measured in seconds. This does not affect validation, as the message returned within the `CallHandler_Response` is still an `OSCMessage` object that can be validated and parsed using a Pydantic model if a validator was provided in the call.
 
 ## Validators {#validators}
 Validators are Pydantic models used to validate and parse incoming OSC messages before they are processed by handler functions. They ensure that the messages conform to expected formats and types.
@@ -179,13 +271,6 @@ class PingResponse(BaseModel):
 
 In this example, we define a `PingResponse` model that expects a single string argument in the OSC message. The `message` property provides a convenient way to access the string value.
 
-### Using a Validator
-
-When registering a handler with the `Dispatcher`, you can specify a validator to ensure that incoming messages are validated before being passed to the handler function.
-
-```python
-peer.dispatcher.add_handler("/test/out/ping", ping_handler, validator=PingResponse)
-```
 
 ## `OSCModes` Enum {#oscmodes}
 
