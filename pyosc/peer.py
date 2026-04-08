@@ -12,6 +12,7 @@ from oscparser import (
     OSCModes,
 )
 
+from pyosc.call_handler import CallHandler
 from pyosc.dispatcher import Dispatcher
 
 
@@ -106,6 +107,7 @@ class Peer:
                 raise PeerConnectionError(f"Could not bind UDP Peer at localhost:{self.udp_rx_port} - {e}") from e
             self._emit_connection_state(True)
         self.Dispatcher = Dispatcher()
+        self.CallHandler = CallHandler(self)
 
     @property
     def connection(self) -> socket.socket:
@@ -213,6 +215,10 @@ class Peer:
     def register_handler(self, *args, **kwargs):
         """Proxy method for the dispatcher's register_handler method."""
         return self.Dispatcher.register_handler(*args, **kwargs)
+
+    def call(self, *args, **kwargs):
+        """Proxy method for the call handler's call method."""
+        return self.CallHandler.call(*args, **kwargs)
 
     def listen_tcp(self):
         """Initiates a background TCP listener against the peer
