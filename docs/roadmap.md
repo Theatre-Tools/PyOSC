@@ -1,7 +1,6 @@
 # Roadmap
 
 ## Version 1.1.0 (Latest Release)
-The initial release covers the core functionality needed for OSC communication in Python.
 
 **What's included:**
 
@@ -14,24 +13,12 @@ The initial release covers the core functionality needed for OSC communication i
 - Unit tests for critical components
 - Time-tagged message scheduling
 
-Version 1.1.0 will bring a varity of feature updates, including:
+Version 1.1.0 brings a varity of feature updates, including:
 
   - Implemented TCP connection flags for increased speed and lower latency
   - Enhanced event and error handling using decorators for cleaner code and easier debugging
   - Added Deprecation warning to ```add_handler('/*')``` to warn users of it's deprecation in it's current form. This is due to an oversight in the original dispatcher that ignored address lengths when dispatching messages. This will be fixed in 2.0.0 and we will then be more closely aligned with the OSC Specification.
 
-If you are interested in testing the current release candidate for 1.1.0, it can be installed using the following commands:
-
-=== "Pip"
-
-    ```bash
-    pip install pyopensoundcontrol=1.1.0rc4
-    ```
-=== "Poetry"
-
-    ```bash
-    poetry add pyopensoundcontrol=1.1.0rc4
-    ```
 
 ## Upcoming Versions (May include breaking changes)
 
