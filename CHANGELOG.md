@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.1.1] - 2026-04-08
+### :bug: Bug Fixes
+- [`18ed254`](https://github.com/Theatre-Tools/PyOSC/commit/18ed25461582db9a00451bdb0791f7036895f9dc) - change warning category from DeprecationWarning to FutureWarning for deprecated `/*` behaviour. *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
+
+### :wrench: Chores
+- [`4e0fab8`](https://github.com/Theatre-Tools/PyOSC/commit/4e0fab885eb9287af785d54ccd7723b778a1b561) - bump 1.1.1 *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
+
+
 ## [1.1.0docs] - 2026-04-08
 ### :wrench: Chores
 - [`e81fc49`](https://github.com/Theatre-Tools/PyOSC/commit/e81fc4953a0d40480b9bc7a11988f990b523a911) - remove obsolete GitLab CI configuration file *(commit by [@Morph-Tollon](https://github.com/Morph-Tollon))*
@@ -86,3 +94,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [1.0.19docfix]: https://github.com/Theatre-Tools/PyOSC/compare/1.1.0rc4...1.0.19docfix
 [1.1.0]: https://github.com/Theatre-Tools/PyOSC/compare/1.1.0rc7...1.1.0
 [1.1.0docs]: https://github.com/Theatre-Tools/PyOSC/compare/1.1.0...1.1.0docs
+[1.1.1]: https://github.com/Theatre-Tools/PyOSC/compare/1.1.0docs...1.1.1
