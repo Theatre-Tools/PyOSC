@@ -11,6 +11,7 @@ from oscparser import (
     OSCMessage,
     OSCModes,
 )
+from pydantic import BaseModel
 
 from pyosc.call_handler import CallHandler
 from pyosc.dispatcher import Dispatcher
@@ -208,6 +209,9 @@ class Peer:
             self._emit_error(peer_error)
             raise peer_error from e
 
+        """Proxy Methods: Proxy methods exist for the purpose of an nicer developer experience.
+        """
+
     def handler(self, *args, **kwargs):
         """Proxy method for the dispatcher's handler decorator."""
         return self.Dispatcher.handler(*args, **kwargs)
@@ -216,9 +220,54 @@ class Peer:
         """Proxy method for the dispatcher's register_handler method."""
         return self.Dispatcher.register_handler(*args, **kwargs)
 
-    def call(self, *args, **kwargs):
-        """Proxy method for the call handler's call method."""
-        return self.CallHandler.call(*args, **kwargs)
+    """
+    Call methods require overloads to properly type hint the various return types based on the presence of a validator. The implementation is all handled by the CallHandler class, which the Peer class proxies to for a nicer developer experience."""
+
+    @overload
+    def call(
+        self,
+        message: OSCMessage,
+        *,
+        return_address: str | None = None,
+        timeout: float = 5.0,
+    ) -> OSCMessage: ...
+
+    @overload
+    def call[T: BaseModel](
+        self,
+        message: OSCMessage,
+        *,
+        return_address: str | None = None,
+        validator: type[T],
+        timeout: float = 5.0,
+    ) -> T: ...
+
+    def call(
+        self,
+        message: OSCMessage,
+        *,
+        return_address: str | None = None,
+        validator: type[BaseModel] = OSCMessage,
+        timeout: float = 5.0,
+    ) -> BaseModel | None:
+        """
+
+        Args:
+            message (OSCMessage): The OSCMessage to send as the call request.
+            return_address (str | None, optional): The address to which the response should be sent. Defaults to None.
+            validator (type[BaseModel], optional): The validator to use for the response. Defaults to OSCMessage.
+            timeout (float, optional): The timeout for the call. Defaults to 5.0.
+
+        Returns:
+            BaseModel | None: The validated response or None if no response is received.
+        """
+        return self.CallHandler.call(
+            message,
+            return_address=return_address,
+            validator=validator,
+            timeout=timeout
+        )
+
 
     def listen_tcp(self):
         """Initiates a background TCP listener against the peer
