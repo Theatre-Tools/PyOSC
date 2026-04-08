@@ -23,14 +23,10 @@ from oscparser import (
     OSCTrue,
 )
 
-from pyosc.call_handler import CallHandler
-from pyosc.dispatcher import Dispatcher
 from pyosc.peer import Peer
 
 __all__ = [
     "OSCRGBA",
-    "CallHandler",
-    "Dispatcher",
     "OSCArg",
     "OSCArray",
     "OSCAtomic",
