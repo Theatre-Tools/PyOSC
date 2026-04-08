@@ -1,9 +1,8 @@
 name: Deploy Documentation
 
 on:
-  push:
-    tags: ["*"]
   workflow_call:
+  workflow_dispatch:
 
 permissions:
   contents: write
