@@ -107,8 +107,8 @@ class Peer:
             except OSError as e:
                 raise PeerConnectionError(f"Could not bind UDP Peer at localhost:{self.udp_rx_port} - {e}") from e
             self._emit_connection_state(True)
-        self.Dispatcher = Dispatcher()
-        self.CallHandler = CallHandler(self)
+        self.dispatcher = Dispatcher()
+        self.callHandler = CallHandler(self)
 
     @property
     def connection(self) -> socket.socket:
@@ -214,11 +214,11 @@ class Peer:
 
     def handler(self, *args, **kwargs):
         """Proxy method for the dispatcher's handler decorator."""
-        return self.Dispatcher.handler(*args, **kwargs)
+        return self.dispatcher.handler(*args, **kwargs)
 
     def register_handler(self, *args, **kwargs):
         """Proxy method for the dispatcher's register_handler method."""
-        return self.Dispatcher.register_handler(*args, **kwargs)
+        return self.dispatcher.register_handler(*args, **kwargs)
 
     """
     Call methods require overloads to properly type hint the various return types based on the presence of a validator. The implementation is all handled by the CallHandler class, which the Peer class proxies to for a nicer developer experience."""
@@ -261,7 +261,7 @@ class Peer:
         Returns:
             OSCMessage | None: The response message, validated and parsed according to the provided validator if applicable. Returns None if the call times out without receiving a valid response.
         """
-        return self.CallHandler.call(message, return_address=return_address, validator=validator, timeout=timeout)
+        return self.callHandler.call(message, return_address=return_address, validator=validator, timeout=timeout)
 
     def listen_tcp(self):
         """Initiates a background TCP listener against the peer
@@ -279,7 +279,7 @@ class Peer:
                         self._emit_connection_state(False)
                         return
                     for msg in self.decoder.decode(data):
-                        self.Dispatcher.dispatch(msg)
+                        self.dispatcher.dispatch(msg)
             self.tcp_connection.close()
         except Exception as e:
             listener_error = PeerListenerError(f"TCP listener failed for {self.address}:{self.port} - {e}")
@@ -300,7 +300,7 @@ class Peer:
                     if addr[0] != self.address:
                         continue
                     for msg in self.decoder.decode(data):
-                        self.Dispatcher.dispatch(msg)
+                        self.dispatcher.dispatch(msg)
             self.udp_connection.close()
             self._emit_connection_state(False)
         except Exception as e:
@@ -311,7 +311,7 @@ class Peer:
     def start_listening(self):
         """Invokes above methods to start a connection dependant on mode."""
         # Start the dispatcher's scheduler for timestamped bundles
-        self.Dispatcher.start_scheduler()
+        self.dispatcher.start_scheduler()
 
         if self.mode == OSCModes.TCP:
             self.background = threading.Thread(target=self.listen_tcp, daemon=True)
@@ -327,4 +327,4 @@ class Peer:
             self.background.join(timeout=1)
         self._emit_connection_state(False)
         # Stop the scheduler as well
-        self.Dispatcher.stop_scheduler()
+        self.dispatcher.stop_scheduler()
