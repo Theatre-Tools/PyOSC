@@ -12,6 +12,7 @@ class CallHandler_Response:
         self.message = message
         self.latency = latency
 
+
 class Call:
     def __init__[T: BaseModel](self, queue: queue.Queue[T], validator: type[T]):
         self.queue = queue
@@ -87,6 +88,7 @@ class CallHandler:
             return None
         finally:
             with self.queue_lock:
+                self.queues.pop(return_address, None)
                 handler.unregister()
 
     def __call__(self, message: OSCMessage):
