@@ -63,7 +63,7 @@ class TestPeerTCP(unittest.TestCase):
         self.assertEqual(self.peer.framing, OSCFraming.OSC10)
         self.assertIsNotNone(self.peer.encoder)
         self.assertIsNotNone(self.peer.decoder)
-        self.assertIsNotNone(self.peer.Dispatcher)
+        self.assertIsNotNone(self.peer.dispatcher)
 
     def test_tcp_peer_connection_failure(self):
         """Test TCP peer raises exception on connection failure."""
@@ -169,7 +169,7 @@ class TestPeerTCP(unittest.TestCase):
             framing=OSCFraming.OSC10,
         )
 
-        self.peer.Dispatcher.register_handler("/test/receive", message_handler, OSCMessage)
+        self.peer.dispatcher.register_handler("/test/receive", message_handler, OSCMessage)
         self.peer.start_listening()
 
         # Wait for message to be received
@@ -333,7 +333,7 @@ class TestPeerUDP(unittest.TestCase):
             udp_rx_address="127.0.0.1",
         )
 
-        self.peer.Dispatcher.register_handler("/test/udp/receive", message_handler, OSCMessage)
+        self.peer.dispatcher.register_handler("/test/udp/receive", message_handler, OSCMessage)
         self.peer.start_listening()
 
         # Create a sender socket
@@ -368,7 +368,7 @@ class TestPeerUDP(unittest.TestCase):
             udp_rx_address="127.0.0.1",
         )
 
-        self.peer.Dispatcher.register_handler("/test", message_handler, OSCMessage)
+        self.peer.dispatcher.register_handler("/test", message_handler, OSCMessage)
         self.peer.start_listening()
 
         # Send from a different address (using 127.0.0.2 if available, or skip)
@@ -439,15 +439,15 @@ class TestPeerDispatcher(unittest.TestCase):
         self.peer = Peer("127.0.0.1", self.server_port, mode=OSCModes.TCP)
 
         # Scheduler should not be running yet
-        self.assertIsNone(self.peer.Dispatcher._scheduler_thread)
+        self.assertIsNone(self.peer.dispatcher._scheduler_thread)
 
         self.peer.start_listening()
         time.sleep(0.1)
 
         # Scheduler should now be running
-        self.assertIsNotNone(self.peer.Dispatcher._scheduler_thread)
-        assert self.peer.Dispatcher._scheduler_thread is not None  # Type narrowing
-        self.assertTrue(self.peer.Dispatcher._scheduler_thread.is_alive())
+        self.assertIsNotNone(self.peer.dispatcher._scheduler_thread)
+        assert self.peer.dispatcher._scheduler_thread is not None  # Type narrowing
+        self.assertTrue(self.peer.dispatcher._scheduler_thread.is_alive())
 
     def test_dispatcher_scheduler_stops_with_peer(self):
         """Test that dispatcher scheduler stops when peer stops listening."""
@@ -468,7 +468,7 @@ class TestPeerDispatcher(unittest.TestCase):
         time.sleep(0.1)
 
         # Scheduler should be stopped
-        self.assertTrue(self.peer.Dispatcher._stop_scheduler.is_set())
+        self.assertTrue(self.peer.dispatcher._stop_scheduler.is_set())
 
 
 class TestPeerEdgeCases(unittest.TestCase):
@@ -504,7 +504,7 @@ class TestPeerEdgeCases(unittest.TestCase):
         threading.Thread(target=accept_and_send_multiple, daemon=True).start()
 
         peer = Peer("127.0.0.1", server_port, mode=OSCModes.TCP)
-        peer.Dispatcher.register_handler("/test/*", message_handler, OSCMessage)
+        peer.dispatcher.register_handler("/test/*", message_handler, OSCMessage)
         peer.start_listening()
 
         time.sleep(0.3)

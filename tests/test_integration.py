@@ -6,7 +6,8 @@ import unittest
 
 from oscparser import OSCInt, OSCMessage, OSCModes, OSCString
 
-from pyosc import Dispatcher, Peer
+from pyosc.dispatcher import Dispatcher
+from pyosc.peer import Peer
 
 
 class TestEndToEndTCP(unittest.TestCase):
@@ -100,7 +101,7 @@ class TestEndToEndUDP(unittest.TestCase):
         )
 
         # Set up handler
-        self.server.Dispatcher.register_handler("/udp/test", handle_message, OSCMessage)
+        self.server.dispatcher.register_handler("/udp/test", handle_message, OSCMessage)
         self.server.start_listening()
 
         time.sleep(0.1)

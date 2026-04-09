@@ -9,9 +9,8 @@ from pydantic import BaseModel
 
 from pyosc.dispatcher import (
     Dispatcher,
-    DispatcherController,
     DispatcherMissingFieldError,
-    DispatchMatcher,
+    Handler,
 )
 
 
@@ -22,19 +21,19 @@ class CustomModel(BaseModel):
     args: tuple
 
 
-class TestDispatchMatcher(unittest.TestCase):
-    """Test cases for DispatchMatcher pattern matching."""
+class TestHandlerMatcher(unittest.TestCase):
+    """Test cases for handler address pattern matching."""
 
     def test_exact_match(self):
         """Test exact address matching."""
-        matcher = DispatchMatcher.from_address("/test/message")
+        matcher = Handler.from_address("/test/message", lambda _msg: None, OSCMessage)
         self.assertTrue(matcher.matches("/test/message"))
         self.assertFalse(matcher.matches("/test/other"))
         self.assertFalse(matcher.matches("/test"))
 
     def test_single_char_wildcard(self):
         """Test ? wildcard matches single character."""
-        matcher = DispatchMatcher.from_address("/test/?")
+        matcher = Handler.from_address("/test/?", lambda _msg: None, OSCMessage)
         self.assertTrue(matcher.matches("/test/a"))
         self.assertTrue(matcher.matches("/test/1"))
         self.assertFalse(matcher.matches("/test/ab"))
@@ -42,7 +41,7 @@ class TestDispatchMatcher(unittest.TestCase):
 
     def test_multi_char_wildcard(self):
         """Test * wildcard matches zero or more characters."""
-        matcher = DispatchMatcher.from_address("/test/*")
+        matcher = Handler.from_address("/test/*", lambda _msg: None, OSCMessage)
         self.assertTrue(matcher.matches("/test/"))
         self.assertTrue(matcher.matches("/test/abc"))
         self.assertTrue(matcher.matches("/test/123"))
@@ -50,7 +49,7 @@ class TestDispatchMatcher(unittest.TestCase):
 
     def test_character_class(self):
         """Test [abc] character class matching."""
-        matcher = DispatchMatcher.from_address("/test/[abc]")
+        matcher = Handler.from_address("/test/[abc]", lambda _msg: None, OSCMessage)
         self.assertTrue(matcher.matches("/test/a"))
         self.assertTrue(matcher.matches("/test/b"))
         self.assertTrue(matcher.matches("/test/c"))
@@ -58,7 +57,7 @@ class TestDispatchMatcher(unittest.TestCase):
 
     def test_negated_character_class(self):
         """Test [!abc] negated character class matching."""
-        matcher = DispatchMatcher.from_address("/test/[!abc]")
+        matcher = Handler.from_address("/test/[!abc]", lambda _msg: None, OSCMessage)
         self.assertFalse(matcher.matches("/test/a"))
         self.assertFalse(matcher.matches("/test/b"))
         self.assertTrue(matcher.matches("/test/d"))
@@ -66,36 +65,36 @@ class TestDispatchMatcher(unittest.TestCase):
 
     def test_alternatives(self):
         """Test {foo,bar} alternatives matching."""
-        matcher = DispatchMatcher.from_address("/test/{foo,bar}")
+        matcher = Handler.from_address("/test/{foo,bar}", lambda _msg: None, OSCMessage)
         self.assertTrue(matcher.matches("/test/foo"))
         self.assertTrue(matcher.matches("/test/bar"))
         self.assertFalse(matcher.matches("/test/baz"))
 
     def test_complex_pattern(self):
         """Test complex pattern combining multiple wildcards."""
-        matcher = DispatchMatcher.from_address("/osc/*/[0-9]?/{enable,disable}")
+        matcher = Handler.from_address("/osc/*/[0-9]?/{enable,disable}", lambda _msg: None, OSCMessage)
         self.assertTrue(matcher.matches("/osc/channel/12/enable"))
         self.assertTrue(matcher.matches("/osc/track/5a/disable"))
         self.assertFalse(matcher.matches("/osc/channel/12/toggle"))
 
     def test_hash_equality(self):
-        """Test DispatchMatcher can be hashed."""
-        matcher1 = DispatchMatcher.from_address("/test/message")
+        """Test handler matcher can be hashed."""
+        matcher1 = Handler.from_address("/test/message", lambda _msg: None, OSCMessage)
         # Test that they can be used in sets/dicts
         matcher_set = {matcher1}
         self.assertEqual(len(matcher_set), 1)
 
 
-class TestDispatcherController(unittest.TestCase):
-    """Test cases for DispatcherController validation and dispatch."""
+class TestHandlerValidation(unittest.TestCase):
+    """Test handler validation and dispatch behavior."""
 
     def test_valid_message_dispatch(self):
         """Test successful validation and dispatch."""
         mock_dispatcher = MagicMock()
-        controller = DispatcherController(mock_dispatcher, OSCMessage)
+        handler = Handler.from_address("/test", mock_dispatcher, OSCMessage)
 
         message = OSCMessage(address="/test", args=())
-        controller.run(message)
+        handler.run(message)
 
         mock_dispatcher.assert_called_once()
         called_with = mock_dispatcher.call_args[0][0]
@@ -109,11 +108,11 @@ class TestDispatcherController(unittest.TestCase):
         class StrictModel(BaseModel):
             required_field: str
 
-        controller = DispatcherController(mock_dispatcher, StrictModel)
+        handler = Handler.from_address("/test", mock_dispatcher, StrictModel)
 
         message = OSCMessage(address="/test", args=())
         with self.assertRaises(DispatcherMissingFieldError):
-            controller.run(message)
+            handler.run(message)
 
         # Dispatcher should not be called when validation fails
         mock_dispatcher.assert_not_called()
@@ -136,8 +135,7 @@ class TestDispatcher(unittest.TestCase):
         handler = self.dispatcher.register_handler("/test", mock_handler, OSCMessage)
 
         self.assertEqual(len(self.dispatcher.handlers), 1)
-        matcher = self.dispatcher.handlers[0].matcher
-        self.assertTrue(matcher.matches("/test"))
+        self.assertTrue(self.dispatcher.handlers[0].matches("/test"))
         self.assertIs(handler, self.dispatcher.handlers[0])
 
     def test_add_handler_with_validator(self):
@@ -146,7 +144,7 @@ class TestDispatcher(unittest.TestCase):
         handler = self.dispatcher.register_handler("/test", mock_handler, CustomModel)
 
         self.assertEqual(len(self.dispatcher.handlers), 1)
-        self.assertIs(handler.controller.validator, CustomModel)
+        self.assertIs(handler.validator, CustomModel)
 
     def test_dispatch_exact_match(self):
         """Test dispatching to exact matching handler."""

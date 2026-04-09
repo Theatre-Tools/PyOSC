@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, Mock
 from oscparser import OSCInt, OSCMessage, OSCString
 from pydantic import BaseModel, Field
 
-from pyosc.call_handler import Call, CallHandler, CallHandlerValidationError
+from pyosc.call_handler import Call, CallHandler, CallHandler_Response, CallHandlerValidationError
 from pyosc.dispatcher import Dispatcher
 from pyosc.peer import Peer
 
@@ -39,8 +39,8 @@ class TestCallHandler(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.mock_peer = Mock(spec=Peer)
-        self.mock_peer.Dispatcher = Dispatcher()
-        dispatcher = self.mock_peer.Dispatcher
+        self.mock_peer.dispatcher = Dispatcher()
+        dispatcher = self.mock_peer.dispatcher
         original_remove_handler = dispatcher.remove_handler
 
         def add_handler(address, handler, validator=OSCMessage):
@@ -85,8 +85,9 @@ class TestCallHandler(unittest.TestCase):
 
         self.assertIsNotNone(result)
         assert result is not None  # Type narrowing for pyright
-        self.assertIsInstance(result, OSCMessage)
-        self.assertEqual(result.address, "/test/call")
+        self.assertIsInstance(result, CallHandler_Response)
+        self.assertIsInstance(result.message, OSCMessage)
+        self.assertEqual(result.message.address, "/test/call")
 
     def test_call_with_custom_return_address(self):
         """Test call with custom return address."""
@@ -103,7 +104,8 @@ class TestCallHandler(unittest.TestCase):
 
         self.assertIsNotNone(result)
         assert result is not None  # Type narrowing for pyright
-        self.assertEqual(result.address, "/test/response")
+        self.assertIsInstance(result, CallHandler_Response)
+        self.assertEqual(result.message.address, "/test/response")
 
     def test_call_with_validator(self):
         """Test call with custom validator."""
@@ -132,7 +134,7 @@ class TestCallHandler(unittest.TestCase):
         responseq = queue.Queue()
         with self.call_handler.queue_lock:
             self.call_handler.queues["/test/validated"] = Call(responseq, ResponseModel)
-            self.mock_peer.Dispatcher.register_handler("/test/validated", self.call_handler, ResponseModel)
+            self.mock_peer.dispatcher.register_handler("/test/validated", self.call_handler, ResponseModel)
 
         # Send message and get from queue
         self.mock_peer.send_message(message)
@@ -142,7 +144,7 @@ class TestCallHandler(unittest.TestCase):
             self.assertIsInstance(result, ResponseModel)
         finally:
             with self.call_handler.queue_lock:
-                self.mock_peer.Dispatcher.remove_handler("/test/validated")
+                self.mock_peer.dispatcher.remove_handler("/test/validated")
                 if "/test/validated" in self.call_handler.queues:
                     del self.call_handler.queues["/test/validated"]
 
@@ -251,7 +253,9 @@ class TestCallHandler(unittest.TestCase):
         self.assertEqual(len(results), 5)
         for idx, result in results:
             self.assertIsNotNone(result)
-            self.assertIsInstance(result, OSCMessage)
+            assert result is not None
+            self.assertIsInstance(result, CallHandler_Response)
+            self.assertIsInstance(result.message, OSCMessage)
 
     def test_queue_lock_thread_safety(self):
         """Test that queue_lock prevents race conditions."""
