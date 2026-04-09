@@ -73,7 +73,8 @@ extra:
       - manage
     title: Cookie consent
     description: >- 
-      With your consent, you're helping us to make our documentation better. We use cookies to collect anonymous data about how users interact with our documentation, which helps us identify areas for improvement and make informed decisions about future updates. Your data is safe with us and will never be shared with third parties. You can change your cookie settings at any time by clicking the "Change cookie settings" link in the footer of our documentation. Thank you for helping us improve our documentation! 
+      We use cookies to make docuementation better. Nothing nefarious, nothing to make money. We simply use google analytics to see what pages are most popular, and to get a general sense of how people are using the documentation.
+      You do have the right to easily reject the use of these cookies, which you can do by simply clicking "reject". However, please consider how usefull the information would be to us in improving the documentation.
 
 
 markdown_extensions:
