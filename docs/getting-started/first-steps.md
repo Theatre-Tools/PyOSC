@@ -18,15 +18,18 @@ peer = Peer(
 message = OSCMessage(
     address="/test/message",
     args=(
-        OSCInt(value=42),
-        OSCString(value="Hello_World!"),
+        OSCInt(value=42), #(1)!
+        OSCString(value="Hello_World!"), #(2)!
     )
 )
 peer.send_message(message)
 ```
-The above example creates a [`Peer`](../api_reference.md#peer){ data-preview } object, using the TCP mode, and framing from OSC version 1.1. It then constructs a [`OSCMessage`](../api_reference.md#oscmessage){ data-preview } with the address `/test/message` and two arguments:
 
 1. An integer with the value `42`
 2. A string with the value `Hello_World!`
+
+
+The above example creates a [`Peer`](../api_reference.md#peer){ data-preview } object, using the TCP mode, and framing from OSC version 1.1. It then constructs a [`OSCMessage`](../api_reference.md#oscmessage){ data-preview } with the address `/test/message` and two arguments:
+
 
 Finally, it sends the message using the [`send_message`](../api_reference.md#method-send_message){ data-preview } method, of the [`Peer`](../api_reference.md#peer){ data-preview } object.
