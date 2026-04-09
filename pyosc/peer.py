@@ -2,7 +2,7 @@ import inspect
 import socket
 import threading
 from select import select
-from typing import Callable, Literal, overload
+from typing import Any, Callable, Literal, overload
 
 from oscparser import (
     OSCDecoder,
@@ -14,7 +14,7 @@ from oscparser import (
 from pydantic import BaseModel
 
 from pyosc.call_handler import CallHandler, CallHandler_Response
-from pyosc.dispatcher import Dispatcher
+from pyosc.dispatcher import Dispatcher, DispatcherInterface, Handler
 
 
 class PeerError(Exception):
@@ -216,9 +216,21 @@ class Peer:
         """Proxy method for the dispatcher's handler decorator."""
         return self.dispatcher.handler(*args, **kwargs)
 
-    def register_handler(self, *args, **kwargs):
-        """Proxy method for the dispatcher's register_handler method."""
-        return self.dispatcher.register_handler(*args, **kwargs)
+    @overload
+    def register_handler(self, address: str, func: DispatcherInterface[OSCMessage]) -> Handler: ...
+
+    @overload
+    def register_handler[T: BaseModel](
+        self, address: str, func: DispatcherInterface[OSCMessage], validator: type[T]
+    ) -> Handler: ...
+
+    def register_handler[T: BaseModel](
+        self,
+        address: str,
+        func: DispatcherInterface[OSCMessage],
+        validator: type[T] = OSCMessage,
+    ) -> Handler:
+        return self.dispatcher.register_handler(address, func, validator)
 
     """
     Call methods require overloads to properly type hint the various return types based on the presence of a validator. The implementation is all handled by the CallHandler class, which the Peer class proxies to for a nicer developer experience."""
@@ -230,7 +242,7 @@ class Peer:
         *,
         return_address: str | None = None,
         timeout: float = 5.0,
-    ) -> CallHandler_Response | None: ...
+    ) -> CallHandler_Response[OSCMessage] | None: ...
 
     @overload
     def call[T: BaseModel](
@@ -240,7 +252,7 @@ class Peer:
         return_address: str | None = None,
         validator: type[T],
         timeout: float = 5.0,
-    ) -> CallHandler_Response | None: ...
+    ) -> CallHandler_Response[T] | None: ...
 
     def call(
         self,
@@ -249,7 +261,7 @@ class Peer:
         return_address: str | None = None,
         validator: type[BaseModel] = OSCMessage,
         timeout: float = 5.0,
-    ) -> CallHandler_Response | None:
+    ) -> CallHandler_Response[Any] | None:
         """
 
         Args:

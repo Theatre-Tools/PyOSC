@@ -1,14 +1,14 @@
 import queue
 import threading
 from time import perf_counter_ns
-from typing import overload
+from typing import Any, overload
 
 from oscparser import OSCMessage
 from pydantic import BaseModel, ValidationError
 
 
-class CallHandler_Response:
-    def __init__(self, message: OSCMessage, latency: float):
+class CallHandler_Response[T: BaseModel]:
+    def __init__(self, message: T, latency: float):
         self.message = message
         self.latency = latency
 
@@ -38,7 +38,7 @@ class CallHandler:
         *,
         return_address: str | None = None,
         timeout: float = 5.0,
-    ) -> CallHandler_Response | None: ...
+    ) -> CallHandler_Response[OSCMessage] | None: ...
 
     @overload
     def call[T: BaseModel](
@@ -48,7 +48,7 @@ class CallHandler:
         return_address: str | None = None,
         validator: type[T],
         timeout: float = 5.0,
-    ) -> CallHandler_Response | None: ...
+    ) -> CallHandler_Response[T] | None: ...
 
     def call(
         self,
@@ -57,7 +57,7 @@ class CallHandler:
         return_address: str | None = None,
         validator: type[BaseModel] | None = None,
         timeout: float = 5.0,
-    ) -> CallHandler_Response | None:
+    ) -> CallHandler_Response[Any] | None:
         """Calling a call handler will send a message to the peer, and await a response that meets the critieria.
 
         Args:
@@ -78,7 +78,7 @@ class CallHandler:
         with self.queue_lock:
             self.queues[return_address] = Call(responseq, validator)
             handler = self.peer.register_handler(return_address, self)
-        self.peer.send_message(message)
+            self.peer.send_message(message)
         start_time = perf_counter_ns()
         try:
             response = responseq.get(timeout=timeout)
