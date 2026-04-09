@@ -40,7 +40,7 @@ def ping_handler(message: PingResponse):
 
 1. The `peer.handler` decorator is used to register the `ping_handler` function as a handler for messages sent to the `/test/out/ping` address, with the `PingResponse` model as its validator. Whenever a message with this address is received, it will first be validated against the `PingResponse` model, and if it passes validation, the `ping_handler` function will be called with the validated message as its argument.
 
-#### Modifying Decorated Handlers {#modifying-decorated-handlers}
+##### Modifying Decorated Handlers {#modifying-decorated-handlers}
 
 Handlers created with the `peer.handler` decorator can be modified after they have been created. The easiest way to do that is by using the fucntions associated with the handler object that is created by the decorator. These are exposed through the function that is decorated. Using the decorator is preffered for static handlers, and easier to understand if you are used to things like Flask or FastAPI.
 
@@ -130,7 +130,7 @@ handler.unregister() #(5)!
 5. The `unregister` method is called on the `handler` object, which will permanently remove the handler from the dispatcher, preventing it from being called when a message with the `/test/out/ping` address is received.
    
 
-### Validators {#validators}
+## Validators {#validators}
 
 When registering handlers, you can also provide an optional `validator`. A validator is a pydantic model that is used to validate incoming messages before they are passed to the handler. If the message does not conform to the validator, it will be rejected and not processed by the handler.
 
