@@ -5,48 +5,38 @@ This is particularly useful for request-response patterns, where you send a mess
 
 They function in a very similar way to dispatch handlers, and actually replace the need for writing a default handler, as the call handler will handle the response for you.
 
-## Creating a Call Handler
-To create a `CallHandler`, you need to define a handler function that will process the response message. You can also define a validator function to ensure that the incoming message is of the expected type.
-
-In this simple example we will create a call handler, assuming that you have already created a [`Peer`](../api_reference.md#peer){ data-preview } object called `peer`.
-
-```python
-from pyosc import CallHandler
-
-call_handler = CallHandler(peer) #(1)!
-peer.dispatcher.add_default_handler(call_handler) #(2)!
-```
-
-1. The `CallHandler` is instantiated with the `peer` object, which allows it to send messages through that peer.
-2. The `call_handler` is registered as the default handler for the `peer`'s dispatcher. This means that it will handle incoming messages that do not match any other registered handlers.
+In versions after 2.0.0, the `CallHandler` is now integrated directly into the peer class, and initialized automatically when a peer is created. This means you can use the call handler without the clutter of having to create the call handler.
 
 ## Using the Call Handler
-Once you have created a `CallHandler`, you can use it to send messages and wait for responses. You can specify a validator to ensure that the response message is of the expected type.
-
-Here's an example of how to use the `CallHandler` to send a message and wait for a response:
+The `CallHandler` can be accessed via `peer.callHandler`, however there is very little utility to doing this, as all user facing methods are exposed via proxy methods of the `Peer` class. This means you can call messages and wait for responses directly from the `Peer` object, without having to interact with the `CallHandler` directly. Here's an example of how to use the call handler to send a message and wait for a response:
 
 ```python
 from pyosc import OSCMessage, OSCString
 
-response = call_handler.call(
+response = peer.call(
     OSCMessage(address="/test/ping", args=(OSCString(value="Hello_world!"),)),
     return_addr="/test/out/ping",
-    timeout=10.0,
+    timeout=5.0,
 )  # (1)!
 if response:
     print(response.message)  # (2)!
+    print(f"Round-trip latency: {response.latency:.2f} seconds")  # (3)!
 ```
 
-1. The [`call`](../api_reference.md#method-call){ data-preview } method of the [`call_handler`](../api_reference.md#callhandler){ data-preview } is used to send an [`OSCMessage`](../api_reference.md#oscmessage){ data-preview } to the address `/test/ping`, with a string argument. The `return_addr` parameter specifies the address where the response is expected, and the `timeout` parameter specifies how long to wait for a response.
+1. The [`call`](../api_reference.md#callhandler-proxy-method){ data-preview } method of the [`Peer`](../api_reference.md#peer){ data-preview } is used to send an [`OSCMessage`](../api_reference.md#oscmessage){ data-preview } to the address `/test/ping`, with a string argument. The `return_addr` parameter specifies the address where the response is expected, and the `timeout` parameter specifies how long to wait for a response.
 2. If a response is received within the timeout period, it is printed to the console.
+3. The round-trip latency is also printed, showing how long it took for the response to be received after the message was sent.
 
-In this example, we send a ping message to the `/test/ping` address, and wait for a response on the `/test/out/ping` address. If a response is received within 10 seconds, it is printed to the console.
+In this example, we send a ping message to the `/test/ping` address, and wait for a response on the `/test/out/ping` address. If a response is received within 5 seconds, it is printed to the console.
+
+Starting in version 2.0.0, the call handler returns a [`CallResponse`](../api_reference.md#callresponse){ data-preview } object. This contains the message, and a latency paramenter that indicates how long it took for the response to be received. This allows you to easily measure the round-trip time of your messages, which can be useful for debugging and performance monitoring.
+
 
 ### Using [Validators](./dispatcher.md#validators){ data-preview }
 You can also specify a validator when calling a message to ensure that the response message is of the expected type. Here's an example:
 
 ```python
-from pydantic import BaseModel
+from pydantic import BaseModel #(5)!
 from pyosc import OSCString
 
 class PingResponse(BaseModel):
@@ -54,22 +44,27 @@ class PingResponse(BaseModel):
     
     @property
     def message(self) -> str:
-        return self.args[0].value
+        return self.args[0].value #(1)!
 
 
-response = call_handler.call(
+response = peer.call(
     OSCMessage(address="/test/ping", args=(OSCString(value="Hello_world!"),
     )),
-    validator=PingResponse,  #(1)!
+    validator=PingResponse,  #(2)!
     return_addr="/test/out/ping",
     timeout=10.0,
 )
 
 if response:
-    print(response.message) 
+    print(response.message.message) #(3)!
+    print(f"Round-trip latency: {response.latency:.2f} seconds") #(4)!
 ```
 
-1. The `validator` parameter is set to the `PingResponse` pydantic model, which defines the expected structure of the response message. If the response message does not conform to this model, it will be rejected.
+1. A `PingResponse` model is defined using Pydantic, which specifies that the response message should have a tuple of `OSCString` arguments. A property `message` is defined to extract the string value from the first argument of the response message.
+2. When calling the message, the `validator` parameter is set to the `PingResponse
+3. model. This means that when a response is received, it will be validated against the `PingResponse` model before being passed to the caller. If the response does not conform to the model, it will be rejected and an error will be raised.
+4. The round trip latency is printed as before, allowing you to measure the time it took for the response to be received.
+5. We import the `BaseModel` class from Pydantic, which is used to define the `PingResponse` model. This allows us to easily validate the structure of the response message and extract the relevant information in a structured way.
 
 In this example, we define a `PingResponse` model that specifies the expected structure of the response message. When calling the message, we provide this model as the validator. If the response message conforms to the model, it is printed to the console.
 
@@ -87,6 +82,8 @@ peer = Peer(
     mode=OSCModes.TCP,
     framing=OSCFraming.OSC11,
 ) #(1)!
+peer.start_listening() #(7)!
+
 
 class PingResponse(BaseModel):
     args: tuple[OSCString] #(2)!
@@ -95,8 +92,7 @@ class PingResponse(BaseModel):
     def message(self) -> str:
         return self.args[0].value #(3)!
 
-call_handler = CallHandler(peer)
-response = call_handler.call(
+response = peer.call(
     OSCMessage(address="/test/ping", args=(OSCString(value="Hello_world!"),
     )),
     validator=PingResponse,
@@ -105,18 +101,17 @@ response = call_handler.call(
 ) #(4)!
 
 if response:
-    print(response.message) #(5)!
+    print(response.message.message) #(5)!
+    print(f"Round-trip latency: {response.latency:.2f} seconds") #(6)!
     
-peer.dispatcher.add_default_handler(call_handler) #(6)!
-peer.start_listening() #(7)!
 
 ```
 
-1. A `Peer` object is created to manage the network connection.
-2. A `PingResponse` model is defined to specify the expected structure of the response message
-3. A property `message` is defined to extract the string value from the first argument of the response message.
-4. A `CallHandler` is created and used to send a message and wait for a response, with the `PingResponse` model as the validator.
-5. If a response is received, the message is printed to the console.
-6. The `call_handler` is registered as the default handler for the `peer`'s dispatcher.
-7. The `peer` starts listening for incoming messages.
+1. We create a `Peer` object that listens on localhost at port 3032 using TCP and OSC 1.1 framing.
+2. We define a `PingResponse` model that specifies the expected structure of the incoming message. In this case, we expect a tuple of `OSCString` arguments.
+3. We define a property `message` that extracts the string value from the first argument of the message. This allows us to easily access the response message in a structured way.
+4. We use the `peer.call` method to send a ping message to the `/test/ping` address, and specify the `PingResponse` model as the validator for the expected response. We also specify the `return_addr` where we expect the response to be sent, and a timeout for how long to wait for the response.
+5. If a response is received within the timeout period, we print the response message to the console.
+6. We also print the round-trip latency, which indicates how long it took for the response to be received after the message was sent.
+7. We start the peer's listening loop, allowing it to receive and process incoming messages. This is necessary for the peer to be able to receive the response to our call message.
 
