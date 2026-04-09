@@ -47,8 +47,8 @@
       
         
         
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        
+        <link rel="stylesheet" href="../assets/external/fonts.googleapis.com/css.49ea35f2.css">
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
@@ -56,6 +56,16 @@
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
+  
+
+
+  
+  
+
+<script id="__analytics">function __md_analytics(){function e(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],e("js",new Date),e("config","G-P6CRQR38Y9"),document.addEventListener("DOMContentLoaded",(function(){document.forms.search&&document.forms.search.query.addEventListener("blur",(function(){this.value&&e("event","search",{search_term:this.value})}));document$.subscribe((function(){var t=document.forms.feedback;if(void 0!==t)for(var a of t.querySelectorAll("[type=submit]"))a.addEventListener("click",(function(a){a.preventDefault();var n=document.location.pathname,d=this.getAttribute("data-md-value");e("event","feedback",{page:n,data:d}),t.firstElementChild.disabled=!0;var r=t.querySelector(".md-feedback__note [data-md-value='"+d+"']");r&&(r.hidden=!1)})),t.hidden=!1})),location$.subscribe((function(t){e("config","G-P6CRQR38Y9",{page_path:t.pathname})}))}));var t=document.createElement("script");t.async=!0,t.src="https://www.googletagmanager.com/gtag/js?id=G-P6CRQR38Y9",document.getElementById("__analytics").insertAdjacentElement("afterEnd",t)}</script>
+  
+    <script>if("undefined"!=typeof __md_analytics){var consent=__md_get("__consent");consent&&consent.analytics&&__md_analytics()}</script>
+  
 
     
     
@@ -150,6 +160,11 @@
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
       </label>
       <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
         
         <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
           
@@ -740,21 +755,30 @@
 <p>All notable changes to this project will be documented in this file.</p>
 <p>The format is based on <a href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>,
 and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
+<h2 id="111-2026-04-08"><a href="https://github.com/Theatre-Tools/PyOSC/compare/1.1.0docs...1.1.1">1.1.1</a> - 2026-04-08<a class="headerlink" href="#111-2026-04-08" title="Permanent link">&para;</a></h2>
+<h3 id="bug-fixes"><img alt="🐛" class="twemoji" src="../assets/external/cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f41b.svg" title=":bug:"> Bug Fixes<a class="headerlink" href="#bug-fixes" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://github.com/Theatre-Tools/PyOSC/commit/18ed25461582db9a00451bdb0791f7036895f9dc"><code>18ed254</code></a> - change warning category from DeprecationWarning to FutureWarning for deprecated <code>/*</code> behaviour. <em>(commit by <a href="https://github.com/Morph-Tollon">@Morph-Tollon</a>)</em></li>
+</ul>
+<h3 id="chores"><img alt="🔧" class="twemoji" src="../assets/external/cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f527.svg" title=":wrench:"> Chores<a class="headerlink" href="#chores" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://github.com/Theatre-Tools/PyOSC/commit/4e0fab885eb9287af785d54ccd7723b778a1b561"><code>4e0fab8</code></a> - bump 1.1.1 <em>(commit by <a href="https://github.com/Morph-Tollon">@Morph-Tollon</a>)</em></li>
+</ul>
 <h2 id="110docs-2026-04-08"><a href="https://github.com/Theatre-Tools/PyOSC/compare/1.1.0...1.1.0docs">1.1.0docs</a> - 2026-04-08<a class="headerlink" href="#110docs-2026-04-08" title="Permanent link">&para;</a></h2>
-<h3 id="chores"><img alt="🔧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f527.svg" title=":wrench:" /> Chores<a class="headerlink" href="#chores" title="Permanent link">&para;</a></h3>
+<h3 id="chores_1"><img alt="🔧" class="twemoji" src="../assets/external/cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f527.svg" title=":wrench:"> Chores<a class="headerlink" href="#chores_1" title="Permanent link">&para;</a></h3>
 <ul>
 <li><a href="https://github.com/Theatre-Tools/PyOSC/commit/e81fc4953a0d40480b9bc7a11988f990b523a911"><code>e81fc49</code></a> - remove obsolete GitLab CI configuration file <em>(commit by <a href="https://github.com/Morph-Tollon">@Morph-Tollon</a>)</em></li>
 <li><a href="https://github.com/Theatre-Tools/PyOSC/commit/633695255f1e02b81455ac5eeddcf84dcf6668c2"><code>6336952</code></a> - update poetry config for ci requirements. <em>(commit by <a href="https://github.com/Morph-Tollon">@Morph-Tollon</a>)</em></li>
 <li><a href="https://github.com/Theatre-Tools/PyOSC/commit/ec45a07ea908ef31786ae99ac36f14a9ca98ab79"><code>ec45a07</code></a> - update dependencies in pyproject.toml and poetry.lock for improved stability <em>(commit by <a href="https://github.com/Morph-Tollon">@Morph-Tollon</a>)</em></li>
 </ul>
 <h2 id="110-2026-04-05"><a href="https://github.com/Theatre-Tools/PyOSC/compare/1.1.0rc7...1.1.0">1.1.0</a> - 2026-04-05<a class="headerlink" href="#110-2026-04-05" title="Permanent link">&para;</a></h2>
-<h3 id="bug-fixes"><img alt="🐛" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f41b.svg" title=":bug:" /> Bug Fixes<a class="headerlink" href="#bug-fixes" title="Permanent link">&para;</a></h3>
+<h3 id="bug-fixes_1"><img alt="🐛" class="twemoji" src="../assets/external/cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f41b.svg" title=":bug:"> Bug Fixes<a class="headerlink" href="#bug-fixes_1" title="Permanent link">&para;</a></h3>
 <ul>
 <li><a href="https://github.com/Theatre-Tools/PyOSC/commit/116b0e03d9575cde592e8c2920e55c96403c156e"><code>116b0e0</code></a> - Made the dispatcher handle nexted timetagged bundles correctly, and updated the pytests to reflect this <em>(commit by <a href="https://github.com/Morph-Tollon">@Morph-Tollon</a>)</em></li>
 <li><a href="https://github.com/Theatre-Tools/PyOSC/commit/612d93c41d51ea440b5a9882e03ec52fbddb160e"><code>612d93c</code></a> - update prerelease documentation deployment and cleanup HTML template <em>(commit by <a href="https://github.com/Morph-Tollon">@Morph-Tollon</a>)</em></li>
 <li><a href="https://github.com/Theatre-Tools/PyOSC/commit/5cabf9878d58875e345320b6ab9ef7a3fdfd079a"><code>5cabf98</code></a> - update prerelease documentation deployment and cleanup HTML template <em>(commit by <a href="https://github.com/Morph-Tollon">@Morph-Tollon</a>)</em></li>
 </ul>
-<h3 id="chores_1"><img alt="🔧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f527.svg" title=":wrench:" /> Chores<a class="headerlink" href="#chores_1" title="Permanent link">&para;</a></h3>
+<h3 id="chores_2"><img alt="🔧" class="twemoji" src="../assets/external/cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f527.svg" title=":wrench:"> Chores<a class="headerlink" href="#chores_2" title="Permanent link">&para;</a></h3>
 <ul>
 <li><a href="https://github.com/Theatre-Tools/PyOSC/commit/822331aee752d0f9091e8e75e10943e95cba6d2d"><code>822331a</code></a> - added deprecation warning for using <code>/*</code> as a replacement for the default handler. <em>(commit by <a href="https://github.com/Morph-Tollon">@Morph-Tollon</a>)</em></li>
 <li><a href="https://github.com/Theatre-Tools/PyOSC/commit/29e7f3122185937476d21d6768c4b17bcc7a16be"><code>29e7f31</code></a> - 1.0.17 <em>(commit by <a href="https://github.com/Morph-Tollon">@Morph-Tollon</a>)</em></li>
@@ -763,7 +787,7 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
 <li><a href="https://github.com/Theatre-Tools/PyOSC/commit/28245a992fe9a973f03cf4154b27facd36561dcb"><code>28245a9</code></a> - update version to 1.1.0 in pyproject.toml <em>(commit by <a href="https://github.com/Morph-Tollon">@Morph-Tollon</a>)</em></li>
 </ul>
 <h2 id="1019-2026-03-29"><a href="https://github.com/Theatre-Tools/PyOSC/compare/1.0.18...1.0.19">1.0.19</a> - 2026-03-29<a class="headerlink" href="#1019-2026-03-29" title="Permanent link">&para;</a></h2>
-<h3 id="chores_2"><img alt="🔧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f527.svg" title=":wrench:" /> Chores<a class="headerlink" href="#chores_2" title="Permanent link">&para;</a></h3>
+<h3 id="chores_3"><img alt="🔧" class="twemoji" src="../assets/external/cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f527.svg" title=":wrench:"> Chores<a class="headerlink" href="#chores_3" title="Permanent link">&para;</a></h3>
 <ul>
 <li><a href="https://github.com/Theatre-Tools/PyOSC/commit/379b4370764e20648250fc55a2b25cc8e883f3c5"><code>379b437</code></a> - bump 1.0.18 <em>(commit by <a href="https://github.com/Morph-Tollon">@Morph-Tollon</a>)</em></li>
 <li><a href="https://github.com/Theatre-Tools/PyOSC/commit/c171f698b6a8052cbf5ddc53d96a73205db85c9c"><code>c171f69</code></a> - Bump! 1.0.19 <em>(commit by <a href="https://github.com/Morph-Tollon">@Morph-Tollon</a>)</em></li>
@@ -774,47 +798,47 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
 </li>
 </ul>
 <h2 id="docs-1015-2026-02-24"><a href="https://github.com/Theatre-Tools/PyOSC/compare/1.0.15...docs-1.0.15">docs-1.0.15</a> - 2026-02-24<a class="headerlink" href="#docs-1015-2026-02-24" title="Permanent link">&para;</a></h2>
-<h3 id="chores_3"><img alt="🔧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f527.svg" title=":wrench:" /> Chores<a class="headerlink" href="#chores_3" title="Permanent link">&para;</a></h3>
+<h3 id="chores_4"><img alt="🔧" class="twemoji" src="../assets/external/cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f527.svg" title=":wrench:"> Chores<a class="headerlink" href="#chores_4" title="Permanent link">&para;</a></h3>
 <ul>
 <li><a href="https://github.com/Theatre-Tools/PyOSC/commit/0338f1e28b218b74c864c52ff205a210b1e0fd72"><code>0338f1e</code></a> - remove outdated roadmap.md file <em>(commit by <a href="https://github.com/Morph-Tollon">@Morph-Tollon</a>)</em></li>
 </ul>
 <h2 id="1015-2026-02-16"><a href="https://github.com/Theatre-Tools/PyOSC/compare/1.0.14...1.0.15">1.0.15</a> - 2026-02-16<a class="headerlink" href="#1015-2026-02-16" title="Permanent link">&para;</a></h2>
-<h3 id="bug-fixes_1"><img alt="🐛" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f41b.svg" title=":bug:" /> Bug Fixes<a class="headerlink" href="#bug-fixes_1" title="Permanent link">&para;</a></h3>
+<h3 id="bug-fixes_2"><img alt="🐛" class="twemoji" src="../assets/external/cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f41b.svg" title=":bug:"> Bug Fixes<a class="headerlink" href="#bug-fixes_2" title="Permanent link">&para;</a></h3>
 <ul>
 <li><a href="https://github.com/Theatre-Tools/PyOSC/commit/3808c58dbb3b09e4a114eddb5e5cce2487707ea3"><code>3808c58</code></a> - update version to 1.0.15 in pyproject.toml <em>(commit by <a href="https://github.com/Morph-Tollon">@Morph-Tollon</a>)</em></li>
 </ul>
-<h3 id="chores_4"><img alt="🔧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f527.svg" title=":wrench:" /> Chores<a class="headerlink" href="#chores_4" title="Permanent link">&para;</a></h3>
+<h3 id="chores_5"><img alt="🔧" class="twemoji" src="../assets/external/cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f527.svg" title=":wrench:"> Chores<a class="headerlink" href="#chores_5" title="Permanent link">&para;</a></h3>
 <ul>
 <li><a href="https://github.com/Theatre-Tools/PyOSC/commit/45345d79a2e08127e2cef76f5935329a9919b7ea"><code>45345d7</code></a> - bump! <em>(commit by <a href="https://github.com/Morph-Tollon">@Morph-Tollon</a>)</em></li>
 </ul>
 <h2 id="1012-2026-02-16"><a href="https://github.com/Theatre-Tools/PyOSC/compare/1.0.11...1.0.12">1.0.12</a> - 2026-02-16<a class="headerlink" href="#1012-2026-02-16" title="Permanent link">&para;</a></h2>
-<h3 id="chores_5"><img alt="🔧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f527.svg" title=":wrench:" /> Chores<a class="headerlink" href="#chores_5" title="Permanent link">&para;</a></h3>
+<h3 id="chores_6"><img alt="🔧" class="twemoji" src="../assets/external/cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f527.svg" title=":wrench:"> Chores<a class="headerlink" href="#chores_6" title="Permanent link">&para;</a></h3>
 <ul>
 <li><a href="https://github.com/Theatre-Tools/PyOSC/commit/c20eced24c59b5aeb2501eee6059f30ca41db16a"><code>c20eced</code></a> - bump <em>(commit by <a href="https://github.com/Morph-Tollon">@Morph-Tollon</a>)</em></li>
 </ul>
 <h2 id="1011-2026-02-16"><a href="https://github.com/Theatre-Tools/PyOSC/compare/1.0.10...1.0.11">1.0.11</a> - 2026-02-16<a class="headerlink" href="#1011-2026-02-16" title="Permanent link">&para;</a></h2>
-<h3 id="bug-fixes_2"><img alt="🐛" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f41b.svg" title=":bug:" /> Bug Fixes<a class="headerlink" href="#bug-fixes_2" title="Permanent link">&para;</a></h3>
+<h3 id="bug-fixes_3"><img alt="🐛" class="twemoji" src="../assets/external/cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f41b.svg" title=":bug:"> Bug Fixes<a class="headerlink" href="#bug-fixes_3" title="Permanent link">&para;</a></h3>
 <ul>
 <li><a href="https://github.com/Theatre-Tools/PyOSC/commit/0b43e11ae914933bf3890919eb4cb7920b96c3e6"><code>0b43e11</code></a> - introduce CallHandlerValidationError for improved error handling in CallHandler <em>(commit by <a href="https://github.com/Morph-Tollon">@Morph-Tollon</a>)</em></li>
 <li><a href="https://github.com/Theatre-Tools/PyOSC/commit/365c937aa6e9e26ac8ec87b2cecd9b6a191c6488"><code>365c937</code></a> - add CallHandlerValidationError to CallHandler tests for improved validation handling <em>(commit by <a href="https://github.com/Morph-Tollon">@Morph-Tollon</a>)</em></li>
 </ul>
-<h3 id="chores_6"><img alt="🔧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f527.svg" title=":wrench:" /> Chores<a class="headerlink" href="#chores_6" title="Permanent link">&para;</a></h3>
+<h3 id="chores_7"><img alt="🔧" class="twemoji" src="../assets/external/cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f527.svg" title=":wrench:"> Chores<a class="headerlink" href="#chores_7" title="Permanent link">&para;</a></h3>
 <ul>
 <li><a href="https://github.com/Theatre-Tools/PyOSC/commit/74f74518e4e1cc8435f628154e6a4bea80c2d8ed"><code>74f7451</code></a> - bump! <em>(commit by <a href="https://github.com/Morph-Tollon">@Morph-Tollon</a>)</em></li>
 </ul>
 <h2 id="108-2026-02-16"><a href="https://github.com/Theatre-Tools/PyOSC/compare/1.0.7...1.0.8">1.0.8</a> - 2026-02-16<a class="headerlink" href="#108-2026-02-16" title="Permanent link">&para;</a></h2>
-<h3 id="chores_7"><img alt="🔧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f527.svg" title=":wrench:" /> Chores<a class="headerlink" href="#chores_7" title="Permanent link">&para;</a></h3>
+<h3 id="chores_8"><img alt="🔧" class="twemoji" src="../assets/external/cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f527.svg" title=":wrench:"> Chores<a class="headerlink" href="#chores_8" title="Permanent link">&para;</a></h3>
 <ul>
 <li><a href="https://github.com/Theatre-Tools/PyOSC/commit/1738141478c696fc05e3e160f59d9250a97ad486"><code>1738141</code></a> - If I have to bump this one more time to get it published there will be backlash. (1.0.7) <em>(commit by <a href="https://github.com/Morph-Tollon">@Morph-Tollon</a>)</em></li>
 <li><a href="https://github.com/Theatre-Tools/PyOSC/commit/5165cee06431b48d1d99a76960946184a97b2528"><code>5165cee</code></a> - ensure checkout step fetches main branch with full history <em>(commit by <a href="https://github.com/Morph-Tollon">@Morph-Tollon</a>)</em></li>
 <li><a href="https://github.com/Theatre-Tools/PyOSC/commit/2f1ea52063882f24e7f303ee2cc80fb0ce54ba25"><code>2f1ea52</code></a> - sad bumping noises... 1.0.8 <em>(commit by <a href="https://github.com/Morph-Tollon">@Morph-Tollon</a>)</em></li>
 </ul>
 <h2 id="106-2026-02-16"><a href="https://github.com/Theatre-Tools/PyOSC/compare/1.0.5...1.0.6">1.0.6</a> - 2026-02-16<a class="headerlink" href="#106-2026-02-16" title="Permanent link">&para;</a></h2>
-<h3 id="refactors"><img alt="♻" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/267b.svg" title=":recycle:" /> Refactors<a class="headerlink" href="#refactors" title="Permanent link">&para;</a></h3>
+<h3 id="refactors"><img alt="♻" class="twemoji" src="../assets/external/cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/267b.svg" title=":recycle:"> Refactors<a class="headerlink" href="#refactors" title="Permanent link">&para;</a></h3>
 <ul>
 <li><a href="https://github.com/Theatre-Tools/PyOSC/commit/e69e861870da0bb0e2e48e0aa935e8d0100eb5d5"><code>e69e861</code></a> - streamline workflow by removing unused lint and docs jobs, and update test job reference <em>(commit by <a href="https://github.com/Morph-Tollon">@Morph-Tollon</a>)</em></li>
 </ul>
-<h3 id="chores_8"><img alt="🔧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f527.svg" title=":wrench:" /> Chores<a class="headerlink" href="#chores_8" title="Permanent link">&para;</a></h3>
+<h3 id="chores_9"><img alt="🔧" class="twemoji" src="../assets/external/cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f527.svg" title=":wrench:"> Chores<a class="headerlink" href="#chores_9" title="Permanent link">&para;</a></h3>
 <ul>
 <li><a href="https://github.com/Theatre-Tools/PyOSC/commit/22ca3808ad00814ae514e970b8f6e48681340b80"><code>22ca380</code></a> - BUMPY MC BUMP FACE 1.0.6! <em>(commit by <a href="https://github.com/Morph-Tollon">@Morph-Tollon</a>)</em></li>
 </ul>
@@ -870,7 +894,7 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
       
         <a href="https://github.com/Morph-Tollon" class="md-author" title="@Morph-Tollon">
           
-          <img src="https://avatars.githubusercontent.com/u/89318965?v=4&size=72" alt="Morph-Tollon">
+          <img src="../assets/external/avatars.githubusercontent.com/u/89318965.fe356448.jpg" alt="Morph-Tollon">
         </a>
       
       
@@ -882,7 +906,59 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
   </aside>
 
 
+  
 
+
+
+  <form class="md-feedback" name="feedback" hidden>
+    <fieldset>
+      <legend class="md-feedback__title">
+        Was this page helpful?
+      </legend>
+      <div class="md-feedback__inner">
+        <div class="md-feedback__list">
+          
+            <button class="md-feedback__icon md-icon" type="submit" title="This page was helpful" data-md-value="1">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 12a8 8 0 0 0-8-8 8 8 0 0 0-8 8 8 8 0 0 0 8 8 8 8 0 0 0 8-8m2 0a10 10 0 0 1-10 10A10 10 0 0 1 2 12 10 10 0 0 1 12 2a10 10 0 0 1 10 10M10 9.5c0 .8-.7 1.5-1.5 1.5S7 10.3 7 9.5 7.7 8 8.5 8s1.5.7 1.5 1.5m7 0c0 .8-.7 1.5-1.5 1.5S14 10.3 14 9.5 14.7 8 15.5 8s1.5.7 1.5 1.5m-5 7.73c-1.75 0-3.29-.73-4.19-1.81L9.23 14c.45.72 1.52 1.23 2.77 1.23s2.32-.51 2.77-1.23l1.42 1.42c-.9 1.08-2.44 1.81-4.19 1.81"/></svg>
+            </button>
+          
+            <button class="md-feedback__icon md-icon" type="submit" title="This page could be improved" data-md-value="0">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 12a8 8 0 0 0-8-8 8 8 0 0 0-8 8 8 8 0 0 0 8 8 8 8 0 0 0 8-8m2 0a10 10 0 0 1-10 10A10 10 0 0 1 2 12 10 10 0 0 1 12 2a10 10 0 0 1 10 10m-6.5-4c.8 0 1.5.7 1.5 1.5s-.7 1.5-1.5 1.5-1.5-.7-1.5-1.5.7-1.5 1.5-1.5M10 9.5c0 .8-.7 1.5-1.5 1.5S7 10.3 7 9.5 7.7 8 8.5 8s1.5.7 1.5 1.5m2 4.5c1.75 0 3.29.72 4.19 1.81l-1.42 1.42C14.32 16.5 13.25 16 12 16s-2.32.5-2.77 1.23l-1.42-1.42C8.71 14.72 10.25 14 12 14"/></svg>
+            </button>
+          
+        </div>
+        <div class="md-feedback__note">
+          
+            <div data-md-value="1" hidden>
+              
+              
+                
+              
+              
+              
+                
+                
+              
+              Thanks for your feedback!
+            </div>
+          
+            <div data-md-value="0" hidden>
+              
+              
+                
+              
+              
+              
+                
+                
+              
+              Thanks for your feedback! Help us improve this page by using our <a href="..." target="_blank" rel="noopener">feedback form</a>.
+            </div>
+          
+        </div>
+      </div>
+    </fieldset>
+  </form>
 
 
                 
@@ -907,11 +983,11 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
     <div class="md-footer-meta__inner md-grid">
       <div class="md-copyright">
   
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2025 - 2026 Morph Tollon – <a href="#__consent">Change cookie settings</a>
+
+    </div>
   
-    Made with
-    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
-      Material for MkDocs
-    </a>
   
 </div>
       
@@ -927,10 +1003,85 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
       <div class="md-progress" data-md-component="progress" role="progressbar"></div>
     
     
+      <div class="md-consent" data-md-component="consent" id="__consent" hidden>
+        <div class="md-consent__overlay"></div>
+        <aside class="md-consent__inner">
+          <form class="md-consent__form md-grid md-typeset" name="consent">
+            
+
+
+  
+
+
+<h4>Cookie consent</h4>
+<p>We use cookies to recognize your repeated visits and preferences, as well as to measure the effectiveness of our documentation and whether users find what they're searching for. With your consent, you're helping us to make our documentation better.</p>
+<input class="md-toggle" type="checkbox" id="__settings" >
+<div class="md-consent__settings">
+  <ul class="task-list">
+    
+    
+      
+        
+  
+  
+    
+    
+  
+  <li class="task-list-item">
+    <label class="task-list-control">
+      <input type="checkbox" name="analytics" checked>
+      <span class="task-list-indicator"></span>
+      Google Analytics
+    </label>
+  </li>
+
+      
+    
+    
+      
+        
+  
+  
+    
+    
+  
+  <li class="task-list-item">
+    <label class="task-list-control">
+      <input type="checkbox" name="github" checked>
+      <span class="task-list-indicator"></span>
+      GitHub
+    </label>
+  </li>
+
+      
+    
+    
+  </ul>
+</div>
+<div class="md-consent__controls">
+  
+    
+      <button class="md-button md-button--primary">Accept</button>
+    
+    
+    
+  
+    
+    
+    
+      <label class="md-button" for="__settings">Manage settings</label>
+    
+  
+</div>
+          </form>
+        </aside>
+      </div>
+      <script>var consent=__md_get("__consent");if(consent)for(var input of document.forms.consent.elements)input.name&&(input.checked=consent[input.name]||!1);else"file:"!==location.protocol&&setTimeout((function(){document.querySelector("[data-md-component=consent]").hidden=!1}),250);var form=document.forms.consent;for(var action of["submit","reset"])form.addEventListener(action,(function(e){if(e.preventDefault(),"reset"===e.type)for(var n of document.forms.consent.elements)n.name&&(n.checked=!1);__md_set("__consent",Object.fromEntries(Array.from(new FormData(form).keys()).map((function(e){return[e,!0]})))),location.hash="",location.reload()}))</script>
+    
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.action.view", "content.action.edit", "search.highlight", "search.suggest", "navigation.instant", "navigation.top", "navigation.tracking", "navigation.instant.prefetch", "navigation.instant.progress", "content.tooltips", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "stable", "provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.code.copy", "content.code.select", "content.action.view", "content.action.edit", "search.highlight", "search.share", "search.suggest", "navigation.instant", "navigation.top", "navigation.tracking", "navigation.instant.prefetch", "navigation.instant.progress", "content.tooltips", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "stable", "provider": "mike"}}</script>
     
     
       <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
