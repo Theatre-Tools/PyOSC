@@ -49,8 +49,8 @@
       
         
         
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        
+        <link rel="stylesheet" href="../../assets/external/fonts.googleapis.com/css.49ea35f2.css">
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
@@ -58,6 +58,16 @@
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
+  
+
+
+  
+  
+
+<script id="__analytics">function __md_analytics(){function e(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],e("js",new Date),e("config","G-P6CRQR38Y9"),document.addEventListener("DOMContentLoaded",(function(){document.forms.search&&document.forms.search.query.addEventListener("blur",(function(){this.value&&e("event","search",{search_term:this.value})}));document$.subscribe((function(){var t=document.forms.feedback;if(void 0!==t)for(var a of t.querySelectorAll("[type=submit]"))a.addEventListener("click",(function(a){a.preventDefault();var n=document.location.pathname,d=this.getAttribute("data-md-value");e("event","feedback",{page:n,data:d}),t.firstElementChild.disabled=!0;var r=t.querySelector(".md-feedback__note [data-md-value='"+d+"']");r&&(r.hidden=!1)})),t.hidden=!1})),location$.subscribe((function(t){e("config","G-P6CRQR38Y9",{page_path:t.pathname})}))}));var t=document.createElement("script");t.async=!0,t.src="https://www.googletagmanager.com/gtag/js?id=G-P6CRQR38Y9",document.getElementById("__analytics").insertAdjacentElement("afterEnd",t)}</script>
+  
+    <script>if("undefined"!=typeof __md_analytics){var consent=__md_get("__consent");consent&&consent.analytics&&__md_analytics()}</script>
+  
 
     
     
@@ -153,6 +163,11 @@
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
       </label>
       <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
         
         <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
           
@@ -1081,43 +1096,43 @@ The dispatcher's core methods are exposed via <a data-preview="data-preview" hre
 <h2 id="registering-handlers">Registering Handlers<a class="headerlink" href="#registering-handlers" title="Permanent link">&para;</a></h2>
 <h3 id="peer-handler-decorator"><code>@peer.handler</code> Decorator<a class="headerlink" href="#peer-handler-decorator" title="Permanent link">&para;</a></h3>
 <p>There are currently two ways to register handlers. The first way is to use the <code>peer.handler</code> decorator, which is a convenient way to register a handler function for a specific address pattern. The second way is to use the <code>peer.register_handler</code> method to register a handler function for a specific address. Examples below:</p>
-<div class="highlight"><pre><span></span><code><span class="nd">@peer</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="s2">&quot;/test/out/ping&quot;</span><span class="p">)</span> <span class="c1">#(1)!</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">ping_handler</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Received a ping message with args: </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">args</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nd">@peer</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="s2">&quot;/test/out/ping&quot;</span><span class="p">)</span> <span class="c1">#(1)!</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">ping_handler</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Received a ping message with args: </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">args</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span></code></pre></div>
 <ol>
 <li>The <code>peer.handler</code> decorator is used to register the <code>ping_handler</code> function as a handler for messages sent to the <code>/test/out/ping</code> address. Whenever a message with this address is received, the <code>ping_handler</code> function will be called with the message as its argument.</li>
 </ol>
 <h5 id="using-validators-with-decorators">Using Validators with Decorators<a class="headerlink" href="#using-validators-with-decorators" title="Permanent link">&para;</a></h5>
 <p>These can also be used with <a data-preview="data-preview" href="#validators"><code>validators</code></a> to ensure that incoming messages are validated before being passed to the handler function, and can be parsed programatically within the handler.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
-
-<span class="k">class</span><span class="w"> </span><span class="nc">PingResponse</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-    <span class="n">args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">OSCString</span><span class="p">]</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">message</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
-
-<span class="nd">@peer</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="s2">&quot;/test/out/ping&quot;</span><span class="p">,</span> <span class="n">validator</span><span class="o">=</span><span class="n">PingResponse</span><span class="p">)</span> <span class="c1">#(1)!</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">ping_handler</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">PingResponse</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Received a ping message with response: </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">PingResponse</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">OSCString</span><span class="p">]</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="nd">@property</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">message</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="nd">@peer</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="s2">&quot;/test/out/ping&quot;</span><span class="p">,</span> <span class="n">validator</span><span class="o">=</span><span class="n">PingResponse</span><span class="p">)</span> <span class="c1">#(1)!</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="k">def</span><span class="w"> </span><span class="nf">ping_handler</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">PingResponse</span><span class="p">):</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Received a ping message with response: </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span></code></pre></div>
 <ol>
 <li>The <code>peer.handler</code> decorator is used to register the <code>ping_handler</code> function as a handler for messages sent to the <code>/test/out/ping</code> address, with the <code>PingResponse</code> model as its validator. Whenever a message with this address is received, it will first be validated against the <code>PingResponse</code> model, and if it passes validation, the <code>ping_handler</code> function will be called with the validated message as its argument.</li>
 </ol>
 <h5 id="modifying-decorated-handlers">Modifying Decorated Handlers<a class="headerlink" href="#modifying-decorated-handlers" title="Permanent link">&para;</a></h5>
 <p>Handlers created with the <code>peer.handler</code> decorator can be modified after they have been created. The easiest way to do that is by using the fucntions associated with the handler object that is created by the decorator. These are exposed through the function that is decorated. Using the decorator is preffered for static handlers, and easier to understand if you are used to things like Flask or FastAPI.</p>
-<div class="highlight"><pre><span></span><code><span class="nd">@peer</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="s2">&quot;/test/out/ping&quot;</span><span class="p">)</span> <span class="c1">#(1)!</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">ping_handler</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Received a ping message with args: </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">args</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-<span class="n">ping_handler</span><span class="o">.</span><span class="n">pause</span><span class="p">()</span> <span class="c1">#(2)!</span>
-
-<span class="n">ping_handler</span><span class="o">.</span><span class="n">unpause</span><span class="p">()</span> <span class="c1">#(3)!</span>
-
-<span class="n">ping_handler</span><span class="o">.</span><span class="n">unregister</span><span class="p">()</span> <span class="c1">#(4)!</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nd">@peer</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="s2">&quot;/test/out/ping&quot;</span><span class="p">)</span> <span class="c1">#(1)!</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">ping_handler</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Received a ping message with args: </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">args</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">ping_handler</span><span class="o">.</span><span class="n">pause</span><span class="p">()</span> <span class="c1">#(2)!</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">ping_handler</span><span class="o">.</span><span class="n">unpause</span><span class="p">()</span> <span class="c1">#(3)!</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="n">ping_handler</span><span class="o">.</span><span class="n">unregister</span><span class="p">()</span> <span class="c1">#(4)!</span>
+</span></code></pre></div>
 <ol>
 <li>The <code>peer.handler</code> decorator is used to register the <code>ping_handler</code> function as a handler for messages sent to the <code>/test/out/ping</code> address.</li>
 <li>The <code>pause</code> method is called on the <code>ping_handler</code> function, which will temporarily disable the handler, preventing it from being called when a message with the <code>/test/out/ping</code> address is received.</li>
@@ -1126,31 +1141,31 @@ The dispatcher's core methods are exposed via <a data-preview="data-preview" hre
 </ol>
 <h3 id="peer-register-handler-method"><code>peer.register_handler</code> Method<a class="headerlink" href="#peer-register-handler-method" title="Permanent link">&para;</a></h3>
 <p>The other way to create a handler is by using the <code>peer.register_handler</code> method. This allows you to register a handler in a way that is more conjucive to dynamic handler creation, as you can create and destroy handlers at any time. This method also allows you to specify an optional validator for the handler.</p>
-<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">ping_handler</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Received a ping message with args: </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">args</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="c1">#(1)!</span>
-
-<span class="n">peer</span><span class="o">.</span><span class="n">register_handler</span><span class="p">(</span><span class="s2">&quot;/test/out/ping&quot;</span><span class="p">,</span> <span class="n">ping_handler</span><span class="p">)</span> <span class="c1">#(2)!</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">ping_handler</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Received a ping message with args: </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">args</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="c1">#(1)!</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">peer</span><span class="o">.</span><span class="n">register_handler</span><span class="p">(</span><span class="s2">&quot;/test/out/ping&quot;</span><span class="p">,</span> <span class="n">ping_handler</span><span class="p">)</span> <span class="c1">#(2)!</span>
+</span></code></pre></div>
 <ol>
 <li>The <code>ping_handler</code> function is defined to accept a message as its argument and print the arguments of the message.</li>
 <li>The <code>register_handler</code> method is called on the <code>peer</code> object to register the <code>ping_handler</code> function as a handler for messages sent to the <code>/test/out/ping</code> address</li>
 </ol>
 <h5 id="using-validators-with-peerregister_handler">Using Validators with <code>peer.register_handler</code><a class="headerlink" href="#using-validators-with-peerregister_handler" title="Permanent link">&para;</a></h5>
 <p>The <code>peer.register_handler</code> method, like the decorator, also supports validators to ensure that the incoming data is validated, and can be easily accessed programatically within the handler.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
-
-<span class="k">class</span><span class="w"> </span><span class="nc">PingResponse</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-    <span class="n">args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">OSCString</span><span class="p">]</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">message</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="c1">#(1)!</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">ping_handler</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">PingResponse</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Received a ping message with response: </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="c1">#(2)!</span>
-
-<span class="n">peer</span><span class="o">.</span><span class="n">register_handler</span><span class="p">(</span><span class="s2">&quot;/test/out/ping&quot;</span><span class="p">,</span> <span class="n">ping_handler</span><span class="p">,</span> <span class="n">validator</span><span class="o">=</span><span class="n">PingResponse</span><span class="p">)</span> <span class="c1">#(3)!</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">PingResponse</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">OSCString</span><span class="p">]</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="nd">@property</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">message</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="c1">#(1)!</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="k">def</span><span class="w"> </span><span class="nf">ping_handler</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">PingResponse</span><span class="p">):</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Received a ping message with response: </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="c1">#(2)!</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="n">peer</span><span class="o">.</span><span class="n">register_handler</span><span class="p">(</span><span class="s2">&quot;/test/out/ping&quot;</span><span class="p">,</span> <span class="n">ping_handler</span><span class="p">,</span> <span class="n">validator</span><span class="o">=</span><span class="n">PingResponse</span><span class="p">)</span> <span class="c1">#(3)!</span>
+</span></code></pre></div>
 <ol>
 <li>We define a <code>PingResponse</code> model that specifies the expected structure of the incoming message.</li>
 <li>The <code>ping_handler</code> function is defined to accept a <code>PingResponse</code> object,</li>
@@ -1158,18 +1173,18 @@ The dispatcher's core methods are exposed via <a data-preview="data-preview" hre
 </ol>
 <h5 id="modifying-registered-handlers">Modifying Registered Handlers<a class="headerlink" href="#modifying-registered-handlers" title="Permanent link">&para;</a></h5>
 <p>Editing handlers that are created with the <code>peer.register_handler</code> method is a little bit more complicated. The easiest way to do it is by accessing the <code>Handler</code> object that is created by the method. Conveniently, the <code>register_handler</code> method returns the <code>Handler</code> object that is created, so you can easily store it in a variable and use that variable to modify the handler.</p>
-<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">ping_handler</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Received a ping message with args: </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">args</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="c1">#(1)!</span>
-
-<span class="n">handler</span> <span class="o">=</span> <span class="n">peer</span><span class="o">.</span><span class="n">register_handler</span><span class="p">(</span><span class="s2">&quot;/test/out/ping&quot;</span><span class="p">,</span> <span class="n">ping_handler</span><span class="p">)</span> <span class="c1">#(2)!</span>
-
-
-<span class="n">handler</span><span class="o">.</span><span class="n">pause</span><span class="p">()</span> <span class="c1">#(3)!</span>
-
-<span class="n">handler</span><span class="o">.</span><span class="n">unpause</span><span class="p">()</span> <span class="c1">#(4)!</span>
-
-<span class="n">handler</span><span class="o">.</span><span class="n">unregister</span><span class="p">()</span> <span class="c1">#(5)!</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">ping_handler</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Received a ping message with args: </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">args</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="c1">#(1)!</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="n">handler</span> <span class="o">=</span> <span class="n">peer</span><span class="o">.</span><span class="n">register_handler</span><span class="p">(</span><span class="s2">&quot;/test/out/ping&quot;</span><span class="p">,</span> <span class="n">ping_handler</span><span class="p">)</span> <span class="c1">#(2)!</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="n">handler</span><span class="o">.</span><span class="n">pause</span><span class="p">()</span> <span class="c1">#(3)!</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="n">handler</span><span class="o">.</span><span class="n">unpause</span><span class="p">()</span> <span class="c1">#(4)!</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="n">handler</span><span class="o">.</span><span class="n">unregister</span><span class="p">()</span> <span class="c1">#(5)!</span>
+</span></code></pre></div>
 <ol>
 <li>The <code>ping_handler</code> function is defined to accept a message as its argument and print the arguments of the message.</li>
 <li>The <code>register_handler</code> method is called on the <code>peer</code> object to register the <code>ping_handler</code> function as a handler for messages sent to the <code>/test/out/ping</code> address. The <code>Handler</code> object that is created by the method is stored in the <code>handler</code> variable.</li>
@@ -1180,19 +1195,19 @@ The dispatcher's core methods are exposed via <a data-preview="data-preview" hre
 <h2 id="validators">Validators<a class="headerlink" href="#validators" title="Permanent link">&para;</a></h2>
 <p>When registering handlers, you can also provide an optional <code>validator</code>. A validator is a pydantic model that is used to validate incoming messages before they are passed to the handler. If the message does not conform to the validator, it will be rejected and not processed by the handler.</p>
 <p>Here's an example of registering a handler with a validator:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span> <span class="c1">#(1)!</span>
-
-<span class="k">class</span><span class="w"> </span><span class="nc">PingResponse</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span> <span class="c1">#(2)!</span>
-    <span class="n">args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">OSCString</span><span class="p">]</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">message</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="c1">#(3)!</span>
-
-<span class="nd">@peer</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="s2">&quot;/test/out/ping&quot;</span><span class="p">,</span> <span class="n">validator</span><span class="o">=</span><span class="n">PingResponse</span><span class="p">)</span> <span class="c1">#(4)!</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">ping_handler</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">PingResponse</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Received a ping message with response: </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span> <span class="c1">#(1)!</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">PingResponse</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span> <span class="c1">#(2)!</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="n">args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">OSCString</span><span class="p">]</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="nd">@property</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">message</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="c1">#(3)!</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="nd">@peer</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="s2">&quot;/test/out/ping&quot;</span><span class="p">,</span> <span class="n">validator</span><span class="o">=</span><span class="n">PingResponse</span><span class="p">)</span> <span class="c1">#(4)!</span>
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="k">def</span><span class="w"> </span><span class="nf">ping_handler</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">PingResponse</span><span class="p">):</span>
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Received a ping message with response: </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span></code></pre></div>
 <ol>
 <li>We import <code>BaseModel</code> from the <code>pydantic</code> library to create a validator model.</li>
 <li>We define a <code>PingResponse</code> model that specifies the expected structure of the incoming message</li>
@@ -1202,30 +1217,30 @@ The dispatcher's core methods are exposed via <a data-preview="data-preview" hre
 <h2 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h2>
 <p>Here is a complete example that demonstrates the use of a dispatcher with both a default handler and an address-specific handler with a validator:</p>
 <h5 id="using-the-peerhandler-decorator-with-a-validator">Using the <code>@peer.handler</code> decorator with a validator<a class="headerlink" href="#using-the-peerhandler-decorator-with-a-validator" title="Permanent link">&para;</a></h5>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pyosc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Peer</span><span class="p">,</span> <span class="n">OSCMessage</span><span class="p">,</span> <span class="n">OSCModes</span><span class="p">,</span> <span class="n">OSCFraming</span><span class="p">,</span> <span class="n">OSCString</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
-
-<span class="n">peer</span> <span class="o">=</span> <span class="n">Peer</span><span class="p">(</span>
-    <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
-    <span class="mi">3032</span><span class="p">,</span>
-    <span class="n">mode</span><span class="o">=</span><span class="n">OSCModes</span><span class="o">.</span><span class="n">TCP</span><span class="p">,</span>
-    <span class="n">framing</span><span class="o">=</span><span class="n">OSCFraming</span><span class="o">.</span><span class="n">OSC11</span><span class="p">,</span>
-<span class="p">)</span> <span class="c1">#(1)!</span>
-
-<span class="k">class</span><span class="w"> </span><span class="nc">PingResponse</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-    <span class="n">args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">OSCString</span><span class="p">]</span> <span class="c1">#(2)!</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">message</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="c1">#(3)!</span>
-
-
-<span class="nd">@peer</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="s1">&#39;/test/out/ping&#39;</span><span class="p">,</span> <span class="n">validator</span><span class="o">=</span><span class="n">PingResponse</span><span class="p">)</span> <span class="c1">#(4)!</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">ping_handler</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">PingResponse</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Received a ping message with response: </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="c1">#(5)!</span>
-
-<span class="n">peer</span><span class="o">.</span><span class="n">start_listening</span><span class="p">()</span> <span class="c1">#(6)!</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyosc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Peer</span><span class="p">,</span> <span class="n">OSCMessage</span><span class="p">,</span> <span class="n">OSCModes</span><span class="p">,</span> <span class="n">OSCFraming</span><span class="p">,</span> <span class="n">OSCString</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="n">peer</span> <span class="o">=</span> <span class="n">Peer</span><span class="p">(</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    <span class="mi">3032</span><span class="p">,</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>    <span class="n">mode</span><span class="o">=</span><span class="n">OSCModes</span><span class="o">.</span><span class="n">TCP</span><span class="p">,</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>    <span class="n">framing</span><span class="o">=</span><span class="n">OSCFraming</span><span class="o">.</span><span class="n">OSC11</span><span class="p">,</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="p">)</span> <span class="c1">#(1)!</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="k">class</span><span class="w"> </span><span class="nc">PingResponse</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>    <span class="n">args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">OSCString</span><span class="p">]</span> <span class="c1">#(2)!</span>
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>
+</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>    <span class="nd">@property</span>
+</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">message</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="c1">#(3)!</span>
+</span><span id="__span-7-17"><a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>
+</span><span id="__span-7-18"><a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>
+</span><span id="__span-7-19"><a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a><span class="nd">@peer</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="s1">&#39;/test/out/ping&#39;</span><span class="p">,</span> <span class="n">validator</span><span class="o">=</span><span class="n">PingResponse</span><span class="p">)</span> <span class="c1">#(4)!</span>
+</span><span id="__span-7-20"><a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a><span class="k">def</span><span class="w"> </span><span class="nf">ping_handler</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">PingResponse</span><span class="p">):</span>
+</span><span id="__span-7-21"><a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Received a ping message with response: </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="c1">#(5)!</span>
+</span><span id="__span-7-22"><a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a>
+</span><span id="__span-7-23"><a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a><span class="n">peer</span><span class="o">.</span><span class="n">start_listening</span><span class="p">()</span> <span class="c1">#(6)!</span>
+</span></code></pre></div>
 <ol>
 <li>We create a <code>Peer</code> object that listens on localhost at port 3032 using TCP and OSC 1.1 framing.</li>
 <li>We define a <code>PingResponse</code> model that specifies the expected structure of the incoming message</li>
@@ -1235,30 +1250,30 @@ The dispatcher's core methods are exposed via <a data-preview="data-preview" hre
 <li>We call the <code>start_listening</code> method on the <code>peer</code> object to start listening for incoming OSC messages.</li>
 </ol>
 <h5 id="using-the-register_handler-method-with-a-validator">Using the <code>register_handler</code> method with a validator<a class="headerlink" href="#using-the-register_handler-method-with-a-validator" title="Permanent link">&para;</a></h5>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pyosc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Peer</span><span class="p">,</span> <span class="n">OSCMessage</span><span class="p">,</span> <span class="n">OSCModes</span><span class="p">,</span> <span class="n">OSCFraming</span><span class="p">,</span> <span class="n">OSCString</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
-
-<span class="n">peer</span> <span class="o">=</span> <span class="n">Peer</span><span class="p">(</span>
-    <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
-    <span class="mi">3032</span><span class="p">,</span>
-    <span class="n">mode</span><span class="o">=</span><span class="n">OSCModes</span><span class="o">.</span><span class="n">TCP</span><span class="p">,</span>
-    <span class="n">framing</span><span class="o">=</span><span class="n">OSCFraming</span><span class="o">.</span><span class="n">OSC11</span><span class="p">,</span>
-<span class="p">)</span> <span class="c1">#(1)!</span>
-
-<span class="k">class</span><span class="w"> </span><span class="nc">PingResponse</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-    <span class="n">args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">OSCString</span><span class="p">]</span> <span class="c1">#(2)!</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">message</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="c1">#(3)!</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">ping_handler</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">PingResponse</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Received a ping message with response: </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="c1">#(5)!</span>
-
-<span class="n">handler</span> <span class="o">=</span> <span class="n">peer</span><span class="o">.</span><span class="n">register_handler</span><span class="p">(</span><span class="s1">&#39;/test/out/ping&#39;</span><span class="p">,</span> <span class="n">ping_handler</span><span class="p">,</span> <span class="n">validator</span><span class="o">=</span><span class="n">PingResponse</span><span class="p">)</span> <span class="c1">#(4)!</span>
-
-<span class="n">peer</span><span class="o">.</span><span class="n">start_listening</span><span class="p">()</span> <span class="c1">#(6)!</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyosc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Peer</span><span class="p">,</span> <span class="n">OSCMessage</span><span class="p">,</span> <span class="n">OSCModes</span><span class="p">,</span> <span class="n">OSCFraming</span><span class="p">,</span> <span class="n">OSCString</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="n">peer</span> <span class="o">=</span> <span class="n">Peer</span><span class="p">(</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    <span class="mi">3032</span><span class="p">,</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span class="n">mode</span><span class="o">=</span><span class="n">OSCModes</span><span class="o">.</span><span class="n">TCP</span><span class="p">,</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span class="n">framing</span><span class="o">=</span><span class="n">OSCFraming</span><span class="o">.</span><span class="n">OSC11</span><span class="p">,</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="p">)</span> <span class="c1">#(1)!</span>
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="k">class</span><span class="w"> </span><span class="nc">PingResponse</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>    <span class="n">args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">OSCString</span><span class="p">]</span> <span class="c1">#(2)!</span>
+</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>
+</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>    <span class="nd">@property</span>
+</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">message</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="__span-8-16"><a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="c1">#(3)!</span>
+</span><span id="__span-8-17"><a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>
+</span><span id="__span-8-18"><a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a><span class="k">def</span><span class="w"> </span><span class="nf">ping_handler</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">PingResponse</span><span class="p">):</span>
+</span><span id="__span-8-19"><a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Received a ping message with response: </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="c1">#(5)!</span>
+</span><span id="__span-8-20"><a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>
+</span><span id="__span-8-21"><a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a><span class="n">handler</span> <span class="o">=</span> <span class="n">peer</span><span class="o">.</span><span class="n">register_handler</span><span class="p">(</span><span class="s1">&#39;/test/out/ping&#39;</span><span class="p">,</span> <span class="n">ping_handler</span><span class="p">,</span> <span class="n">validator</span><span class="o">=</span><span class="n">PingResponse</span><span class="p">)</span> <span class="c1">#(4)!</span>
+</span><span id="__span-8-22"><a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a>
+</span><span id="__span-8-23"><a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a><span class="n">peer</span><span class="o">.</span><span class="n">start_listening</span><span class="p">()</span> <span class="c1">#(6)!</span>
+</span></code></pre></div>
 <ol>
 <li>We create a <code>Peer</code> object that listens on localhost at port 3032 using TCP and OSC 1.1 framing.</li>
 <li>We define a <code>PingResponse</code> model that specifies the expected structure of the incoming message</li>
@@ -1319,7 +1334,7 @@ The dispatcher's core methods are exposed via <a data-preview="data-preview" hre
       
         <a href="https://github.com/Morph-Tollon" class="md-author" title="@Morph-Tollon">
           
-          <img src="https://avatars.githubusercontent.com/u/89318965?v=4&size=72" alt="Morph-Tollon">
+          <img src="../../assets/external/avatars.githubusercontent.com/u/89318965.fe356448.jpg" alt="Morph-Tollon">
         </a>
       
       
@@ -1331,7 +1346,59 @@ The dispatcher's core methods are exposed via <a data-preview="data-preview" hre
   </aside>
 
 
+  
 
+
+
+  <form class="md-feedback" name="feedback" hidden>
+    <fieldset>
+      <legend class="md-feedback__title">
+        Was this page helpful?
+      </legend>
+      <div class="md-feedback__inner">
+        <div class="md-feedback__list">
+          
+            <button class="md-feedback__icon md-icon" type="submit" title="This page was helpful" data-md-value="1">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 12a8 8 0 0 0-8-8 8 8 0 0 0-8 8 8 8 0 0 0 8 8 8 8 0 0 0 8-8m2 0a10 10 0 0 1-10 10A10 10 0 0 1 2 12 10 10 0 0 1 12 2a10 10 0 0 1 10 10M10 9.5c0 .8-.7 1.5-1.5 1.5S7 10.3 7 9.5 7.7 8 8.5 8s1.5.7 1.5 1.5m7 0c0 .8-.7 1.5-1.5 1.5S14 10.3 14 9.5 14.7 8 15.5 8s1.5.7 1.5 1.5m-5 7.73c-1.75 0-3.29-.73-4.19-1.81L9.23 14c.45.72 1.52 1.23 2.77 1.23s2.32-.51 2.77-1.23l1.42 1.42c-.9 1.08-2.44 1.81-4.19 1.81"/></svg>
+            </button>
+          
+            <button class="md-feedback__icon md-icon" type="submit" title="This page could be improved" data-md-value="0">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 12a8 8 0 0 0-8-8 8 8 0 0 0-8 8 8 8 0 0 0 8 8 8 8 0 0 0 8-8m2 0a10 10 0 0 1-10 10A10 10 0 0 1 2 12 10 10 0 0 1 12 2a10 10 0 0 1 10 10m-6.5-4c.8 0 1.5.7 1.5 1.5s-.7 1.5-1.5 1.5-1.5-.7-1.5-1.5.7-1.5 1.5-1.5M10 9.5c0 .8-.7 1.5-1.5 1.5S7 10.3 7 9.5 7.7 8 8.5 8s1.5.7 1.5 1.5m2 4.5c1.75 0 3.29.72 4.19 1.81l-1.42 1.42C14.32 16.5 13.25 16 12 16s-2.32.5-2.77 1.23l-1.42-1.42C8.71 14.72 10.25 14 12 14"/></svg>
+            </button>
+          
+        </div>
+        <div class="md-feedback__note">
+          
+            <div data-md-value="1" hidden>
+              
+              
+                
+              
+              
+              
+                
+                
+              
+              Thanks for your feedback!
+            </div>
+          
+            <div data-md-value="0" hidden>
+              
+              
+                
+              
+              
+              
+                
+                
+              
+              Thanks for your feedback! Help us improve this page by creating a <a href="https://github.com/theatre-tools/PyOSC/issues/new/?title=[Feedback]+Receiving%20Messages+-+/tutorials/dispatcher/" target="_blank" rel="noopener">github issue!</a>.
+            </div>
+          
+        </div>
+      </div>
+    </fieldset>
+  </form>
 
 
                 
@@ -1356,11 +1423,11 @@ The dispatcher's core methods are exposed via <a data-preview="data-preview" hre
     <div class="md-footer-meta__inner md-grid">
       <div class="md-copyright">
   
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2025 - 2026 Morph Tollon – <a href="#__consent">Change cookie settings</a>
+
+    </div>
   
-    Made with
-    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
-      Material for MkDocs
-    </a>
   
 </div>
       
@@ -1376,10 +1443,85 @@ The dispatcher's core methods are exposed via <a data-preview="data-preview" hre
       <div class="md-progress" data-md-component="progress" role="progressbar"></div>
     
     
+      <div class="md-consent" data-md-component="consent" id="__consent" hidden>
+        <div class="md-consent__overlay"></div>
+        <aside class="md-consent__inner">
+          <form class="md-consent__form md-grid md-typeset" name="consent">
+            
+
+
+  
+
+
+<h4>Cookie consent</h4>
+<p>We use cookies to recognize your repeated visits and preferences, as well as to measure the effectiveness of our documentation and whether users find what they're searching for. With your consent, you're helping us to make our documentation better.</p>
+<input class="md-toggle" type="checkbox" id="__settings" >
+<div class="md-consent__settings">
+  <ul class="task-list">
+    
+    
+      
+        
+  
+  
+    
+    
+  
+  <li class="task-list-item">
+    <label class="task-list-control">
+      <input type="checkbox" name="analytics" checked>
+      <span class="task-list-indicator"></span>
+      Google Analytics
+    </label>
+  </li>
+
+      
+    
+    
+      
+        
+  
+  
+    
+    
+  
+  <li class="task-list-item">
+    <label class="task-list-control">
+      <input type="checkbox" name="github" checked>
+      <span class="task-list-indicator"></span>
+      GitHub
+    </label>
+  </li>
+
+      
+    
+    
+  </ul>
+</div>
+<div class="md-consent__controls">
+  
+    
+      <button class="md-button md-button--primary">Accept</button>
+    
+    
+    
+  
+    
+    
+    
+      <label class="md-button" for="__settings">Manage settings</label>
+    
+  
+</div>
+          </form>
+        </aside>
+      </div>
+      <script>var consent=__md_get("__consent");if(consent)for(var input of document.forms.consent.elements)input.name&&(input.checked=consent[input.name]||!1);else"file:"!==location.protocol&&setTimeout((function(){document.querySelector("[data-md-component=consent]").hidden=!1}),250);var form=document.forms.consent;for(var action of["submit","reset"])form.addEventListener(action,(function(e){if(e.preventDefault(),"reset"===e.type)for(var n of document.forms.consent.elements)n.name&&(n.checked=!1);__md_set("__consent",Object.fromEntries(Array.from(new FormData(form).keys()).map((function(e){return[e,!0]})))),location.hash="",location.reload()}))</script>
+    
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.action.view", "content.action.edit", "search.highlight", "search.suggest", "navigation.instant", "navigation.top", "navigation.tracking", "navigation.instant.prefetch", "navigation.instant.progress", "content.tooltips", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "stable", "provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.code.copy", "content.code.select", "content.action.view", "content.action.edit", "search.highlight", "search.share", "search.suggest", "navigation.instant", "navigation.top", "navigation.tracking", "navigation.instant.prefetch", "navigation.instant.progress", "content.tooltips", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "stable", "provider": "mike"}}</script>
     
     
       <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
