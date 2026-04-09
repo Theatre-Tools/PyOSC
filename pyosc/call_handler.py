@@ -78,9 +78,9 @@ class CallHandler:
         with self.queue_lock:
             self.queues[return_address] = Call(responseq, validator)
             handler = self.peer.register_handler(return_address, self)
-            self.peer.send_message(message)
         start_time = perf_counter_ns()
         try:
+            self.peer.send_message(message)
             response = responseq.get(timeout=timeout)
             latency = perf_counter_ns() - start_time
             return CallHandler_Response(message=response, latency=latency / 1e9)
