@@ -1,4 +1,4 @@
-# Call Handlers
+# Call Handlers {#CallHandlers}
 
 In PyOSC, a [`CallHandler`](../api_reference.md#callhandler){ data-preview } is a kind of handler that is designed for sending a message and expecting or waiting for a response.
 This is particularly useful for request-response patterns, where you send a message to a remote peer and want to handle the response in a structured way.
@@ -7,7 +7,7 @@ They function in a very similar way to dispatch handlers, and actually replace t
 
 In versions after 2.0.0, the `CallHandler` is now integrated directly into the peer class, and initialized automatically when a peer is created. This means you can use the call handler without the clutter of having to create the call handler.
 
-## Using the Call Handler
+## Using the Call Handler {#Using-CallHandler}
 The `CallHandler` can be accessed via `peer.callHandler`, however there is very little utility to doing this, as all user facing methods are exposed via proxy methods of the `Peer` class. This means you can call messages and wait for responses directly from the `Peer` object, without having to interact with the `CallHandler` directly. Here's an example of how to use the call handler to send a message and wait for a response:
 
 ```python
@@ -61,14 +61,22 @@ if response:
 ```
 
 1. A `PingResponse` model is defined using Pydantic, which specifies that the response message should have a tuple of `OSCString` arguments. A property `message` is defined to extract the string value from the first argument of the response message.
-2. When calling the message, the `validator` parameter is set to the `PingResponse
+2. When calling the message, the `validator` parameter is set to the `PingResponse` model.
 3. model. This means that when a response is received, it will be validated against the `PingResponse` model before being passed to the caller. If the response does not conform to the model, it will be rejected and an error will be raised.
 4. The round trip latency is printed as before, allowing you to measure the time it took for the response to be received.
 5. We import the `BaseModel` class from Pydantic, which is used to define the `PingResponse` model. This allows us to easily validate the structure of the response message and extract the relevant information in a structured way.
 
 In this example, we define a `PingResponse` model that specifies the expected structure of the response message. When calling the message, we provide this model as the validator. If the response message conforms to the model, it is printed to the console.
 
-## Examples
+### Call Response {#CallResponse}
+
+The `CallHandler` returns a `CallHandler_Response` object, which contains the response, in the form of iether a BaseModel instance or an [`OSCMessage`](../api_reference.md#oscmessage){ data-preview }, and the latency of the round trip. This allows you to easily access the response message and measure the time it took for the response to be received. Having the latency information can be very useful for a vareity of things, including debugging, physical network configurations, performance monitoring, and simple ping command implementations.
+
+The Latency is measured from when the message is sent to the peer, all the way to where the message is received, dispatched and validated. The time is calculated just before the object is returned from the caller.
+
+
+
+## Examples {#CallHandler-Examples}
 
 Here is a complete example that demonstrates the use of a `CallHandler` to send a ping message and handle the response:
 
