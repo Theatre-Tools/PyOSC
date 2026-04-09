@@ -67,12 +67,13 @@ extra:
             creating a <a href="https://github.com/theatre-tools/PyOSC/issues/new/?title=[Feedback]+{title}+-+{url}" target="_blank" rel="noopener">github issue!</a>.
 
   consent:
+    actions:
+      - accept
+      - reject
+      - manage
     title: Cookie consent
     description: >- 
-      We use cookies to recognize your repeated visits and preferences, as well
-      as to measure the effectiveness of our documentation and whether users
-      find what they're searching for. With your consent, you're helping us to
-      make our documentation better.
+      With your consent, you're helping us to make our documentation better. We use cookies to collect anonymous data about how users interact with our documentation, which helps us identify areas for improvement and make informed decisions about future updates. Your data is safe with us and will never be shared with third parties. You can change your cookie settings at any time by clicking the "Change cookie settings" link in the footer of our documentation. Thank you for helping us improve our documentation! 
 
 
 markdown_extensions:
