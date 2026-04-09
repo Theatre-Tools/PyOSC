@@ -8,16 +8,9 @@ on:
 
 jobs:
 
-  test:
-    uses: ./.github/workflows/tests.yml
-    
-  release:
+  tag_version_check:
     if: startsWith(github.ref, 'refs/tags/')
-    needs:
-      - test
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     outputs:
       tag_matches_version: ${{ steps.version_check.outputs.tag_matches_version }}
     steps:
@@ -41,6 +34,23 @@ jobs:
           PY
         env:
           PYTHONUTF8: "1"
+
+  test:
+    if: startsWith(github.ref, 'refs/tags/') && needs.tag_version_check.outputs.tag_matches_version == 'true'
+    needs:
+      - tag_version_check
+    uses: ./.github/workflows/tests.yml
+    
+  release:
+    if: startsWith(github.ref, 'refs/tags/') && needs.tag_version_check.outputs.tag_matches_version == 'true'
+    needs:
+      - tag_version_check
+      - test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
 
       - name: Parse tags
         id: parse_tags
@@ -91,18 +101,27 @@ jobs:
           commit_message: 'docs: update CHANGELOG.md for ${{ github.ref_name }}'
           file_pattern: CHANGELOG.md
 
-  docs:
-    if: startsWith(github.ref, 'refs/tags/')
+  docs_after_release:
+    if: startsWith(github.ref, 'refs/tags/') && needs.release.result == 'success'
     needs: release
     uses: ./.github/workflows/docs.yml
     permissions:
       contents: write
 
-  publish:
-    if: startsWith(github.ref, 'refs/tags/') && needs.release.outputs.tag_matches_version == 'true'
+  docs_immediate_if_mismatch:
+    if: startsWith(github.ref, 'refs/tags/') && needs.tag_version_check.outputs.tag_matches_version == 'false'
     needs:
+      - tag_version_check
+    uses: ./.github/workflows/docs.yml
+    permissions:
+      contents: write
+
+  publish:
+    if: startsWith(github.ref, 'refs/tags/') && needs.tag_version_check.outputs.tag_matches_version == 'true'
+    needs:
+      - tag_version_check
       - release
-      - docs
+      - docs_after_release
     runs-on: ubuntu-latest
     permissions:
       id-token: write
