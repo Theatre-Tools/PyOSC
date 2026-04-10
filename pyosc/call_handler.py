@@ -15,9 +15,10 @@ class CallHandler_Response[T: BaseModel]:
 
 
 class Call:
-    def __init__[T: BaseModel](self, queue: queue.Queue[T], validator: type[T]):
+    def __init__[T: BaseModel](self, queue: queue.Queue[T], validator: type[T], prefix: int = 0):
         self.queue = queue
         self.validator = validator
+        self.prefix_remaining = max(0, prefix)
 
 
 class CallHandlerValidationError(ValueError):
@@ -40,6 +41,7 @@ class CallHandler:
         return_address: str | None = None,
         timeout: float = 5.0,
         responses: int = 1,
+        prefix: int = 0,
     ) -> CallHandler_Response[OSCMessage] | list[CallHandler_Response[OSCMessage]] | None: ...
 
     @overload
@@ -51,6 +53,7 @@ class CallHandler:
         validator: type[T],
         timeout: float = 5.0,
         responses: int = 1,
+        prefix: int = 0,
     ) -> CallHandler_Response[T] | list[CallHandler_Response[T]] | None: ...
 
     def call(
@@ -61,6 +64,7 @@ class CallHandler:
         validator: type[BaseModel] | None = None,
         timeout: float = 5.0,
         responses: int = 1,
+        prefix: int = 0,
     ) -> CallHandler_Response[Any] | list[CallHandler_Response[Any]] | None:
         """Calling a call handler will send a message to the peer, and await a response that meets the critieria.
 
@@ -69,10 +73,14 @@ class CallHandler:
             ``return_address (str | None, optional)``: The address to listen for a response on. Defaults to None.
             ``validator (type[BaseModel] | None, optional)``: A Pydantic model to validate the response against. Defaults to None.
             ``timeout (float, optional)``: How long to wait for a response before timing out. Defaults to 5.0.
-
+            ``responses (int, optional)``: How many responses to wait for before returning. Defaults to 1.
+            ``prefix (int, optional)``: How many messages to ignore before starting to listen for responses.
         Returns:
             - CallHandler_Response | list[CallHandler_Response] | None: A CallHandler_Response or list of CallHandler_Responses containing the response messages and latencies, or None if the call timed out.
         """
+        if prefix > 0:
+            responses = responses - prefix
+
 
         if validator is None:
             validator = OSCMessage
@@ -80,7 +88,7 @@ class CallHandler:
             return_address = message.address
         responseq = queue.Queue()
         with self.queue_lock:
-            self.queues[return_address] = Call(responseq, validator)
+            self.queues[return_address] = Call(responseq, validator, prefix)
             handler = self.peer.register_handler(return_address, self)
         start_time = perf_counter_ns()
         try:
@@ -105,8 +113,16 @@ class CallHandler:
 
     def __call__(self, message: OSCMessage):
         with self.queue_lock:
-            if message.address in self.queues:
-                try:
-                    self.queues[message.address].queue.put(self.queues[message.address].validator.model_validate(message.model_dump()))
-                except ValidationError as e:
-                    raise CallHandlerValidationError(f"CallHandler validation error: {e}") from e
+            call = self.queues.get(message.address)
+            if call is None:
+                return
+
+            # Ignore prefixed responses before running validation.
+            if call.prefix_remaining > 0:
+                call.prefix_remaining -= 1
+                return
+
+            try:
+                call.queue.put(call.validator.model_validate(message.model_dump()))
+            except ValidationError as e:
+                raise CallHandlerValidationError(f"CallHandler validation error: {e}") from e

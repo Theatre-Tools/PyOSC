@@ -237,7 +237,13 @@ class Peer:
 
     @overload
     def call(
-        self, message: OSCMessage, *, return_address: str | None = None, timeout: float = 5.0, responses: int = 1
+        self,
+        message: OSCMessage,
+        *,
+        return_address: str | None = None,
+        timeout: float = 5.0,
+        responses: int = 1,
+        prefix: int = 0,
     ) -> CallHandler_Response[OSCMessage] | list[CallHandler_Response[OSCMessage]] | None: ...
 
     @overload
@@ -249,6 +255,7 @@ class Peer:
         validator: type[T],
         timeout: float = 5.0,
         responses: int = 1,
+        prefix: int = 0,
     ) -> CallHandler_Response[T] | list[CallHandler_Response[T]] | None: ...
 
     def call(
@@ -259,6 +266,7 @@ class Peer:
         validator: type[BaseModel] = OSCMessage,
         timeout: float = 5.0,
         responses: int = 1,
+        prefix: int = 0,
     ) -> CallHandler_Response[Any] | list[CallHandler_Response[Any]] | None:
         """
 
@@ -268,12 +276,13 @@ class Peer:
             validator (type[BaseModel], optional): The validator to use for the response. Defaults to OSCMessage.
             timeout (float, optional): The timeout for the call. Defaults to 5.0.
             responses (int, optional): The number of responses to wait for. Defaults to 1.
+            prefix (int, optional): The number of leading arguments in the response to ignore when validating. Defaults to 0.
 
         Returns:
             CallHandler_Response | None: A CallHandler_Response containing the response message and latency, or None if the call timed out.
         """
         return self.callHandler.call(
-            message, return_address=return_address, validator=validator, timeout=timeout, responses=responses
+            message, return_address=return_address, validator=validator, timeout=timeout, responses=responses, prefix=prefix
         )
 
     def listen_tcp(self):
