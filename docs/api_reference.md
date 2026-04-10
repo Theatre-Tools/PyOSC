@@ -78,7 +78,8 @@ response = peer.call(
     return_address='/return/address',
     validator=SomePydanticModel,
     timeout=5,
-    responses=2
+    responses=2,
+    prefix=1
 )
 ```
 Sends an OSC message and waits for a response on a specified return address directly from the `Peer` object.
@@ -227,7 +228,9 @@ response = peer.callHandler.call(
     message=OSCMessage(address='/test/ping', args=(OSCString(value='Hello_World!'),)),
     return_addr='/return/address',
     validator=SomePydanticModel,
-    timeout=5
+    timeout=5,
+    responses=2,
+    prefix=1
 )
 ```
 
@@ -238,6 +241,7 @@ Sends an OSC message and waits for a response on a specified return address.
 - `timeout`: The maximum time to wait for a response, in seconds.
 - `validator`: (Optional) A Pydantic model class used to validate and parse the incoming response message. If none is specified, defaults to `OSCMessage`.
 - `responses`: (Optional) The maximum number of responses to wait for. Defaults to 1.
+- `prefix`: (Optional) The number of initial messages to ignore before waiting for responses. Defaults to 0.
 - Returns:
 
     * `CallHandler_Response` An object that contains the response message and latency
@@ -246,6 +250,9 @@ Sends an OSC message and waits for a response on a specified return address.
 
 !!! Warning "Method Proxies"
     The [`Peer`](#peer){ data-preview } class provides [proxy methods](#peer-proxy-methods) for the above [`Dispatcher`](#dispatcher){ data-preview } method. It is **Highly** reccomended to use the [`Peer`](#peer){ data-preview } proxy methods instead of the [`Dispatcher`](#dispatcher){ data-preview } methods directly, as they provide better integration with the rest of the library and ensure that handlers are properly registered and managed. Using the [`Dispatcher`](#dispatcher){ data-preview } methods directly can lead to unexpected behavior and is not recommended.
+
+!!! Note
+    The `responses` parameter ***Includes*** any messages that may be dropped by the `prefix` parameter. It may be neccesary to adjust the `responses` parameter accordingly.
 
 ##### Response
 
