@@ -78,7 +78,8 @@ response = peer.call(
     return_address='/return/address',
     validator=SomePydanticModel,
     timeout=5,
-    responses=2
+    responses=2,
+    prefix=1
 )
 ```
 Sends an OSC message and waits for a response on a specified return address directly from the `Peer` object.
@@ -240,6 +241,7 @@ Sends an OSC message and waits for a response on a specified return address.
 - `timeout`: The maximum time to wait for a response, in seconds.
 - `validator`: (Optional) A Pydantic model class used to validate and parse the incoming response message. If none is specified, defaults to `OSCMessage`.
 - `responses`: (Optional) The maximum number of responses to wait for. Defaults to 1.
+- `prefix`: (Optional) The number of initial messages to ignore before waiting for responses. Defaults to 0.
 - Returns:
 
     * `CallHandler_Response` An object that contains the response message and latency
