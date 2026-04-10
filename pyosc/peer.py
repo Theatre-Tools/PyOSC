@@ -237,12 +237,8 @@ class Peer:
 
     @overload
     def call(
-        self,
-        message: OSCMessage,
-        *,
-        return_address: str | None = None,
-        timeout: float = 5.0,
-    ) -> CallHandler_Response[OSCMessage] | None: ...
+        self, message: OSCMessage, *, return_address: str | None = None, timeout: float = 5.0, responses: int = 1
+    ) -> CallHandler_Response[OSCMessage] | list[CallHandler_Response[OSCMessage]] | None: ...
 
     @overload
     def call[T: BaseModel](
@@ -252,7 +248,8 @@ class Peer:
         return_address: str | None = None,
         validator: type[T],
         timeout: float = 5.0,
-    ) -> CallHandler_Response[T] | None: ...
+        responses: int = 1,
+    ) -> CallHandler_Response[T] | list[CallHandler_Response[T]] | None: ...
 
     def call(
         self,
@@ -261,7 +258,8 @@ class Peer:
         return_address: str | None = None,
         validator: type[BaseModel] = OSCMessage,
         timeout: float = 5.0,
-    ) -> CallHandler_Response[Any] | None:
+        responses: int = 1,
+    ) -> CallHandler_Response[Any] | list[CallHandler_Response[Any]] | None:
         """
 
         Args:
@@ -269,11 +267,14 @@ class Peer:
             return_address (str | None, optional): The address to which the response should be sent. Defaults to None.
             validator (type[BaseModel], optional): The validator to use for the response. Defaults to OSCMessage.
             timeout (float, optional): The timeout for the call. Defaults to 5.0.
+            responses (int, optional): The number of responses to wait for. Defaults to 1.
 
         Returns:
             CallHandler_Response | None: A CallHandler_Response containing the response message and latency, or None if the call timed out.
         """
-        return self.callHandler.call(message, return_address=return_address, validator=validator, timeout=timeout)
+        return self.callHandler.call(
+            message, return_address=return_address, validator=validator, timeout=timeout, responses=responses
+        )
 
     def listen_tcp(self):
         """Initiates a background TCP listener against the peer

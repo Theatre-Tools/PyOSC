@@ -13,6 +13,7 @@ class CallHandler_Response[T: BaseModel]:
         self.latency = latency
 
 
+
 class Call:
     def __init__[T: BaseModel](self, queue: queue.Queue[T], validator: type[T]):
         self.queue = queue
@@ -38,7 +39,8 @@ class CallHandler:
         *,
         return_address: str | None = None,
         timeout: float = 5.0,
-    ) -> CallHandler_Response[OSCMessage] | None: ...
+        responses: int = 1,
+    ) -> CallHandler_Response[OSCMessage] | list[CallHandler_Response[OSCMessage]] | None: ...
 
     @overload
     def call[T: BaseModel](
@@ -48,7 +50,8 @@ class CallHandler:
         return_address: str | None = None,
         validator: type[T],
         timeout: float = 5.0,
-    ) -> CallHandler_Response[T] | None: ...
+        responses: int = 1,
+    ) -> CallHandler_Response[T] | list[CallHandler_Response[T]] | None: ...
 
     def call(
         self,
@@ -57,7 +60,8 @@ class CallHandler:
         return_address: str | None = None,
         validator: type[BaseModel] | None = None,
         timeout: float = 5.0,
-    ) -> CallHandler_Response[Any] | None:
+        responses: int = 1,
+    ) -> CallHandler_Response[Any] | list[CallHandler_Response[Any]] | None:
         """Calling a call handler will send a message to the peer, and await a response that meets the critieria.
 
         Args:
@@ -67,7 +71,7 @@ class CallHandler:
             ``timeout (float, optional)``: How long to wait for a response before timing out. Defaults to 5.0.
 
         Returns:
-            - CallHandler_Response | None: A CallHandler_Response containing the response message and latency, or None if the call timed out.
+            - CallHandler_Response | list[CallHandler_Response] | None: A CallHandler_Response or list of CallHandler_Responses containing the response messages and latencies, or None if the call timed out.
         """
 
         if validator is None:
@@ -81,9 +85,17 @@ class CallHandler:
         start_time = perf_counter_ns()
         try:
             self.peer.send_message(message)
-            response = responseq.get(timeout=timeout)
-            latency = perf_counter_ns() - start_time
-            return CallHandler_Response(message=response, latency=latency / 1e9)
+            if responses > 1:
+                response_list = []
+                for i in range(responses):
+                    latency = perf_counter_ns() - start_time
+                    response_list.append(CallHandler_Response(message=responseq.get(timeout=timeout), latency=latency / 1e6))
+
+                return response_list
+            else:
+                response = responseq.get(timeout=timeout)
+                latency = perf_counter_ns() - start_time
+                return CallHandler_Response(message=response, latency=latency / 1e6)
         except queue.Empty:
             return None
         finally:
@@ -95,7 +107,6 @@ class CallHandler:
         with self.queue_lock:
             if message.address in self.queues:
                 try:
-                    validated_msg = self.queues[message.address].validator.model_validate(message.model_dump())
-                    self.queues[message.address].queue.put(validated_msg)
+                    self.queues[message.address].queue.put(self.queues[message.address].validator.model_validate(message.model_dump()))
                 except ValidationError as e:
                     raise CallHandlerValidationError(f"CallHandler validation error: {e}") from e
