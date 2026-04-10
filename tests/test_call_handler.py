@@ -3,6 +3,7 @@
 import queue
 import time
 import unittest
+from typing import cast
 from unittest.mock import MagicMock, Mock
 
 from oscparser import OSCInt, OSCMessage, OSCString
@@ -27,10 +28,11 @@ class TestCall(unittest.TestCase):
     def test_call_initialization(self):
         """Test Call object initialization."""
         q = queue.Queue()
-        call = Call(q, OSCMessage)
+        call = Call(q, OSCMessage, prefix=2)
 
         self.assertIs(call.queue, q)
         self.assertEqual(call.validator, OSCMessage)
+        self.assertEqual(call.prefix_remaining, 2)
 
 
 class TestCallHandler(unittest.TestCase):
@@ -240,6 +242,68 @@ class TestCallHandler(unittest.TestCase):
 
         # Queue should remain empty
         self.assertTrue(test_queue.empty())
+
+    def test_call_handler_prefix_skips_validation(self):
+        """Test prefixed messages are ignored before validation."""
+
+        class StrictModel(BaseModel):
+            required_field: str
+
+        test_queue = queue.Queue()
+        with self.call_handler.queue_lock:
+            self.call_handler.queues["/test"] = Call(test_queue, StrictModel, prefix=1)
+
+        # First invalid message should be ignored and not validated.
+        message = OSCMessage(address="/test", args=())
+        self.call_handler(message)
+        self.assertTrue(test_queue.empty())
+
+        # Next message should be validated and fail.
+        with self.assertRaises(CallHandlerValidationError):
+            self.call_handler(message)
+
+    def test_call_prefix_ignores_initial_responses(self):
+        """Test call() ignores prefixed messages before collecting responses."""
+        message = OSCMessage(address="/test/prefix", args=())
+
+        def mock_send(msg):
+            self.call_handler(OSCMessage(address="/test/prefix", args=(OSCString(value="ignore-me"),)))
+            self.call_handler(OSCMessage(address="/test/prefix", args=(OSCString(value="use-me"),)))
+
+        self.mock_peer.send_message = mock_send
+
+        result = self.call_handler.call(message, timeout=1.0, prefix=1)
+
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, CallHandler_Response)
+        if not isinstance(result, CallHandler_Response):
+            self.fail("Expected CallHandler_Response")
+        self.assertIsInstance(result.message, OSCMessage)
+        self.assertEqual(result.message.address, "/test/prefix")
+        self.assertEqual(len(result.message.args), 1)
+        arg = result.message.args[0]
+        self.assertIsInstance(arg, OSCString)
+        self.assertEqual(cast(OSCString, arg).value, "use-me")
+
+    def test_call_prefix_with_multiple_responses(self):
+        """Test responses count is interpreted after applying prefix."""
+        message = OSCMessage(address="/test/prefix/multi", args=())
+
+        def mock_send(msg):
+            self.call_handler(OSCMessage(address="/test/prefix/multi", args=(OSCString(value="ignore"),)))
+            self.call_handler(OSCMessage(address="/test/prefix/multi", args=(OSCString(value="first"),)))
+            self.call_handler(OSCMessage(address="/test/prefix/multi", args=(OSCString(value="second"),)))
+
+        self.mock_peer.send_message = mock_send
+
+        result = self.call_handler.call(message, timeout=1.0, prefix=1, responses=2)
+
+        self.assertIsInstance(result, CallHandler_Response)
+        if not isinstance(result, CallHandler_Response):
+            self.fail("Expected CallHandler_Response")
+        arg = result.message.args[0]
+        self.assertIsInstance(arg, OSCString)
+        self.assertEqual(cast(OSCString, arg).value, "first")
 
     def test_concurrent_calls(self):
         """Test multiple concurrent calls to different addresses."""
