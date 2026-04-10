@@ -31,6 +31,30 @@ In this example, we send a ping message to the `/test/ping` address, and wait fo
 
 Starting in version 2.0.0, the call handler returns a [`CallResponse`](../api_reference.md#callresponse){ data-preview } object. This contains the message, and a latency paramenter that indicates how long it took for the response to be received. This allows you to easily measure the round-trip time of your messages, which can be useful for debugging and performance monitoring.
 
+##### Multiple Responses {#Multiple-Responses}
+The `call` method also supports waiting for multiple responses to a single message. This can be useful in situations where you expect multiple responses to a single message. To wait for multiple responses, you can use the `responses` parameter of the `call` method. It should be noted that the `responses` parameter specifies the ***Maximum*** number of responses to wait for. Here's an example:
+```python
+responses = peer.call(
+    OSCMessage(address="/test/ping", args=(OSCString(value="Hello_world!"),
+    )),
+    return_addr="/test/out/ping",
+    timeout=10.0,
+    responses=3,  #(1)!
+)
+
+if isinstance(responses, list):
+    for response in responses:
+        print(response.message) #(2)!
+        print(f"Round-trip latency: {response.latency:.2f} seconds") #(3)!
+
+```
+
+1. The `responses` parameter is set to 3, which means that the `call` method will wait for up to 3 responses to be received on the return address before returning. If 3 responses are received, they will be returned as a list of `CallResponse` objects.
+2. If multiple responses are received, they are printed to the console in a loop.
+
+If multiple responses are expected, the `call` method will return a list of `CallHandler_Response` objects, each containing a response message and its corresponding latency. If only a single response is expected, it will return a single `CallHandler_Response` object. If no response is received within the timeout period, it will return `None`.
+
+Responses defaults to one. If you only expect a single response, there is no reason to specify it manually.
 
 ### Using [Validators](./dispatcher.md#validators){ data-preview }
 You can also specify a validator when calling a message to ensure that the response message is of the expected type. Here's an example:

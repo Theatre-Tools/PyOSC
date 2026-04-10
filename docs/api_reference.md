@@ -77,7 +77,8 @@ response = peer.call(
     message=OSCMessage(address='/test/ping', args=(OSCString(value='Hello_World!'),)),
     return_address='/return/address',
     validator=SomePydanticModel,
-    timeout=5
+    timeout=5,
+    responses=2
 )
 ```
 Sends an OSC message and waits for a response on a specified return address directly from the `Peer` object.
@@ -219,7 +220,7 @@ The Call Handler has been greatly simplified in version 2.0.0, and you can call 
 
 ### Methods {#callhandler-methods}
 
-#### `call(message: OSCMessage, return_addr: str, timeout: float, validator: Optional)` {#method-call}
+#### `call(message: OSCMessage, return_addr: str, timeout: float, validator: Optional = OSCMessagee, responses: int = 1)` {#method-call}
 
 ```python
 response = peer.callHandler.call(
@@ -235,8 +236,13 @@ Sends an OSC message and waits for a response on a specified return address.
 - `message`: An [`OSCMessage`](#oscmessage){ data-preview } object representing the message to be sent.
 - `return_addr`: The OSC address pattern where the response is expected.
 - `timeout`: The maximum time to wait for a response, in seconds.
-- `validator`: (Optional) A Pydantic model class used to validate and parse the incoming response message.
-- Returns: A [`CallHandler_Response`](#callhandler_response){ data-preview } object containing the response message and latency, or `None` if the call times out without receiving a valid response.
+- `validator`: (Optional) A Pydantic model class used to validate and parse the incoming response message. If none is specified, defaults to `OSCMessage`.
+- `responses`: (Optional) The maximum number of responses to wait for. Defaults to 1.
+- Returns:
+
+    * `CallHandler_Response` An object that contains the response message and latency
+    * `List[CallHandler_Response]` If multiple responses are expected, a list of `CallHandler_Response` objects for each response received within the timeout period, up to the specified number of responses.
+    * `None` If the call times out without receiving a valid response.
 
 !!! Warning "Method Proxies"
     The [`Peer`](#peer){ data-preview } class provides [proxy methods](#peer-proxy-methods) for the above [`Dispatcher`](#dispatcher){ data-preview } method. It is **Highly** reccomended to use the [`Peer`](#peer){ data-preview } proxy methods instead of the [`Dispatcher`](#dispatcher){ data-preview } methods directly, as they provide better integration with the rest of the library and ensure that handlers are properly registered and managed. Using the [`Dispatcher`](#dispatcher){ data-preview } methods directly can lead to unexpected behavior and is not recommended.
