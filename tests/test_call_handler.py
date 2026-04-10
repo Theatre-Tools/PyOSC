@@ -39,6 +39,8 @@ class TestCallHandler(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.mock_peer = Mock(spec=Peer)
+        self.mock_handler = Mock()
+        self.mock_peer.register_handler.return_value = self.mock_handler
         self.mock_peer.dispatcher = Dispatcher()
         dispatcher = self.mock_peer.dispatcher
         original_remove_handler = dispatcher.remove_handler
@@ -84,8 +86,9 @@ class TestCallHandler(unittest.TestCase):
         result = self.call_handler.call(message, timeout=1.0)
 
         self.assertIsNotNone(result)
-        assert result is not None  # Type narrowing for pyright
         self.assertIsInstance(result, CallHandler_Response)
+        if not isinstance(result, CallHandler_Response):
+            self.fail("Expected CallHandler_Response")
         self.assertIsInstance(result.message, OSCMessage)
         self.assertEqual(result.message.address, "/test/call")
 
@@ -103,8 +106,9 @@ class TestCallHandler(unittest.TestCase):
         result = self.call_handler.call(message, return_address="/test/response", timeout=1.0)
 
         self.assertIsNotNone(result)
-        assert result is not None  # Type narrowing for pyright
         self.assertIsInstance(result, CallHandler_Response)
+        if not isinstance(result, CallHandler_Response):
+            self.fail("Expected CallHandler_Response")
         self.assertEqual(result.message.address, "/test/response")
 
     def test_call_with_validator(self):
@@ -116,37 +120,63 @@ class TestCallHandler(unittest.TestCase):
                 address="/test/validated",
                 args=(OSCString(value="success"),),
             )
-            # Manually add status for validation
-            response_dict = response.model_dump()
-            response_dict["status"] = "success"
-            # Simulate the response
-            with self.call_handler.queue_lock:
-                if "/test/validated" in self.call_handler.queues:
-                    try:
-                        validated = ResponseModel.model_validate(response_dict)
-                        self.call_handler.queues["/test/validated"].queue.put(validated)  # type: ignore[arg-type]
-                    except Exception:
-                        pass
+            self.call_handler(response)
 
         self.mock_peer.send_message = mock_send
 
-        # Pre-add the handler for this test
-        responseq = queue.Queue()
-        with self.call_handler.queue_lock:
-            self.call_handler.queues["/test/validated"] = Call(responseq, ResponseModel)
-            self.mock_peer.dispatcher.register_handler("/test/validated", self.call_handler, ResponseModel)
+        result = self.call_handler.call(message, validator=ResponseModel, timeout=1.0)
 
-        # Send message and get from queue
-        self.mock_peer.send_message(message)
-        try:
-            result = responseq.get(timeout=1.0)
-            self.assertIsNotNone(result)
-            self.assertIsInstance(result, ResponseModel)
-        finally:
-            with self.call_handler.queue_lock:
-                self.mock_peer.dispatcher.remove_handler("/test/validated")
-                if "/test/validated" in self.call_handler.queues:
-                    del self.call_handler.queues["/test/validated"]
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, CallHandler_Response)
+        if not isinstance(result, CallHandler_Response):
+            self.fail("Expected CallHandler_Response")
+        self.assertIsInstance(result.message, ResponseModel)
+        self.assertEqual(result.message.address, "/test/validated")
+        self.assertEqual(result.message.status, "success")
+
+    def test_call_multiple_responses(self):
+        """Test call requesting multiple responses."""
+        message = OSCMessage(address="/test/multi", args=(OSCInt(value=1),))
+
+        def mock_send(msg):
+            self.call_handler(OSCMessage(address="/test/multi", args=(OSCInt(value=10),)))
+            self.call_handler(OSCMessage(address="/test/multi", args=(OSCInt(value=20),)))
+
+        self.mock_peer.send_message = mock_send
+
+        result = self.call_handler.call(message, responses=2, timeout=1.0)
+
+        self.assertIsInstance(result, list)
+        assert isinstance(result, list)
+        self.assertEqual(len(result), 2)
+        self.assertTrue(all(isinstance(item, CallHandler_Response) for item in result))
+        self.assertTrue(all(isinstance(item.message, OSCMessage) for item in result))
+
+    def test_unregister_called_after_successful_call(self):
+        """Test handler is always unregistered after a successful call."""
+        message = OSCMessage(address="/test/unregister/success", args=())
+
+        def mock_send(msg):
+            self.call_handler(OSCMessage(address="/test/unregister/success", args=()))
+
+        self.mock_peer.send_message = mock_send
+
+        result = self.call_handler.call(message, timeout=1.0)
+
+        self.assertIsNotNone(result)
+        self.mock_peer.register_handler.assert_called_once_with("/test/unregister/success", self.call_handler)
+        self.mock_handler.unregister.assert_called_once()
+
+    def test_unregister_called_after_timeout(self):
+        """Test handler is always unregistered after a timeout."""
+        message = OSCMessage(address="/test/unregister/timeout", args=())
+        self.mock_peer.send_message = MagicMock()
+
+        result = self.call_handler.call(message, timeout=0.1)
+
+        self.assertIsNone(result)
+        self.mock_peer.register_handler.assert_called_once_with("/test/unregister/timeout", self.call_handler)
+        self.mock_handler.unregister.assert_called_once()
 
     def test_call_timeout(self):
         """Test call timeout when no response received."""

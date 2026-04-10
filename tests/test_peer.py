@@ -64,6 +64,7 @@ class TestPeerTCP(unittest.TestCase):
         self.assertIsNotNone(self.peer.encoder)
         self.assertIsNotNone(self.peer.decoder)
         self.assertIsNotNone(self.peer.dispatcher)
+        self.assertIs(self.peer.connection, self.peer.tcp_connection)
 
     def test_tcp_peer_connection_failure(self):
         """Test TCP peer raises exception on connection failure."""
@@ -254,6 +255,7 @@ class TestPeerUDP(unittest.TestCase):
         self.assertEqual(self.peer.udp_rx_address, "127.0.0.1")
         self.assertIsNotNone(self.peer.encoder)
         self.assertIsNotNone(self.peer.decoder)
+        self.assertIs(self.peer.connection, self.peer.udp_connection)
 
     def test_event_connect_replays_when_already_connected(self):
         """Test on_connect handler fires immediately when UDP peer is already connected."""
@@ -274,6 +276,64 @@ class TestPeerUDP(unittest.TestCase):
 
         self.assertEqual(len(connect_events), 1)
         self.assertIs(connect_events[0], self.peer)
+
+    def test_event_error_accepts_single_error_parameter(self):
+        """Test on_error(error) handlers receive only the exception argument."""
+        self.peer = Peer(
+            "127.0.0.1",
+            self.server_port,
+            mode=OSCModes.UDP,
+            udp_rx_port=self.client_port,
+            udp_rx_address="127.0.0.1",
+            framing=OSCFraming.OSC10,
+        )
+
+        captured_errors = []
+
+        @self.peer.event
+        def on_error(error):
+            captured_errors.append(error)
+
+        sample_error = RuntimeError("boom")
+        self.peer._emit_error(sample_error)
+
+        self.assertEqual(len(captured_errors), 1)
+        self.assertIs(captured_errors[0], sample_error)
+        self.assertIs(self.peer.last_error, sample_error)
+
+    def test_event_requires_on_prefix(self):
+        """Test event decorator rejects handlers without the on_ prefix."""
+        self.peer = Peer(
+            "127.0.0.1",
+            self.server_port,
+            mode=OSCModes.UDP,
+            udp_rx_port=self.client_port,
+            udp_rx_address="127.0.0.1",
+            framing=OSCFraming.OSC10,
+        )
+
+        def connect(peer):
+            return None
+
+        with self.assertRaises(ValueError):
+            self.peer.event(connect)
+
+    def test_event_rejects_unsupported_handler_name(self):
+        """Test event decorator rejects unsupported event names."""
+        self.peer = Peer(
+            "127.0.0.1",
+            self.server_port,
+            mode=OSCModes.UDP,
+            udp_rx_port=self.client_port,
+            udp_rx_address="127.0.0.1",
+            framing=OSCFraming.OSC10,
+        )
+
+        def on_ready(peer):
+            return None
+
+        with self.assertRaises(ValueError):
+            self.peer.event(on_ready)
 
     def test_udp_peer_missing_rx_address(self):
         """Test UDP peer raises exception when rx address is missing."""
