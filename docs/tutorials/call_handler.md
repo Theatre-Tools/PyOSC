@@ -56,32 +56,6 @@ If multiple responses are expected, the `call` method will return a list of `Cal
 
 Responses defaults to one. If you only expect a single response, there is no reason to specify it manually.
 
-##### Prefixes {#Prefixes}
-The `prefix` parameter is a really powerfull yet simple way to handle multiple messages coming in, while interfacing with a peer like a traditional API. It allows you, and more importantly, the validator to ignore the first x number of messages coming in. This was added out of neccesity to enable support for features in a dependant library.
-For example, if you are interfacing with a piece of software that sends mutliple argument schemas on a single address. If you have an address that sends an inital message to say how many items there are, and then sends follow up messages with more detailed information on those actual items. A validator would fail as it would initally reject the first message, using prefixes is a stopgap that allows you to simply siphon off the first message.
-
-!!! Note
-    The `responses` parameter ***Includes*** any messages that may be dropped by the `prefix` parameter. It may be neccesary to adjust the `responses` parameter accordingly.
-
-
-```python
-responses = peer.call(
-    OSCMessage(address="/test/ping", args=(OSCString(value="Hello_world!"),
-    )),
-    return_addr="/test/out/ping",
-    timeout=10.0,
-    responses=3,
-    prefix=1,  #(1)!
-)
-if isinstance(responses, list):
-    for response in responses:
-        print(response.message) #(2)!
-        print(f"Round-trip latency: {response.latency:.2f} seconds") #(3)!
-```
-
-1. The `prefix` parameter is set to 1, which means that the first message received on the return address will be ignored, and the `call` method will wait for the next 2 messages to be received before returning. This can be useful in situations where you expect a certain number of messages to be sent before the actual response messages are sent.
-
-
 ### Using [Validators](./dispatcher.md#validators){ data-preview }
 You can also specify a validator when calling a message to ensure that the response message is of the expected type. Here's an example:
 
