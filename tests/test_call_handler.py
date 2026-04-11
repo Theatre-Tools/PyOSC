@@ -43,7 +43,7 @@ class TestCallHandler(unittest.TestCase):
         self.mock_peer = Mock(spec=Peer)
         self.mock_handler = Mock()
         self.mock_peer.register_handler.return_value = self.mock_handler
-        self.mock_peer.dispatcher = Dispatcher()
+        self.mock_peer.dispatcher = Dispatcher(error_emit=lambda _message: None)
         dispatcher = self.mock_peer.dispatcher
         original_remove_handler = dispatcher.remove_handler
 

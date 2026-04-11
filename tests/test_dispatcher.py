@@ -123,7 +123,7 @@ class TestDispatcher(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures."""
-        self.dispatcher = Dispatcher()
+        self.dispatcher = Dispatcher(error_emit=lambda _message: None)
 
     def tearDown(self):
         """Clean up after tests."""

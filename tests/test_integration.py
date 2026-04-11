@@ -172,7 +172,7 @@ class TestComplexPatterns(unittest.TestCase):
         def handle_all(message):
             received["all"].append(message)
 
-        dispatcher = Dispatcher()
+        dispatcher = Dispatcher(error_emit=lambda _message: None)
         dispatcher.register_handler("/mixer/channel1/*", handle_channel1, OSCMessage)
         dispatcher.register_handler("/mixer/channel2/*", handle_channel2, OSCMessage)
         dispatcher.register_handler("/mixer/*/fader", handle_all, OSCMessage)
