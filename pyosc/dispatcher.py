@@ -261,7 +261,7 @@ class Dispatcher:
 
     def __init__(
         self,
-        error_emit: Callable[[str], None] | None = None,
+        error_emit: Callable,
     ):
         self.handlers: list[Handler] = []
         self.dispatch_cache: dict[str, tuple[Handler, ...]] = {}
@@ -271,7 +271,7 @@ class Dispatcher:
         self._scheduler_counter = 0
         self._stop_scheduler = Event()
         self._scheduler_thread: Thread | None = None
-        self.error_emit = error_emit or (lambda _message: None)
+        self.error_emit = error_emit
 
     @overload
     def add_handler(self, address: str, func: DispatcherInterface[OSCMessage]) -> Handler: ...

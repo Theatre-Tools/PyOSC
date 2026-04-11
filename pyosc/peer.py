@@ -81,7 +81,7 @@ class Peer:
         self.udp_rx_port = udp_rx_port
         self.udp_rx_address = udp_rx_address
         self.connected = threading.Event()
-        self.last_error: Exception | None = None
+        self.last_error: Exception | str | None = None
         self.background: threading.Thread | None = None
         self._event_handlers: dict[str, list[Callable[..., None]]] = {
             "connect": [],
@@ -178,7 +178,7 @@ class Peer:
         for handler in handlers:
             handler(*args)
 
-    def _emit_error(self, error: Exception):
+    def _emit_error(self, error: Exception | str):
         self.last_error = error
         self._emit("error", self, error)
 
