@@ -259,7 +259,10 @@ class Dispatcher:
     It supports dynamic registration and deregistration of handlers, as well as scheduling of messages in bundles based on their timetags.
     """
 
-    def __init__(self):
+    def __init__(
+        self,
+        error_emit: Callable,
+    ):
         self.handlers: list[Handler] = []
         self.dispatch_cache: dict[str, tuple[Handler, ...]] = {}
         self.dispatch_lock: RLock = RLock()
@@ -268,6 +271,7 @@ class Dispatcher:
         self._scheduler_counter = 0
         self._stop_scheduler = Event()
         self._scheduler_thread: Thread | None = None
+        self.error_emit = error_emit
 
     @overload
     def add_handler(self, address: str, func: DispatcherInterface[OSCMessage]) -> Handler: ...
@@ -519,7 +523,11 @@ class Dispatcher:
             if message.address in self.dispatch_cache:
                 for handler in self.dispatch_cache[message.address]:
                     if handler.enabled:
-                        handler.run(message)
+                        try:
+                            handler.run(message)
+                        except Exception as e:
+                            ## Emit a warning using the built in library event handlers
+                            self.error_emit(f"Error in handler for address pattern '{handler.pattern.pattern}': {e}")
                 return
 
         matched_handlers: list[Handler] = []
@@ -531,7 +539,11 @@ class Dispatcher:
 
         for handler in matched_handlers:
             if handler.enabled:
-                handler.run(message)
+                try:
+                    handler.run(message)
+                except Exception as e:
+                    ## Emit a warning using the built in library event handlers
+                    self.error_emit(f"Error in handler for address pattern '{handler.pattern.pattern}': {e}")
 
     def dispatch_bundle(self, bundle: OSCBundle):
         """
@@ -595,7 +607,11 @@ class Dispatcher:
                     # Execute all handlers for this message
                     for handler in handlers:
                         if handler.enabled:
-                            handler.run(item)
+                            try:
+                                handler.run(item)
+                            except Exception as e:
+                                ## Emit a warning using the built in library event handlers
+                                self.error_emit(f"Error in handler for address pattern '{handler.pattern.pattern}': {e}")
                 elif isinstance(item, OSCBundle):
                     # Nested bundle - check its timetag and either process or schedule
                     # RLock allows the same thread to acquire the lock again

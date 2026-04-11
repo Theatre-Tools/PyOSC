@@ -107,7 +107,7 @@ class Peer:
             except OSError as e:
                 raise PeerConnectionError(f"Could not bind UDP Peer at localhost:{self.udp_rx_port} - {e}") from e
             self._emit_connection_state(True)
-        self.dispatcher = Dispatcher()
+        self.dispatcher = Dispatcher(error_emit=self._emit_error)
         self.callHandler = CallHandler(self)
 
     @property
