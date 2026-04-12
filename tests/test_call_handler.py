@@ -154,7 +154,7 @@ class TestCallHandler(unittest.TestCase):
 
         self.mock_peer.send_message = mock_send
 
-        result = self.call_handler.call(message, responses=2, timeout=1.0)
+        result = self.call_handler.call(message, max_responses=2, timeout=1.0)
 
         self.assertIsInstance(result, list)
         assert isinstance(result, list)
@@ -328,7 +328,7 @@ class TestCallHandler(unittest.TestCase):
 
         self.mock_peer.send_message = mock_send
 
-        result = self.call_handler.call(message, timeout=1.0, prefix=1, responses=2)
+        result = self.call_handler.call(message, timeout=1.0, prefix=1, max_responses=2)
 
         self.assertIsInstance(result, CallHandler_Response)
         if not isinstance(result, CallHandler_Response):
