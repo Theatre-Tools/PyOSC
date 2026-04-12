@@ -1,4 +1,5 @@
 import queue
+import re
 import threading
 from time import perf_counter_ns
 from typing import Any, overload
@@ -13,7 +14,6 @@ class CallHandler_Response[T: BaseModel]:
         self.latency = latency
 
 
-
 class Call:
     def __init__[T: BaseModel](self, queue: queue.Queue[T], validator: type[T], prefix: int = 0):
         self.queue = queue
@@ -26,8 +26,6 @@ class CallHandlerValidationError(ValueError):
 
 
 class CallHandler:
-    """"""
-
     def __init__(self, peer):
         self.peer = peer
         self.queues: dict[str, Call] = {}
@@ -81,15 +79,14 @@ class CallHandler:
         if prefix > 0:
             responses = responses - prefix
 
-
         if validator is None:
             validator = OSCMessage
         if not return_address:
             return_address = message.address
         responseq = queue.Queue()
         with self.queue_lock:
-            self.queues[return_address] = Call(responseq, validator, prefix)
             handler = self.peer.register_handler(return_address, self)
+            self.queues[handler.pattern] = Call(responseq, validator, prefix)
         start_time = perf_counter_ns()
         try:
             self.peer.send_message(message)
@@ -97,7 +94,12 @@ class CallHandler:
                 response_list = []
                 for i in range(responses):
                     latency = perf_counter_ns() - start_time
-                    response_list.append(CallHandler_Response(message=responseq.get(timeout=timeout), latency=latency / 1e6))
+                    response_list.append(
+                        CallHandler_Response(
+                            message=responseq.get(timeout=timeout),
+                            latency=latency / 1e6,
+                        )
+                    )
 
                 return response_list
             else:
@@ -108,12 +110,17 @@ class CallHandler:
             return None
         finally:
             with self.queue_lock:
-                self.queues.pop(return_address, None)
+                self.queues.pop(handler.pattern, None)
                 handler.unregister()
 
     def __call__(self, message: OSCMessage):
         with self.queue_lock:
-            call = self.queues.get(message.address)
+            for pattern in self.queues.items():
+                if isinstance(pattern[0], re.Pattern) and pattern[0].fullmatch(message.address):
+                    break
+            else:
+                return
+            call = self.queues.get(pattern[0])
             if call is None:
                 return
 
