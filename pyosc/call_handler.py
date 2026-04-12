@@ -93,7 +93,6 @@ class CallHandler:
             if max_responses > 1:
                 response_list = []
                 for i in range(max_responses):
-                    print(i)
                     latency = perf_counter_ns() - start_time
                     try:
                         response_list.append(
@@ -104,7 +103,6 @@ class CallHandler:
                         )
                     except queue.Empty:
                         if response_list:
-                            print(response_list)
                             return response_list
                         else:
                             return None
