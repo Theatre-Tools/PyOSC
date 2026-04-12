@@ -118,6 +118,9 @@ if response:
 
 In this example, we define a `PingResponse` model that specifies the expected structure of the response message. When calling the message, we provide this model as the validator. If the response message conforms to the model, it is printed to the console.
 
+!!! Warning "Wildcards"
+    As of BETA 8 of version 2.0.0, wildcards based pattern matching is now supported for call handler return addresses. This being missing was an oversight in the original library implementation.
+
 ### Call Response {#CallResponse}
 
 The `CallHandler` returns a `CallHandler_Response` object, which contains the response, in the form of iether a BaseModel instance or an [`OSCMessage`](../api_reference.md#oscmessage){ data-preview }, and the latency of the round trip. This allows you to easily access the response message and measure the time it took for the response to be received. Having the latency information can be very useful for a vareity of things, including debugging, physical network configurations, performance monitoring, and simple ping command implementations.
