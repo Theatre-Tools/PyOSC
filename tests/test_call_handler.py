@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field
 
 from pyosc.call_handler import Call, CallHandler, CallHandler_Response, CallHandlerValidationError
 from pyosc.dispatcher import Dispatcher
+from pyosc.handler import Handler
 from pyosc.peer import Peer
 
 
@@ -41,8 +42,6 @@ class TestCallHandler(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.mock_peer = Mock(spec=Peer)
-        self.mock_handler = Mock()
-        self.mock_peer.register_handler.return_value = self.mock_handler
         self.mock_peer.dispatcher = Dispatcher(error_emit=lambda _message: None)
         dispatcher = self.mock_peer.dispatcher
         original_remove_handler = dispatcher.remove_handler
@@ -58,6 +57,15 @@ class TestCallHandler(unittest.TestCase):
 
         dispatcher.add_handler = add_handler  # type: ignore[attr-defined]
         dispatcher.remove_handler = remove_handler  # type: ignore[attr-defined]
+
+        # Dynamically create mock handlers with patterns based on address
+        def register_handler_side_effect(address, handler, validator=OSCMessage):
+            mock_handler = Mock()
+            mock_handler.pattern = Handler.pattern_generator(address)
+            mock_handler.unregister = Mock()
+            return mock_handler
+
+        self.mock_peer.register_handler.side_effect = register_handler_side_effect
         self.call_handler = CallHandler(self.mock_peer)
 
     def tearDown(self):
@@ -158,6 +166,16 @@ class TestCallHandler(unittest.TestCase):
         """Test handler is always unregistered after a successful call."""
         message = OSCMessage(address="/test/unregister/success", args=())
 
+        mock_handlers = []
+        original_side_effect = self.mock_peer.register_handler.side_effect
+
+        def capture_handler_side_effect(address, handler, validator=OSCMessage):
+            result = original_side_effect(address, handler, validator)
+            mock_handlers.append(result)
+            return result
+
+        self.mock_peer.register_handler.side_effect = capture_handler_side_effect
+
         def mock_send(msg):
             self.call_handler(OSCMessage(address="/test/unregister/success", args=()))
 
@@ -166,19 +184,29 @@ class TestCallHandler(unittest.TestCase):
         result = self.call_handler.call(message, timeout=1.0)
 
         self.assertIsNotNone(result)
-        self.mock_peer.register_handler.assert_called_once_with("/test/unregister/success", self.call_handler)
-        self.mock_handler.unregister.assert_called_once()
+        self.assertEqual(len(mock_handlers), 1)
+        mock_handlers[0].unregister.assert_called_once()
 
     def test_unregister_called_after_timeout(self):
         """Test handler is always unregistered after a timeout."""
         message = OSCMessage(address="/test/unregister/timeout", args=())
+
+        mock_handlers = []
+        original_side_effect = self.mock_peer.register_handler.side_effect
+
+        def capture_handler_side_effect(address, handler, validator=OSCMessage):
+            result = original_side_effect(address, handler, validator)
+            mock_handlers.append(result)
+            return result
+
+        self.mock_peer.register_handler.side_effect = capture_handler_side_effect
         self.mock_peer.send_message = MagicMock()
 
         result = self.call_handler.call(message, timeout=0.1)
 
         self.assertIsNone(result)
-        self.mock_peer.register_handler.assert_called_once_with("/test/unregister/timeout", self.call_handler)
-        self.mock_handler.unregister.assert_called_once()
+        self.assertEqual(len(mock_handlers), 1)
+        mock_handlers[0].unregister.assert_called_once()
 
     def test_call_timeout(self):
         """Test call timeout when no response received."""
@@ -191,14 +219,15 @@ class TestCallHandler(unittest.TestCase):
 
         self.assertIsNone(result)
         # Queue should be cleaned up
-        self.assertNotIn("/test/timeout", self.call_handler.queues)
+        self.assertEqual(len(self.call_handler.queues), 0)
 
     def test_call_handler_callable(self):
         """Test CallHandler as callable (message handler)."""
-        # Set up a queue for testing
+        # Create a pattern for the test address
+        test_pattern = Handler.pattern_generator("/test")
         test_queue = queue.Queue()
         with self.call_handler.queue_lock:
-            self.call_handler.queues["/test"] = Call(test_queue, OSCMessage)
+            self.call_handler.queues[test_pattern] = Call(test_queue, OSCMessage)
 
         # Call the handler
         message = OSCMessage(address="/test", args=(OSCInt(value=42),))
@@ -212,10 +241,11 @@ class TestCallHandler(unittest.TestCase):
 
     def test_call_handler_wrong_address(self):
         """Test CallHandler ignores messages with wrong address."""
-        # Set up queue for /test
+        # Create a pattern for /test
+        test_pattern = Handler.pattern_generator("/test")
         test_queue = queue.Queue()
         with self.call_handler.queue_lock:
-            self.call_handler.queues["/test"] = Call(test_queue, OSCMessage)
+            self.call_handler.queues[test_pattern] = Call(test_queue, OSCMessage)
 
         # Send message to different address
         message = OSCMessage(address="/other", args=())
@@ -230,9 +260,10 @@ class TestCallHandler(unittest.TestCase):
         class StrictModel(BaseModel):
             required_field: str
 
+        test_pattern = Handler.pattern_generator("/test")
         test_queue = queue.Queue()
         with self.call_handler.queue_lock:
-            self.call_handler.queues["/test"] = Call(test_queue, StrictModel)
+            self.call_handler.queues[test_pattern] = Call(test_queue, StrictModel)
 
         # Send message that won't validate
         message = OSCMessage(address="/test", args=())
@@ -249,9 +280,10 @@ class TestCallHandler(unittest.TestCase):
         class StrictModel(BaseModel):
             required_field: str
 
+        test_pattern = Handler.pattern_generator("/test")
         test_queue = queue.Queue()
         with self.call_handler.queue_lock:
-            self.call_handler.queues["/test"] = Call(test_queue, StrictModel, prefix=1)
+            self.call_handler.queues[test_pattern] = Call(test_queue, StrictModel, prefix=1)
 
         # First invalid message should be ignored and not validated.
         message = OSCMessage(address="/test", args=())
@@ -359,11 +391,12 @@ class TestCallHandler(unittest.TestCase):
         def add_remove_queue():
             for i in range(iterations):
                 try:
+                    pattern = Handler.pattern_generator(f"/test/{i}")
                     with self.call_handler.queue_lock:
-                        self.call_handler.queues[f"/test/{i}"] = Call(queue.Queue(), OSCMessage)
+                        self.call_handler.queues[pattern] = Call(queue.Queue(), OSCMessage)
                     with self.call_handler.queue_lock:
-                        if f"/test/{i}" in self.call_handler.queues:
-                            del self.call_handler.queues[f"/test/{i}"]
+                        if pattern in self.call_handler.queues:
+                            del self.call_handler.queues[pattern]
                 except Exception as e:
                     errors.append(e)
 
@@ -392,7 +425,7 @@ class TestCallHandler(unittest.TestCase):
 
         self.assertIsNotNone(result)
         # Queue should be cleaned up
-        self.assertNotIn("/test/cleanup", self.call_handler.queues)
+        self.assertEqual(len(self.call_handler.queues), 0)
 
     def test_cleanup_after_timeout(self):
         """Test that queues are cleaned up after timeout."""
@@ -403,7 +436,7 @@ class TestCallHandler(unittest.TestCase):
 
         self.assertIsNone(result)
         # Queue should be cleaned up
-        self.assertNotIn("/test/cleanup", self.call_handler.queues)
+        self.assertEqual(len(self.call_handler.queues), 0)
 
 
 if __name__ == "__main__":

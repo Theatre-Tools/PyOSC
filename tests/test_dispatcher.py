@@ -7,8 +7,8 @@ from unittest.mock import MagicMock
 from oscparser import OSCBundle, OSCInt, OSCMessage
 from pydantic import BaseModel
 
-from pyosc.dispatcher import (
-    Dispatcher,
+from pyosc.dispatcher import Dispatcher
+from pyosc.handler import (
     DispatcherMissingFieldError,
     Handler,
 )
