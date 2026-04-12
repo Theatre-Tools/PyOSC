@@ -36,14 +36,14 @@ In this example, we send a ping message to the `/test/ping` address, and wait fo
 Starting in version 2.0.0, the call handler returns a [`CallResponse`](../api_reference.md#callhandler_response){ data-preview } object. This contains the message, and a latency paramenter that indicates how long it took for the response to be received. This allows you to easily measure the round-trip time of your messages, which can be useful for debugging and performance monitoring.
 
 ##### Multiple Responses {#Multiple-Responses}
-The `call` method also supports waiting for multiple responses to a single message. This can be useful in situations where you expect multiple responses to a single message. To wait for multiple responses, you can use the `responses` parameter of the `call` method. It should be noted that the `responses` parameter specifies the ***Maximum*** number of responses to wait for. Here's an example:
+The `call` method also supports waiting for multiple responses to a single message. This can be useful in situations where you expect multiple responses to a single message. To wait for multiple responses, you can use the `max_responses` parameter of the `call` method. It should be noted that the `max_responses` parameter specifies the ***Maximum*** number of responses to wait for. Here's an example:
 ```python
 responses = peer.call(
     OSCMessage(address="/test/ping", args=(OSCString(value="Hello_world!"),
     )),
     return_address="/test/out/ping",
     timeout=10.0,
-    responses=3,  #(1)!
+    max_responses=3,  #(1)!
 )
 
 if isinstance(responses, list):
@@ -53,19 +53,19 @@ if isinstance(responses, list):
 
 ```
 
-1. The `responses` parameter is set to 3, which means that the `call` method will wait for up to 3 responses to be received on the return address before returning. If 3 responses are received, they will be returned as a list of `CallResponse` objects.
+1. The `max_responses` parameter is set to 3, which means that the `call` method will wait for up to 3 responses to be received on the return address before returning. If 3 responses are received, they will be returned as a list of `CallResponse` objects.
 2. If multiple responses are received, they are printed to the console in a loop.
 
 If multiple responses are expected, the `call` method will return a list of `CallHandler_Response` objects, each containing a response message and its corresponding latency. If only a single response is expected, it will return a single `CallHandler_Response` object. If no response is received within the timeout period, it will return `None`.
 
-Responses defaults to one. If you only expect a single response, there is no reason to specify it manually.
+Max_responses defaults to one. If you only expect a single response, there is no reason to specify it manually.
 
 ##### Prefixes {#Prefixes}
 The `prefix` parameter is a really powerfull yet simple way to handle multiple messages coming in, while interfacing with a peer like a traditional API. It allows you, and more importantly, the validator to ignore the first x number of messages coming in. This was added out of neccesity to enable support for features in a dependant library.
 For example, if you are interfacing with a piece of software that sends mutliple argument schemas on a single address. If you have an address that sends an inital message to say how many items there are, and then sends follow up messages with more detailed information on those actual items. A validator would fail as it would initally reject the first message, using prefixes is a stopgap that allows you to simply siphon off the first message.
 
 !!! Note
-    The `responses` parameter ***Includes*** any messages that may be dropped by the `prefix` parameter. It may be neccesary to adjust the `responses` parameter accordingly.
+    The `max_responses` parameter ***Includes*** any messages that may be dropped by the `prefix` parameter. It may be neccesary to adjust the `max_responses` parameter accordingly.
 
 
 ```python
@@ -74,7 +74,7 @@ responses = peer.call(
     )),
     return_address="/test/out/ping",
     timeout=10.0,
-    responses=3,
+    max_responses=3,
     prefix=1,  #(1)!
 )
 if isinstance(responses, list):
