@@ -32,12 +32,12 @@ You can install the latest pre-release build with pip:
 === "Pip"
 
     ```bash
-    pip install "pyopensoundcontrol>=2.0.0b9"
+    pip install "pyopensoundcontrol>=2.0.0b10"
     ```
 === "Poetry"
 
     ```bash
-    poetry add "pyopensoundcontrol>=2.0.0b9"
+    poetry add "pyopensoundcontrol>=2.0.0b10"
     ```
 
 
