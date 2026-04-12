@@ -15,7 +15,7 @@ from pyosc import OSCMessage, OSCString
 
 response = peer.call(
     OSCMessage(address="/test/ping", args=(OSCString(value="Hello_world!"),)),
-    return_addr="/test/out/ping",
+    return_address="/test/out/ping",
     timeout=5.0,
 )  # (1)!
 if response:
@@ -29,7 +29,11 @@ if response:
 
 In this example, we send a ping message to the `/test/ping` address, and wait for a response on the `/test/out/ping` address. If a response is received within 5 seconds, it is printed to the console.
 
-Starting in version 2.0.0, the call handler returns a [`CallResponse`](../api_reference.md#callresponse){ data-preview } object. This contains the message, and a latency paramenter that indicates how long it took for the response to be received. This allows you to easily measure the round-trip time of your messages, which can be useful for debugging and performance monitoring.
+!!! Warning "Wildcards"
+    As of BETA 8 of version 2.0.0, wildcards based pattern matching is now supported for call handler return addresses. This being missing was an oversight in the original library implementation.
+
+
+Starting in version 2.0.0, the call handler returns a [`CallResponse`](../api_reference.md#callhandler_response){ data-preview } object. This contains the message, and a latency paramenter that indicates how long it took for the response to be received. This allows you to easily measure the round-trip time of your messages, which can be useful for debugging and performance monitoring.
 
 ##### Multiple Responses {#Multiple-Responses}
 The `call` method also supports waiting for multiple responses to a single message. This can be useful in situations where you expect multiple responses to a single message. To wait for multiple responses, you can use the `responses` parameter of the `call` method. It should be noted that the `responses` parameter specifies the ***Maximum*** number of responses to wait for. Here's an example:
@@ -37,7 +41,7 @@ The `call` method also supports waiting for multiple responses to a single messa
 responses = peer.call(
     OSCMessage(address="/test/ping", args=(OSCString(value="Hello_world!"),
     )),
-    return_addr="/test/out/ping",
+    return_address="/test/out/ping",
     timeout=10.0,
     responses=3,  #(1)!
 )
@@ -68,7 +72,7 @@ For example, if you are interfacing with a piece of software that sends mutliple
 responses = peer.call(
     OSCMessage(address="/test/ping", args=(OSCString(value="Hello_world!"),
     )),
-    return_addr="/test/out/ping",
+    return_address="/test/out/ping",
     timeout=10.0,
     responses=3,
     prefix=1,  #(1)!
@@ -101,7 +105,7 @@ response = peer.call(
     OSCMessage(address="/test/ping", args=(OSCString(value="Hello_world!"),
     )),
     validator=PingResponse,  #(2)!
-    return_addr="/test/out/ping",
+    return_address="/test/out/ping",
     timeout=10.0,
 )
 
@@ -118,8 +122,6 @@ if response:
 
 In this example, we define a `PingResponse` model that specifies the expected structure of the response message. When calling the message, we provide this model as the validator. If the response message conforms to the model, it is printed to the console.
 
-!!! Warning "Wildcards"
-    As of BETA 8 of version 2.0.0, wildcards based pattern matching is now supported for call handler return addresses. This being missing was an oversight in the original library implementation.
 
 ### Call Response {#CallResponse}
 
