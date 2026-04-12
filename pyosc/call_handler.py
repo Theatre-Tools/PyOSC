@@ -28,7 +28,7 @@ class CallHandlerValidationError(ValueError):
 class CallHandler:
     def __init__(self, peer):
         self.peer = peer
-        self.queues: dict[str, Call] = {}
+        self.queues: dict[re.Pattern, Call] = {}
         self.queue_lock = threading.Lock()
 
     @overload
