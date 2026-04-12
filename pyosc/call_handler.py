@@ -38,7 +38,7 @@ class CallHandler:
         *,
         return_address: str | None = None,
         timeout: float = 5.0,
-        responses: int = 1,
+        max_responses: int = 1,
         prefix: int = 0,
     ) -> CallHandler_Response[OSCMessage] | list[CallHandler_Response[OSCMessage]] | None: ...
 
@@ -50,7 +50,7 @@ class CallHandler:
         return_address: str | None = None,
         validator: type[T],
         timeout: float = 5.0,
-        responses: int = 1,
+        max_responses: int = 1,
         prefix: int = 0,
     ) -> CallHandler_Response[T] | list[CallHandler_Response[T]] | None: ...
 
@@ -61,7 +61,7 @@ class CallHandler:
         return_address: str | None = None,
         validator: type[BaseModel] | None = None,
         timeout: float = 5.0,
-        responses: int = 1,
+        max_responses: int = 1,
         prefix: int = 0,
     ) -> CallHandler_Response[Any] | list[CallHandler_Response[Any]] | None:
         """Calling a call handler will send a message to the peer, and await a response that meets the critieria.
@@ -71,13 +71,13 @@ class CallHandler:
             ``return_address (str | None, optional)``: The address to listen for a response on. Defaults to None.
             ``validator (type[BaseModel] | None, optional)``: A Pydantic model to validate the response against. Defaults to None.
             ``timeout (float, optional)``: How long to wait for a response before timing out. Defaults to 5.0.
-            ``responses (int, optional)``: How many responses to wait for before returning. Defaults to 1.
+            ``max_responses (int, optional)``: How many responses to wait for before returning. Defaults to 1.
             ``prefix (int, optional)``: How many messages to ignore before starting to listen for responses.
         Returns:
             - CallHandler_Response | list[CallHandler_Response] | None: A CallHandler_Response or list of CallHandler_Responses containing the response messages and latencies, or None if the call timed out.
         """
         if prefix > 0:
-            responses = responses - prefix
+            max_responses = max_responses - prefix
 
         if validator is None:
             validator = OSCMessage
@@ -90,17 +90,24 @@ class CallHandler:
         start_time = perf_counter_ns()
         try:
             self.peer.send_message(message)
-            if responses > 1:
+            if max_responses > 1:
                 response_list = []
-                for i in range(responses):
+                for i in range(max_responses):
+                    print(i)
                     latency = perf_counter_ns() - start_time
-                    response_list.append(
-                        CallHandler_Response(
-                            message=responseq.get(timeout=timeout),
-                            latency=latency / 1e6,
+                    try:
+                        response_list.append(
+                            CallHandler_Response(
+                                message=responseq.get(timeout=timeout),
+                                latency=latency / 1e6,
+                            )
                         )
-                    )
-
+                    except queue.Empty:
+                        if response_list:
+                            print(response_list)
+                            return response_list
+                        else:
+                            return None
                 return response_list
             else:
                 response = responseq.get(timeout=timeout)
