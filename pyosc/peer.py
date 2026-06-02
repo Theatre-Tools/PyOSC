@@ -16,21 +16,8 @@ from pydantic import BaseModel
 from pyosc.call_handler import CallHandler, CallHandler_Response
 from pyosc.dispatcher import Dispatcher, DispatcherInterface, Handler
 
-
-class PeerError(Exception):
-    """Base exception for peer-related errors."""
-
-
-class PeerConfigurationError(PeerError):
-    """Raised when a peer is configured with invalid arguments."""
-
-
-class PeerConnectionError(PeerError):
-    """Raised when a peer cannot establish or use its transport connection."""
-
-
-class PeerListenerError(PeerError):
-    """Raised when a background listener fails."""
+from .exceptions import PeerConnectionError, PeerListenerError
+from .initiator import _initiate_connection
 
 
 class Peer:
@@ -81,6 +68,7 @@ class Peer:
         self.decoder = OSCDecoder(transport=self.transport, framing=self.framing)
         self.udp_rx_port = udp_rx_port
         self.udp_rx_address = udp_rx_address
+        # Initialize connection attributes so static checkers know they exist
         self.connected = threading.Event()
         self.last_error: Exception | str | None = None
         self.background: threading.Thread | None = None
@@ -89,34 +77,31 @@ class Peer:
             "disconnect": [],
             "error": [],
         }
-        if self.transport == OSCTransport.TCP:
-            try:
-                self.tcp_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self.tcp_connection.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-                self.tcp_connection.connect((self.address, self.port))
-            except OSError as e:
-                raise PeerConnectionError(f"Could not connect to TCP Peer at {self.address}:{self.port} - {e}") from e
+        if transport == OSCTransport.UDP:
+            self.udp_connection = _initiate_connection(self)
             self._emit_connection_state(True)
-        elif self.transport == OSCTransport.UDP:
-            try:
-                if self.udp_rx_address is None:
-                    raise PeerConfigurationError("UDP RX address must be specified for UDP Peers")
-                if self.udp_rx_port is None:
-                    raise PeerConfigurationError("UDP RX port must be specified for UDP Peers")
-                self.udp_connection = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                self.udp_connection.bind((self.udp_rx_address, self.udp_rx_port))
-            except OSError as e:
-                raise PeerConnectionError(f"Could not bind UDP Peer at localhost:{self.udp_rx_port} - {e}") from e
+            self.dispatcher = Dispatcher(error_emit=self._emit_error)
+            self.callHandler = CallHandler(self)
+
+        else:
+            self.tcp_connection = _initiate_connection(self)
             self._emit_connection_state(True)
-        self.dispatcher = Dispatcher(error_emit=self._emit_error)
-        self.callHandler = CallHandler(self)
+            self.dispatcher = Dispatcher(error_emit=self._emit_error)
+            self.callHandler = CallHandler(self)
 
     @property
-    def connection(self) -> socket.socket:
+    def connection(self) -> socket.socket | None:
         """Returns the active transport socket for this peer."""
         if self.transport == OSCTransport.TCP:
-            return self.tcp_connection
-        return self.udp_connection
+            if self.tcp_connection:
+                return self.tcp_connection
+            else:
+                raise PeerConnectionError("TCP connection is not established.")
+        elif self.transport == OSCTransport.UDP:
+            if self.udp_connection:
+                return self.udp_connection
+            else:
+                raise PeerConnectionError("UDP connection is not established.")
 
     def _normalize_event_name(self, raw_name: str) -> str:
         aliases = {
