@@ -1,6 +1,7 @@
 import inspect
 import socket
 import threading
+from enum import Enum
 from select import select
 from typing import Any, Callable, Literal, overload
 
@@ -20,6 +21,10 @@ from .exceptions import PeerConnectionError, PeerListenerError
 from .initiator import _initiate_connection
 
 
+class PeerRoles(Enum):
+    INITIATING = "initiating"
+    ACCEPTING = "accepting"
+
 class Peer:
     """A Peer represents a remote OSC endpoint that can send and receive messages.
 
@@ -30,9 +35,22 @@ class Peer:
     @overload
     def __init__(
         self,
+        connection_role: PeerRoles = PeerRoles.ACCEPTING,
+        *,
+        bind_address: str,
+        bind_port: int,
+        transport: Literal[OSCTransport.TCP],
+        framing: OSCFraming = OSCFraming.OSC10,
+    ): ...
+
+
+    @overload
+    def __init__(
+        self,
+        connection_role: PeerRoles = PeerRoles.INITIATING,
+        *,
         address: str,
         port: int,
-        *,
         transport: Literal[OSCTransport.TCP],
         framing: OSCFraming = OSCFraming.OSC10,
     ): ...
@@ -40,9 +58,10 @@ class Peer:
     @overload
     def __init__(
         self,
+        connection_role: PeerRoles = PeerRoles.INITIATING,
+        *,
         address: str,
         port: int,
-        *,
         udp_rx_port: int,
         udp_rx_address: str,
         transport: Literal[OSCTransport.UDP],
@@ -51,19 +70,25 @@ class Peer:
 
     def __init__(
         self,
-        address: str,
-        port: int,
+        connection_role: PeerRoles = PeerRoles.INITIATING,
         *,
-        transport: OSCTransport = OSCTransport.TCP,
+        bind_address: str | None = None,
+        bind_port: int | None = None,
+        address: str | None = None,
+        port: int | None = None,
         udp_rx_port: int | None = None,
         udp_rx_address: str | None = None,
+        transport: OSCTransport = OSCTransport.TCP,
         framing: OSCFraming = OSCFraming.OSC10,
     ):
         self.address = address
         self.port = port
+        self.bind_address = bind_address
+        self.bind_port = bind_port
         self.stop_flag = threading.Event()
         self.transport = transport
         self.framing = framing
+        self.connection_role = connection_role
         self.encoder = OSCEncoder(transport=self.transport, framing=self.framing)
         self.decoder = OSCDecoder(transport=self.transport, framing=self.framing)
         self.udp_rx_port = udp_rx_port
@@ -77,17 +102,18 @@ class Peer:
             "disconnect": [],
             "error": [],
         }
-        if transport == OSCTransport.UDP:
-            self.udp_connection = _initiate_connection(self)
-            self._emit_connection_state(True)
-            self.dispatcher = Dispatcher(error_emit=self._emit_error)
-            self.callHandler = CallHandler(self)
+        if self.connection_role == PeerRoles.INITIATING:
+            if transport == OSCTransport.UDP:
+                self.udp_connection = _initiate_connection(self)
+                self._emit_connection_state(True)
+                self.dispatcher = Dispatcher(error_emit=self._emit_error)
+                self.callHandler = CallHandler(self)
 
-        else:
-            self.tcp_connection = _initiate_connection(self)
-            self._emit_connection_state(True)
-            self.dispatcher = Dispatcher(error_emit=self._emit_error)
-            self.callHandler = CallHandler(self)
+            else:
+                self.tcp_connection = _initiate_connection(self)
+                self._emit_connection_state(True)
+                self.dispatcher = Dispatcher(error_emit=self._emit_error)
+                self.callHandler = CallHandler(self)
 
     @property
     def connection(self) -> socket.socket | None:
