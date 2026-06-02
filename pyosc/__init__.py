@@ -15,11 +15,11 @@ from oscparser import (
     OSCInt64,
     OSCMessage,
     OSCMidi,
-    OSCModes,
     OSCNil,
     OSCString,
     OSCSymbol,
     OSCTimeTag,
+    OSCTransport,
     OSCTrue,
 )
 
@@ -42,11 +42,11 @@ __all__ = [
     "OSCInt64",
     "OSCMessage",
     "OSCMidi",
-    "OSCModes",
     "OSCNil",
     "OSCString",
     "OSCSymbol",
     "OSCTimeTag",
+    "OSCTransport",
     "OSCTrue",
     "Peer",
 ]

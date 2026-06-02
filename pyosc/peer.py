@@ -9,7 +9,7 @@ from oscparser import (
     OSCEncoder,
     OSCFraming,
     OSCMessage,
-    OSCModes,
+    OSCTransport,
 )
 from pydantic import BaseModel
 
@@ -46,7 +46,7 @@ class Peer:
         address: str,
         port: int,
         *,
-        mode: Literal[OSCModes.TCP],
+        transport: Literal[OSCTransport.TCP],
         framing: OSCFraming = OSCFraming.OSC10,
     ): ...
 
@@ -58,15 +58,16 @@ class Peer:
         *,
         udp_rx_port: int,
         udp_rx_address: str,
-        mode: Literal[OSCModes.UDP],
+        transport: Literal[OSCTransport.UDP],
         framing: OSCFraming = OSCFraming.OSC10,
     ): ...
+
     def __init__(
         self,
         address: str,
         port: int,
         *,
-        mode: OSCModes = OSCModes.TCP,
+        transport: OSCTransport = OSCTransport.TCP,
         udp_rx_port: int | None = None,
         udp_rx_address: str | None = None,
         framing: OSCFraming = OSCFraming.OSC10,
@@ -74,10 +75,10 @@ class Peer:
         self.address = address
         self.port = port
         self.stop_flag = threading.Event()
-        self.mode = mode
+        self.transport = transport
         self.framing = framing
-        self.encoder = OSCEncoder(mode=self.mode, framing=self.framing)
-        self.decoder = OSCDecoder(mode=self.mode, framing=self.framing)
+        self.encoder = OSCEncoder(transport=self.transport, framing=self.framing)
+        self.decoder = OSCDecoder(transport=self.transport, framing=self.framing)
         self.udp_rx_port = udp_rx_port
         self.udp_rx_address = udp_rx_address
         self.connected = threading.Event()
@@ -88,7 +89,7 @@ class Peer:
             "disconnect": [],
             "error": [],
         }
-        if self.mode == OSCModes.TCP:
+        if self.transport == OSCTransport.TCP:
             try:
                 self.tcp_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 self.tcp_connection.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
@@ -96,7 +97,7 @@ class Peer:
             except OSError as e:
                 raise PeerConnectionError(f"Could not connect to TCP Peer at {self.address}:{self.port} - {e}") from e
             self._emit_connection_state(True)
-        elif self.mode == OSCModes.UDP:
+        elif self.transport == OSCTransport.UDP:
             try:
                 if self.udp_rx_address is None:
                     raise PeerConfigurationError("UDP RX address must be specified for UDP Peers")
@@ -113,7 +114,7 @@ class Peer:
     @property
     def connection(self) -> socket.socket:
         """Returns the active transport socket for this peer."""
-        if self.mode == OSCModes.TCP:
+        if self.transport == OSCTransport.TCP:
             return self.tcp_connection
         return self.udp_connection
 
@@ -160,6 +161,7 @@ class Peer:
 
                 def callback(_peer):
                     func()
+
             else:
                 callback = func
 
@@ -200,9 +202,9 @@ class Peer:
         """
         try:
             encoded_message = self.encoder.encode(message)
-            if self.mode == OSCModes.TCP:
+            if self.transport == OSCTransport.TCP:
                 self.tcp_connection.sendall(encoded_message)
-            elif self.mode == OSCModes.UDP:
+            elif self.transport == OSCTransport.UDP:
                 self.udp_connection.sendto(encoded_message, (self.address, self.port))
         except OSError as e:
             peer_error = PeerConnectionError(f"Failed to send OSC message to {self.address}:{self.port} - {e}")
@@ -340,10 +342,10 @@ class Peer:
         # Start the dispatcher's scheduler for timestamped bundles
         self.dispatcher.start_scheduler()
 
-        if self.mode == OSCModes.TCP:
+        if self.transport == OSCTransport.TCP:
             self.background = threading.Thread(target=self.listen_tcp, daemon=True)
             self.background.start()
-        elif self.mode == OSCModes.UDP:
+        elif self.transport == OSCTransport.UDP:
             self.background = threading.Thread(target=self.listen_udp, daemon=True)
             self.background.start()
 
