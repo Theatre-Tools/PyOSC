@@ -11,15 +11,14 @@ def _accept_tcp(peer):
     peer.tcp_connection = connection
     peer.client_address = address
     peer._emit_connection_state(True)
-    peer._emit("connect", address)
     peer.listener_background = threading.Thread(target=_tcp_listener, args=(peer,), daemon=True)
     peer.listener_background.start()
+
 
 def _bind_TCP(peer):
     peer.bind = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     peer.bind.bind((peer.bind_address, peer.bind_port))
     peer.bind.listen(1)
-
 
 
 def _accept_connection(peer):
