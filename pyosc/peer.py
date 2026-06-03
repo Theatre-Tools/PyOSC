@@ -17,6 +17,8 @@ from pydantic import BaseModel
 from pyosc.call_handler import CallHandler, CallHandler_Response
 from pyosc.dispatcher import Dispatcher, DispatcherInterface, Handler
 
+from .acceptor import _accept_connection
+from .connection import _tcp_listener
 from .exceptions import PeerConnectionError, PeerListenerError
 from .initiator import _initiate_connection
 
@@ -94,6 +96,11 @@ class Peer:
         self.udp_rx_port = udp_rx_port
         self.udp_rx_address = udp_rx_address
         # Initialize connection attributes so static checkers know they exist
+        self.bind: socket.socket | None = None
+        self.tcp_connection: socket.socket | None = None
+        self.udp_connection: socket.socket | None = None
+        self.accept_background: threading.Thread | None = None
+        self.listener_background: threading.Thread | None = None
         self.connected = threading.Event()
         self.last_error: Exception | str | None = None
         self.background: threading.Thread | None = None
@@ -114,6 +121,12 @@ class Peer:
                 self._emit_connection_state(True)
                 self.dispatcher = Dispatcher(error_emit=self._emit_error)
                 self.callHandler = CallHandler(self)
+
+        else:
+            _accept_connection(self)
+            self.dispatcher = Dispatcher(error_emit=self._emit_error)
+            self.callHandler = CallHandler(self)
+
 
     @property
     def connection(self) -> socket.socket | None:
@@ -214,9 +227,15 @@ class Peer:
         try:
             encoded_message = self.encoder.encode(message)
             if self.transport == OSCTransport.TCP:
-                self.tcp_connection.sendall(encoded_message)
+                tcp_connection = self.tcp_connection
+                if tcp_connection is None:
+                    raise PeerConnectionError("TCP connection is not established.")
+                tcp_connection.sendall(encoded_message)
             elif self.transport == OSCTransport.UDP:
-                self.udp_connection.sendto(encoded_message, (self.address, self.port))
+                udp_connection = self.udp_connection
+                if udp_connection is None:
+                    raise PeerConnectionError("UDP connection is not established.")
+                udp_connection.sendto(encoded_message, (self.address, self.port))
         except OSError as e:
             peer_error = PeerConnectionError(f"Failed to send OSC message to {self.address}:{self.port} - {e}")
             self._emit_error(peer_error)
@@ -304,27 +323,19 @@ class Peer:
         )
 
     def listen_tcp(self):
-        """Initiates a background TCP listener against the peer
+        """Initiates a background TCP listener
 
         Raises:
             e: Any exceptions raised during listening are propagated upwards
         """
-        try:
-            while self.stop_flag.is_set() is False:
-                read, _write, _exec = select([self.tcp_connection], [], [], 0.01)
-                for sock in read:
-                    data = sock.recv(2**16)
-                    if data == b"":
-                        self.tcp_connection.close()
-                        self._emit_connection_state(False)
-                        return
-                    for msg in self.decoder.decode(data):
-                        self.dispatcher.dispatch(msg)
-            self.tcp_connection.close()
-        except Exception as e:
-            listener_error = PeerListenerError(f"TCP listener failed for {self.address}:{self.port} - {e}")
-            self._emit_error(listener_error)
-            self._emit_connection_state(False)
+        if self.connection_role == PeerRoles.ACCEPTING:
+            _accept_connection(self)
+            return
+
+        self.listener_background = threading.Thread(target=_tcp_listener, daemon=True)
+        self.listener_background.start()
+
+
 
     def listen_udp(self):
         """Initiates a background UDP listener against the peer
@@ -333,15 +344,19 @@ class Peer:
             e: Any exceptions raised during listening are propagated upwards
         """
         try:
+            udp_connection = self.udp_connection
+            if udp_connection is None:
+                raise PeerConnectionError("UDP connection is not established.")
+
             while self.stop_flag.is_set() is False:
-                read, _write, _exec = select([self.udp_connection], [], [], 0.01)
+                read, _write, _exec = select([udp_connection], [], [], 0.01)
                 for sock in read:
                     data, addr = sock.recvfrom(2**16)
                     if addr[0] != self.address:
                         continue
                     for msg in self.decoder.decode(data):
                         self.dispatcher.dispatch(msg)
-            self.udp_connection.close()
+            udp_connection.close()
             self._emit_connection_state(False)
         except Exception as e:
             listener_error = PeerListenerError(f"UDP listener failed for {self.address}:{self.port} - {e}")
@@ -352,19 +367,29 @@ class Peer:
         """Invokes above methods to start a connection dependant on mode."""
         # Start the dispatcher's scheduler for timestamped bundles
         self.dispatcher.start_scheduler()
-
-        if self.transport == OSCTransport.TCP:
-            self.background = threading.Thread(target=self.listen_tcp, daemon=True)
-            self.background.start()
-        elif self.transport == OSCTransport.UDP:
-            self.background = threading.Thread(target=self.listen_udp, daemon=True)
-            self.background.start()
+        if self.connection_role == PeerRoles.INITIATING:
+            if self.transport == OSCTransport.TCP:
+                self.listener_background = threading.Thread(target=_tcp_listener, daemon=True)
+                self.listener_background.start()
+            elif self.transport == OSCTransport.UDP:
+                self.background = threading.Thread(target=self.listen_udp, daemon=True)
+                self.background.start()
 
     def stop_listening(self):
-        """Stops listening to incoming messages by terminating the background thread"""
+        """Stops listening to incoming messages byterminating the background thread"""
         self.stop_flag.set()
+        if self.accept_background is not None and self.accept_background.is_alive():
+            self.accept_background.join(timeout=1)
+        if self.listener_background is not None and self.listener_background.is_alive():
+            self.listener_background.join(timeout=1)
         if self.background is not None and self.background.is_alive():
             self.background.join(timeout=1)
+        if self.bind is not None:
+            self.bind.close()
+        if self.tcp_connection is not None:
+            self.tcp_connection.close()
+        if self.udp_connection is not None:
+            self.udp_connection.close()
         self._emit_connection_state(False)
         # Stop the scheduler as well
         self.dispatcher.stop_scheduler()
