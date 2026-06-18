@@ -19,13 +19,20 @@ from pyosc.dispatcher import Dispatcher, DispatcherInterface, Handler
 
 from .acceptor import _accept_connection
 from .connection import _tcp_listener
-from .exceptions import PeerConnectionError, PeerListenerError
+from .exceptions import PeerConfigurationError, PeerConnectionError, PeerListenerError
 from .initiator import _initiate_connection
+from .udp import _begin_udp
+
+
+class remote(BaseModel):
+    address: str
+    port: int
 
 
 class PeerRoles(Enum):
     INITIATING = "initiating"
     ACCEPTING = "accepting"
+
 
 class Peer:
     """A Peer represents a remote OSC endpoint that can send and receive messages.
@@ -43,6 +50,7 @@ class Peer:
         bind_port: int,
         transport: Literal[OSCTransport.TCP],
         framing: OSCFraming = OSCFraming.OSC10,
+        learning: bool = False,
     ): ...
 
     @overload
@@ -54,6 +62,7 @@ class Peer:
         remote_port: int,
         transport: Literal[OSCTransport.TCP],
         framing: OSCFraming = OSCFraming.OSC10,
+        learning: bool = False,
     ): ...
 
     @overload
@@ -63,22 +72,38 @@ class Peer:
         remote_address: str,
         remote_port: int,
         bind_port: int,
-        bind_address: str,
+        bind_address: str = "0.0.0.0",
         transport: Literal[OSCTransport.UDP],
         framing: OSCFraming = OSCFraming.OSC10,
+        learning: bool = False,
+    ): ...
+
+    @overload
+    def __init__(
+        self,
+        *,
+        bind_port: int,
+        bind_address: str = "",
+        remote_port: int,
+        transport: Literal[OSCTransport.UDP],
+        framing: OSCFraming = OSCFraming.OSC10,
+        learning: bool = True,
     ): ...
 
     def __init__(
         self,
         *,
-        connection_role: PeerRoles = PeerRoles.INITIATING,
+        connection_role: PeerRoles | None = None,
         remote_address: str | None = None,
         remote_port: int | None = None,
-        bind_address: str | None = None,
+        bind_address: str | None = "0.0.0.0",
         bind_port: int | None = None,
         transport: OSCTransport = OSCTransport.TCP,
         framing: OSCFraming = OSCFraming.OSC10,
+        learning: bool = False,
     ):
+        if connection_role is None and transport == OSCTransport.TCP:
+            connection_role = PeerRoles.INITIATING
         self.remote_address = remote_address
         self.remote_port = remote_port
         self.address = remote_address
@@ -95,6 +120,10 @@ class Peer:
         self.udp_bind_address = bind_address
         self.udp_rx_port = bind_port
         self.udp_rx_address = bind_address
+        self.udp_remotes: list[remote] = []
+        self.learning = learning
+        if not self.remote_address:
+            self.learning = True
         # Initialize connection attributes so static checkers know they exist
         self.bind: socket.socket | None = None
         self.tcp_connection: socket.socket | None = None
@@ -109,24 +138,24 @@ class Peer:
             "disconnect": [],
             "error": [],
         }
-        if self.connection_role == PeerRoles.INITIATING:
-            if transport == OSCTransport.UDP:
-                self.udp_connection = _initiate_connection(self)
-                self._emit_connection_state(True)
+        if self.connection_role and self.transport == OSCTransport.TCP:
+            # Connection roles only apply to TCP peers, as UDP is connectionless. If a connection role is specified for a UDP peer, raise an error.
+            if self.connection_role == PeerRoles.INITIATING:
+                self.tcp_connection = _initiate_connection(self)
                 self.dispatcher = Dispatcher(error_emit=self._emit_error)
                 self.callHandler = CallHandler(self)
 
             else:
-                self.tcp_connection = _initiate_connection(self)
-                self._emit_connection_state(True)
+                _accept_connection(self)
                 self.dispatcher = Dispatcher(error_emit=self._emit_error)
                 self.callHandler = CallHandler(self)
 
-        else:
-            _accept_connection(self)
+        elif not self.connection_role and self.transport == OSCTransport.UDP:
+            if self.remote_address and self.remote_port:
+                self.udp_remotes.append(remote(address=self.remote_address, port=self.remote_port))
+            self.udp_connection = _begin_udp(self)
             self.dispatcher = Dispatcher(error_emit=self._emit_error)
             self.callHandler = CallHandler(self)
-
 
     @property
     def connection(self) -> socket.socket | None:
@@ -235,7 +264,13 @@ class Peer:
                 udp_connection = self.udp_connection
                 if udp_connection is None:
                     raise PeerConnectionError("UDP connection is not established.")
-                udp_connection.sendto(encoded_message, (self.remote_address, self.remote_port))
+                if self.udp_remotes.__len__() == 0:
+                    if self.learning:
+                        raise PeerConnectionError(
+                            "No remote addresses are known for this UDP peer. Specify a remote address if you want to send messages before receiving messages."
+                        )
+                for remote in self.udp_remotes:
+                    udp_connection.sendto(encoded_message, (remote.address, remote.port))
         except OSError as e:
             peer_error = PeerConnectionError(f"Failed to send OSC message to {self.remote_address}:{self.remote_port} - {e}")
             self._emit_error(peer_error)
@@ -249,11 +284,11 @@ class Peer:
         return self.dispatcher.handler(*args, **kwargs)
 
     @overload
-    def register_handler(self, address: str, func: DispatcherInterface[OSCMessage]) -> Handler: ...
+    def register_handler(self, message_address: str, func: DispatcherInterface[OSCMessage]) -> Handler: ...
 
     @overload
     def register_handler[T: BaseModel](
-        self, address: str, func: DispatcherInterface[OSCMessage], validator: type[T]
+        self, message_address: str, func: DispatcherInterface[OSCMessage], validator: type[T]
     ) -> Handler: ...
 
     def register_handler[T: BaseModel](
@@ -335,8 +370,6 @@ class Peer:
         self.listener_background = threading.Thread(target=_tcp_listener, daemon=True)
         self.listener_background.start()
 
-
-
     def listen_udp(self):
         """Initiates a background UDP listener against the peer
 
@@ -344,6 +377,7 @@ class Peer:
             e: Any exceptions raised during listening are propagated upwards
         """
         try:
+            learning = self.learning
             udp_connection = self.udp_connection
             if udp_connection is None:
                 raise PeerConnectionError("UDP connection is not established.")
@@ -353,7 +387,15 @@ class Peer:
                 for sock in read:
                     data, addr = sock.recvfrom(2**16)
                     if addr[0] != self.remote_address:
-                        continue
+                        if not learning:
+                            continue
+                        else:
+                            if addr[0] not in [remote.address for remote in self.udp_remotes]:
+                                if not self.remote_port:
+                                    raise PeerConfigurationError(
+                                        "UDP remote port must be specified for UDP Peers in learning mode"
+                                    )
+                                self.udp_remotes.append(remote(address=addr[0], port=self.remote_port))
                     for msg in self.decoder.decode(data):
                         self.dispatcher.dispatch(msg)
             udp_connection.close()
@@ -367,13 +409,13 @@ class Peer:
         """Invokes above methods to start a connection dependant on mode."""
         # Start the dispatcher's scheduler for timestamped bundles
         self.dispatcher.start_scheduler()
-        if self.connection_role == PeerRoles.INITIATING:
-            if self.transport == OSCTransport.TCP:
+        if self.transport == OSCTransport.TCP:
+            if self.connection_role == PeerRoles.INITIATING:
                 self.listener_background = threading.Thread(target=_tcp_listener, daemon=True)
                 self.listener_background.start()
-            elif self.transport == OSCTransport.UDP:
-                self.background = threading.Thread(target=self.listen_udp, daemon=True)
-                self.background.start()
+        elif self.transport == OSCTransport.UDP:
+            self.background = threading.Thread(target=self.listen_udp, daemon=True)
+            self.background.start()
 
     def stop_listening(self):
         """Stops listening to incoming messages byterminating the background thread"""
