@@ -9,7 +9,7 @@ from .connection import _tcp_listener
 def _accept_tcp(peer):
     connection, address = peer.bind.accept()
     peer.tcp_connection = connection
-    peer.client_address = address
+    peer.remote_address = address
     peer._emit_connection_state(True)
     peer.listener_background = threading.Thread(target=_tcp_listener, args=(peer,), daemon=True)
     peer.listener_background.start()
