@@ -37,22 +37,21 @@ class Peer:
     @overload
     def __init__(
         self,
-        connection_role: PeerRoles = PeerRoles.ACCEPTING,
         *,
+        connection_role: PeerRoles = PeerRoles.ACCEPTING,
         bind_address: str,
         bind_port: int,
         transport: Literal[OSCTransport.TCP],
         framing: OSCFraming = OSCFraming.OSC10,
     ): ...
 
-
     @overload
     def __init__(
         self,
-        connection_role: PeerRoles = PeerRoles.INITIATING,
         *,
-        address: str,
-        port: int,
+        connection_role: PeerRoles = PeerRoles.INITIATING,
+        remote_address: str,
+        remote_port: int,
         transport: Literal[OSCTransport.TCP],
         framing: OSCFraming = OSCFraming.OSC10,
     ): ...
@@ -60,31 +59,30 @@ class Peer:
     @overload
     def __init__(
         self,
-        connection_role: PeerRoles = PeerRoles.INITIATING,
         *,
-        address: str,
-        port: int,
-        udp_rx_port: int,
-        udp_rx_address: str,
+        remote_address: str,
+        remote_port: int,
+        bind_port: int,
+        bind_address: str,
         transport: Literal[OSCTransport.UDP],
         framing: OSCFraming = OSCFraming.OSC10,
     ): ...
 
     def __init__(
         self,
-        connection_role: PeerRoles = PeerRoles.INITIATING,
         *,
+        connection_role: PeerRoles = PeerRoles.INITIATING,
+        remote_address: str | None = None,
+        remote_port: int | None = None,
         bind_address: str | None = None,
         bind_port: int | None = None,
-        address: str | None = None,
-        port: int | None = None,
-        udp_rx_port: int | None = None,
-        udp_rx_address: str | None = None,
         transport: OSCTransport = OSCTransport.TCP,
         framing: OSCFraming = OSCFraming.OSC10,
     ):
-        self.address = address
-        self.port = port
+        self.remote_address = remote_address
+        self.remote_port = remote_port
+        self.address = remote_address
+        self.port = remote_port
         self.bind_address = bind_address
         self.bind_port = bind_port
         self.stop_flag = threading.Event()
@@ -93,8 +91,10 @@ class Peer:
         self.connection_role = connection_role
         self.encoder = OSCEncoder(transport=self.transport, framing=self.framing)
         self.decoder = OSCDecoder(transport=self.transport, framing=self.framing)
-        self.udp_rx_port = udp_rx_port
-        self.udp_rx_address = udp_rx_address
+        self.udp_bind_port = bind_port
+        self.udp_bind_address = bind_address
+        self.udp_rx_port = bind_port
+        self.udp_rx_address = bind_address
         # Initialize connection attributes so static checkers know they exist
         self.bind: socket.socket | None = None
         self.tcp_connection: socket.socket | None = None
@@ -235,9 +235,9 @@ class Peer:
                 udp_connection = self.udp_connection
                 if udp_connection is None:
                     raise PeerConnectionError("UDP connection is not established.")
-                udp_connection.sendto(encoded_message, (self.address, self.port))
+                udp_connection.sendto(encoded_message, (self.remote_address, self.remote_port))
         except OSError as e:
-            peer_error = PeerConnectionError(f"Failed to send OSC message to {self.address}:{self.port} - {e}")
+            peer_error = PeerConnectionError(f"Failed to send OSC message to {self.remote_address}:{self.remote_port} - {e}")
             self._emit_error(peer_error)
             raise peer_error from e
 
@@ -258,11 +258,11 @@ class Peer:
 
     def register_handler[T: BaseModel](
         self,
-        address: str,
+        message_address: str,
         func: DispatcherInterface[OSCMessage],
         validator: type[T] = OSCMessage,
     ) -> Handler:
-        return self.dispatcher.register_handler(address, func, validator)
+        return self.dispatcher.register_handler(message_address, func, validator)
 
     """
     Call methods require overloads to properly type hint the various return types based on the presence of a validator. The implementation is all handled by the CallHandler class, which the Peer class proxies to for a nicer developer experience."""
@@ -272,7 +272,7 @@ class Peer:
         self,
         message: OSCMessage,
         *,
-        return_address: str | None = None,
+        message_return_address: str | None = None,
         timeout: float = 5.0,
         max_responses: int = 1,
         prefix: int = 0,
@@ -283,7 +283,7 @@ class Peer:
         self,
         message: OSCMessage,
         *,
-        return_address: str | None = None,
+        message_return_address: str | None = None,
         validator: type[T],
         timeout: float = 5.0,
         max_responses: int = 1,
@@ -294,7 +294,7 @@ class Peer:
         self,
         message: OSCMessage,
         *,
-        return_address: str | None = None,
+        message_return_address: str | None = None,
         validator: type[BaseModel] = OSCMessage,
         timeout: float = 5.0,
         max_responses: int = 1,
@@ -304,7 +304,7 @@ class Peer:
 
         Args:
             message (OSCMessage): The OSCMessage to send as the call request.
-            return_address (str | None, optional): The address to which the response should be sent. Defaults to None.
+            message_return_address (str | None, optional): The address to which the response should be sent. Defaults to None.
             validator (type[BaseModel], optional): The validator to use for the response. Defaults to OSCMessage.
             timeout (float, optional): The timeout for the call. Defaults to 5.0.
             max_responses (int, optional): The maximum number of responses to wait for. Defaults to 1.
@@ -315,7 +315,7 @@ class Peer:
         """
         return self.callHandler.call(
             message,
-            return_address=return_address,
+            return_address=message_return_address,
             validator=validator,
             timeout=timeout,
             max_responses=max_responses,
@@ -352,14 +352,14 @@ class Peer:
                 read, _write, _exec = select([udp_connection], [], [], 0.01)
                 for sock in read:
                     data, addr = sock.recvfrom(2**16)
-                    if addr[0] != self.address:
+                    if addr[0] != self.remote_address:
                         continue
                     for msg in self.decoder.decode(data):
                         self.dispatcher.dispatch(msg)
             udp_connection.close()
             self._emit_connection_state(False)
         except Exception as e:
-            listener_error = PeerListenerError(f"UDP listener failed for {self.address}:{self.port} - {e}")
+            listener_error = PeerListenerError(f"UDP listener failed for {self.remote_address}:{self.remote_port} - {e}")
             self._emit_error(listener_error)
             self._emit_connection_state(False)
 
