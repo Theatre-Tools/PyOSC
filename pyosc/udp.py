@@ -6,10 +6,10 @@ from typing import TYPE_CHECKING
 from oscparser import OSCBundle, OSCDecoder, OSCEncoder, OSCFraming, OSCMessage, OSCTransport
 
 from .exceptions import PeerConfigurationError, PeerConnectionError, PeerListenerError
-from .transport import Transport
+from .transport import Remote, Transport
 
 if TYPE_CHECKING:
-    from .peer import Peer, remote
+    from .peer import Peer
 
 
 class UDPTransport(Transport):
@@ -19,7 +19,7 @@ class UDPTransport(Transport):
         self.peer = peer
         self.bind_ip = bind_ip
         self.bind_port = bind_port
-        self.remotes: list[remote] = remotes
+        self.remotes: list[Remote] = remotes
         self.remote_port = remote_port
         self.encoder = OSCEncoder(transport=OSCTransport.UDP, framing=framing)
         self.decoder = OSCDecoder(transport=OSCTransport.UDP, framing=framing)
@@ -52,7 +52,7 @@ class UDPTransport(Transport):
                                     raise PeerConfigurationError(
                                         "UDP remote port must be specified for UDP Peers in learning mode"
                                     )
-                                self.remotes.append(remote(address=addr[0], port=self.remote_port))
+                                self.remotes.append(Remote(address=addr[0], port=self.remote_port))
                     for msg in self.decoder.decode(data):
                         self.peer.dispatcher.dispatch(msg)
             self.conn.close()
@@ -77,10 +77,6 @@ class UDPTransport(Transport):
 
         except OSError as e:
             raise PeerConfigurationError(f"Could not bind UDP Peer to {self.bind_ip}:{self.bind_port} - {e}") from e
-        finally:
-            self.peer._emit_connection_state(False)
-            if hasattr(self, "conn"):
-                self.conn.close()
 
     def send(self, packet: OSCMessage | OSCBundle):
         if self.conn is None:
@@ -91,16 +87,11 @@ class UDPTransport(Transport):
                 raise PeerConnectionError(
                     "No remote addresses are known for this UDP peer. Specify a remote address if you want to send messages before receiving messages."
                 )
-
         for remote in self.peer.remotes:
             try:
                 self.conn.sendto(encoded_packet, (remote.address, remote.port))
             except OSError as e:
                 raise PeerConnectionError(f"Could not send UDP packet to {remote.address}:{remote.port} - {e}") from e
-            finally:
-                self.peer._emit_connection_state(False)
-                if hasattr(self, "conn"):
-                    self.conn.close()
 
     def __enter__(self):
         self.start()
