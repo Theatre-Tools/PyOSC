@@ -36,7 +36,7 @@ class CallHandler:
         self,
         message: OSCMessage,
         *,
-        return_address: str | None = None,
+        message_return_address: str | None = None,
         timeout: float = 5.0,
         max_responses: int = 1,
         prefix: int = 0,
@@ -47,7 +47,7 @@ class CallHandler:
         self,
         message: OSCMessage,
         *,
-        return_address: str | None = None,
+        message_return_address: str | None = None,
         validator: type[T],
         timeout: float = 5.0,
         max_responses: int = 1,
@@ -58,7 +58,7 @@ class CallHandler:
         self,
         message: OSCMessage,
         *,
-        return_address: str | None = None,
+        message_return_address: str | None = None,
         validator: type[BaseModel] | None = None,
         timeout: float = 5.0,
         max_responses: int = 1,
@@ -68,7 +68,7 @@ class CallHandler:
 
         Args:
             ``message (OSCMessage)``: An OSCMessage to send to the peer.
-            ``return_address (str | None, optional)``: The address to listen for a response on. Defaults to None.
+            ``message_return_address (str | None, optional)``: The address to listen for a response on. Defaults to None.
             ``validator (type[BaseModel] | None, optional)``: A Pydantic model to validate the response against. Defaults to None.
             ``timeout (float, optional)``: How long to wait for a response before timing out. Defaults to 5.0.
             ``max_responses (int, optional)``: How many responses to wait for before returning. Defaults to 1.
@@ -81,11 +81,11 @@ class CallHandler:
 
         if validator is None:
             validator = OSCMessage
-        if not return_address:
-            return_address = message.address
+        if not message_return_address:
+            message_return_address = message.address
         responseq = queue.Queue()
         with self.queue_lock:
-            handler = self.peer.register_handler(return_address, self)
+            handler = self.peer.register_handler(message_return_address, self)
             self.queues[handler.pattern] = Call(responseq, validator, prefix)
         start_time = perf_counter_ns()
         try:
