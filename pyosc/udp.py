@@ -1,24 +1,30 @@
 import socket
+from typing import TYPE_CHECKING
 
 from oscparser import OSCBundle, OSCDecoder, OSCEncoder, OSCFraming, OSCMessage, OSCTransport
 
 from .exceptions import PeerConfigurationError, PeerConnectionError
 from .transport import Transport
 
+if TYPE_CHECKING:
+    from .peer import Peer, remote
+
 
 class UDPTransport(Transport):
-    def __init__(self, bind_ip, bind_port, remotes, remote_port, peer, framing: OSCFraming = OSCFraming.OSC10, learning: bool = False):
+    def __init__(
+        self, bind_ip, bind_port, remotes, remote_port, peer, framing: OSCFraming = OSCFraming.OSC10, learning: bool = False
+    ):
         self.peer = peer
         self.bind_ip = bind_ip
         self.bind_port = bind_port
-        self.remotes: list = remotes
+        self.remotes: list[remote] = remotes
         self.remote_port = remote_port
         self.encoder = OSCEncoder(transport=OSCTransport.UDP, framing=framing)
         self.decoder = OSCDecoder(transport=OSCTransport.UDP, framing=framing)
         self.learning = learning
 
     @classmethod
-    def from_peer(cls, peer):
+    def from_peer(cls, peer: "Peer"):
         return cls(
             bind_ip=peer.bind_ip,
             bind_port=peer.bind_port,
@@ -26,7 +32,7 @@ class UDPTransport(Transport):
             remote_port=peer.remote_port,
             peer=peer,
             framing=peer.framing,
-            learning=peer.learning
+            learning=peer.learning,
         )
 
     def _begin_udp(self) -> socket.socket | None:
@@ -36,11 +42,10 @@ class UDPTransport(Transport):
             self.peer._emit_connection_state(True)
             self.conn = conn
         except OSError as e:
-            raise PeerConfigurationError(
-                f"Could not bind UDP Peer to {self.bind_ip}:{self.bind_port} - {e}") from e
+            raise PeerConfigurationError(f"Could not bind UDP Peer to {self.bind_ip}:{self.bind_port} - {e}") from e
         finally:
             self.peer._emit_connection_state(False)
-            if hasattr(self, 'conn'):
+            if hasattr(self, "conn"):
                 self.conn.close()
 
     def start(self):
@@ -57,12 +62,10 @@ class UDPTransport(Transport):
                 )
         for remote in self.remotes:
             try:
-                self.conn.sendto(
-                    encoded_packet, (remote.address, remote.port))
+                self.conn.sendto(encoded_packet, (remote.address, remote.port))
             except OSError as e:
-                raise PeerConnectionError(
-                    f"Could not send UDP packet to {remote.address}:{remote.port} - {e}") from e
+                raise PeerConnectionError(f"Could not send UDP packet to {remote.address}:{remote.port} - {e}") from e
             finally:
                 self.peer._emit_connection_state(False)
-                if hasattr(self, 'conn'):
+                if hasattr(self, "conn"):
                     self.conn.close()
