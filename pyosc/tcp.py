@@ -90,18 +90,21 @@ class TCPTransport(Transport):
             self.peer._emit_connection_state(False)
 
     def _initiate_tcp_connection(self):
-        self.connection_role = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.connection.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-        self.connection.connect((self.peer.remote_address, self.peer.remote_port))
+        if self.remote:
+            self.connection_role = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.connection.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+            self.connection.connect((self.remote.address, self.remote.port))
+        else:
+            raise PeerConnectionError("Remote peer must be provided for initiating connection")
 
     def _accept_tcp_connection(self):
         connection, address = self.binding.accept()
         self.connection = connection
         self.remote = Remote(address=address[0], port=address[1])
 
-        def start(self):
-            if self.connection_role == ConnectionRole.INITIATING:
-                self._initiate_tcp_connection()
+    def start(self):
+        if self.connection_role == ConnectionRole.INITIATING:
+            self._initiate_tcp_connection()
 
-            else:
-                self._bind_tcp_acceptor()
+        else:
+            self._bind_tcp_acceptor()
