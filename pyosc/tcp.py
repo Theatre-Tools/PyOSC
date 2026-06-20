@@ -19,10 +19,15 @@ class connectionFamily:
     binding: Optional[socket.socket] = None
 
     def graceful_close(self):
-        if self.connection:
-            self.connection.close()
-        if self.binding:
-            self.binding.close()
+        for sock in (self.connection, self.binding):
+            if sock:
+                try:
+                    sock.shutdown(socket.SHUT_RDWR)
+                except OSError:
+                    pass
+
+                sock.close()
+                sock = None
 
 
 @dataclass
@@ -82,9 +87,16 @@ class TCPTransport(Transport):
             bind = Bind(bind_address=peer.bind_ip, bind_port=peer.bind_port)
             return cls(peer=peer, framing=peer.framing, connection_role=ConnectionRole.ACCEPTING, bind=bind)
 
+    def close(self):
+        self.peer.stop_flag.set()
+        self.connection.graceful_close()
+        self.threads.graceful_close()
+        self.peer._emit_connection_state(False)
+
     def _bind_tcp_acceptor(self):
         try:
             self.connection.binding = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.connection.binding.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             self.connection.binding.bind((self.bind.bind_address, self.bind.bind_port))
             self.connection.binding.listen(1)
             self.threads._acceptance_thread = threading.Thread(target=self._accept_tcp_connection, args=(), daemon=True)
