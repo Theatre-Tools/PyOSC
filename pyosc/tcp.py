@@ -78,7 +78,7 @@ class TCPTransport(Transport):
             return cls(peer=peer, framing=peer.framing, connection_role=ConnectionRole.INITIATING, remote=remote)
         else:
             if peer.bind_ip is None or peer.bind_port is None:
-                raise ValueError("Invalid bind interface for accepting connection")
+                raise ConnectionError("Invalid bind interface for accepting connection")
             bind = Bind(bind_address=peer.bind_ip, bind_port=peer.bind_port)
             return cls(peer=peer, framing=peer.framing, connection_role=ConnectionRole.ACCEPTING, bind=bind)
 
@@ -145,8 +145,11 @@ class TCPTransport(Transport):
     def send(self, packet):
         if not self.peer.connected.is_set() or not self.connection.connection:
             raise PeerConnectionError("Cannot send data, peer is not connected")
-        encoded_packet = self.encoder.encode(packet)
-        self.connection.connection.sendall(encoded_packet)
+        try:
+            encoded_packet = self.encoder.encode(packet)
+            self.connection.connection.sendall(encoded_packet)
+        except Exception as e:
+            self.peer._emit_error(PeerConnectionError(f"Error occurred while sending TCP data: {e}"))
 
     def start(self):
         try:
