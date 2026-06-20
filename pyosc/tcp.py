@@ -4,7 +4,6 @@ from select import select
 from typing import TYPE_CHECKING, Optional
 
 from oscparser import OSCDecoder, OSCEncoder, OSCFraming, OSCTransport
-from pydantic import BaseModel
 
 from .exceptions import PeerConnectionError, PeerListenerError
 from .transport import Bind, ConnectionRole, Remote, Transport
@@ -13,10 +12,28 @@ if TYPE_CHECKING:
     from .peer import Peer
 
 
-class threadFamily(BaseModel):
+class connectionFamily:
+    connection: Optional[socket.socket] = None
+    binding: Optional[socket.socket] = None
+
+    def graceful_close(self):
+        if self.connection:
+            self.connection.close()
+        if self.binding:
+            self.binding.close()
+
+class threadFamily:
     _acceptance_thread: Optional[threading.Thread] = None
     _listener_thread: Optional[threading.Thread] = None
     _bind_thread: Optional[threading.Thread] = None
+
+    def killall(self):
+        if self._acceptance_thread:
+            self._acceptance_thread.join(timeout=1)
+        if self._listener_thread:
+            self._listener_thread.join(timeout=1)
+        if self._bind_thread:
+            self._bind_thread.join(timeout=1)
 
 
 class TCPTransport(Transport):
@@ -34,6 +51,7 @@ class TCPTransport(Transport):
         self.encoder = OSCEncoder(transport=OSCTransport.TCP, framing=framing)
         self.decoder = OSCDecoder(transport=OSCTransport.TCP, framing=framing)
         self.threads = threadFamily()
+        self.connection: connectionFamily = connectionFamily()
 
         if connection_role == ConnectionRole.INITIATING:
             if remote is None:
@@ -61,27 +79,31 @@ class TCPTransport(Transport):
             return cls(peer=peer, framing=peer.framing, connection_role=ConnectionRole.ACCEPTING, bind=bind)
 
     def _bind_tcp_acceptor(self):
-        self.binding = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.binding.bind((self.bind.bind_address, self.bind.bind_port))
-        self.binding.listen(1)
-        self.threads._acceptance_thread = threading.Thread(target=self._accept_tcp_connection, args=(), daemon=True)
-        self.threads._acceptance_thread.start()
+        try:
+            self.connection.binding = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.connection.binding.bind((self.bind.bind_address, self.bind.bind_port))
+            self.connection.binding.listen(1)
+            self.threads._acceptance_thread = threading.Thread(target=self._accept_tcp_connection, args=(), daemon=True)
+            self.threads._acceptance_thread.start()
+        except Exception as e:
+            self.connection.graceful_close()
+            raise PeerConnectionError(f"Error occurred while binding TCP acceptor: {e}")
 
     def _tcp_listener(self):
         try:
-            if not self.peer.connected.is_set():
+            if not self.peer.connected.is_set() or not self.connection.connection:
                 raise PeerConnectionError("TCP listener cannot start until a client has connected")
             while self.peer.stop_flag.is_set() is False:
-                read, _write, _exec = select([self.connection], [], [], 0.01)
+                read, _write, _exec = select([self.connection.connection], [], [], 0.01)
                 for sock in read:
                     data = sock.recv(2**16)
                     if data == b"":
-                        self.connection.close()
+                        self.connection.graceful_close()
                         self.peer._emit_connection_state(False)
                         return
                     for msg in self.decoder.decode(data):
                         self.peer.dispatcher.dispatch(msg)
-            self.connection.close()
+            self.connection.graceful_close()
         except Exception as e:
             listener_error = PeerListenerError(
                 f"TCP listener failed for {self.peer.remote_address}:{self.peer.remote_port} - {e}"
@@ -91,9 +113,9 @@ class TCPTransport(Transport):
 
     def _initiate_tcp_connection(self):
         if self.remote:
-            self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.connection.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-            self.connection.connect((self.remote.address, self.remote.port))
+            self.connection.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.connection.connection.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+            self.connection.connection.connect((self.remote.address, self.remote.port))
             self.peer._emit_connection_state(True)
             self.threads._listener_thread = threading.Thread(target=self._tcp_listener, daemon=True)
             self.threads._listener_thread.start()
@@ -101,22 +123,36 @@ class TCPTransport(Transport):
             raise PeerConnectionError("Remote peer must be provided for initiating connection")
 
     def _accept_tcp_connection(self):
-        connection, address = self.binding.accept()
-        self.connection = connection
-        self.remote = Remote(address=address[0], port=address[1])
-
-    def send(self, packet):
-        if not self.peer.connected.is_set():
-            raise PeerConnectionError("Cannot send data, peer is not connected")
-        encoded_packet = self.encoder.encode(packet)
-        self.connection.sendall(encoded_packet)
-
-    def start(self):
-        if self.connection_role == ConnectionRole.INITIATING:
-            print("here")
-            self._initiate_tcp_connection()
-
-        else:
-            self._bind_tcp_acceptor()
+        if not self.connection.binding:
+            raise PeerConnectionError("TCP acceptor cannot accept connections without a binding socket")
+        try:
+            connection, address = self.connection.binding.accept()
+            self.connection.connection = connection
+            self.remote = Remote(address=address[0], port=address[1])
+            self.peer._emit_connection_state(True)
             self.threads._listener_thread = threading.Thread(target=self._tcp_listener, daemon=True)
             self.threads._listener_thread.start()
+        except Exception as e:
+            self.connection.graceful_close()
+            self.threads.killall()
+            self.peer._emit_connection_state(False)
+            raise PeerConnectionError(f"Error occurred while accepting TCP connection: {e}")
+
+    def send(self, packet):
+        if not self.peer.connected.is_set() or not self.connection.connection:
+            raise PeerConnectionError("Cannot send data, peer is not connected")
+        encoded_packet = self.encoder.encode(packet)
+        self.connection.connection.sendall(encoded_packet)
+
+    def start(self):
+        try:
+            if self.connection_role == ConnectionRole.INITIATING:
+                self._initiate_tcp_connection()
+
+            else:
+                self._bind_tcp_acceptor()
+        except Exception as e:
+            self.connection.graceful_close()
+            self.threads.killall()
+            self.peer._emit_connection_state(False)
+            raise PeerConnectionError(f"Error occurred while starting TCP transport: {e}")
