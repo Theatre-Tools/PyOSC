@@ -22,12 +22,13 @@ class connectionFamily:
         if self.binding:
             self.binding.close()
 
+
 class threadFamily:
     _acceptance_thread: Optional[threading.Thread] = None
     _listener_thread: Optional[threading.Thread] = None
     _bind_thread: Optional[threading.Thread] = None
 
-    def killall(self):
+    def graceful_close(self):
         if self._acceptance_thread:
             self._acceptance_thread.join(timeout=1)
         if self._listener_thread:
@@ -134,7 +135,7 @@ class TCPTransport(Transport):
             self.threads._listener_thread.start()
         except Exception as e:
             self.connection.graceful_close()
-            self.threads.killall()
+            self.threads.graceful_close()
             self.peer._emit_connection_state(False)
             raise PeerConnectionError(f"Error occurred while accepting TCP connection: {e}")
 
@@ -153,6 +154,6 @@ class TCPTransport(Transport):
                 self._bind_tcp_acceptor()
         except Exception as e:
             self.connection.graceful_close()
-            self.threads.killall()
+            self.threads.graceful_close()
             self.peer._emit_connection_state(False)
             raise PeerConnectionError(f"Error occurred while starting TCP transport: {e}")
