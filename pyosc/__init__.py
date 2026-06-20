@@ -23,10 +23,13 @@ from oscparser import (
     OSCTrue,
 )
 
-from pyosc.peer import Peer, PeerRoles
+from pyosc.peer import Peer
+from pyosc.transport import Bind, ConnectionRole, Remote
 
 __all__ = [
     "OSCRGBA",
+    "Bind",
+    "ConnectionRole",
     "OSCArg",
     "OSCArray",
     "OSCAtomic",
@@ -49,5 +52,5 @@ __all__ = [
     "OSCTransport",
     "OSCTrue",
     "Peer",
-    "PeerRoles",
+    "Remote",
 ]
