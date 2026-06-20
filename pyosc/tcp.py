@@ -105,6 +105,12 @@ class TCPTransport(Transport):
         self.connection = connection
         self.remote = Remote(address=address[0], port=address[1])
 
+    def send(self, packet):
+        if not self.peer.connected.is_set():
+            raise PeerConnectionError("Cannot send data, peer is not connected")
+        encoded_packet = self.encoder.encode(packet)
+        self.connection.sendall(encoded_packet)
+
     def start(self):
         if self.connection_role == ConnectionRole.INITIATING:
             print("here")
