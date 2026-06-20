@@ -13,8 +13,7 @@ from pydantic import BaseModel
 from pyosc.call_handler import CallHandler, CallHandler_Response
 from pyosc.dispatcher import Dispatcher, DispatcherInterface, Handler
 
-from .acceptor import _accept_connection
-from .initiator import _initiate_connection
+from .tcp import TCPTransport
 from .transport import ConnectionRole, Remote, Transport
 from .udp import UDPTransport
 
@@ -116,23 +115,27 @@ class Peer:
         }
         if transport == OSCTransport.UDP:
             self.connection = UDPTransport.from_peer(self)
+        else:
+            self.connection = TCPTransport.from_peer(self)
+        self.dispatcher = Dispatcher(error_emit=self._emit_error)
+        self.callHandler = CallHandler(self)
 
-        if self.connection_role and self.transport == OSCTransport.TCP:
-            # Connection roles only apply to TCP peers, as UDP is connectionless. If a connection role is specified for a UDP peer, raise an error.
-            if self.connection_role == ConnectionRole.INITIATING:
-                self.tcp_connection = _initiate_connection(self)
-                self.dispatcher = Dispatcher(error_emit=self._emit_error)
-                self.callHandler = CallHandler(self)
-            else:
-                _accept_connection(self)
-                self.dispatcher = Dispatcher(error_emit=self._emit_error)
-                self.callHandler = CallHandler(self)
+        ##if self.connection_role and self.transport == OSCTransport.TCP:
+        ##    # Connection roles only apply to TCP peers, as UDP is connectionless. If a connection role is specified for a UDP peer, raise an error.
+        ##    if self.connection_role == ConnectionRole.INITIATING:
+        ##        self.tcp_connection = _initiate_connection(self)
+        ##        self.dispatcher = Dispatcher(error_emit=self._emit_error)
+        ##        self.callHandler = CallHandler(self)
+        ##    else:
+        ##        _accept_connection(self)
+        ##        self.dispatcher = Dispatcher(error_emit=self._emit_error)
+        ##        self.callHandler = CallHandler(self)
 
-        elif not self.connection_role and self.transport == OSCTransport.UDP:
-            if self.remote_address and self.remote_port:
-                self.remotes.append(Remote(address=self.remote_address, port=self.remote_port))
-            self.dispatcher = Dispatcher(error_emit=self._emit_error)
-            self.callHandler = CallHandler(self)
+    ##
+    ##elif not self.connection_role and self.transport == OSCTransport.UDP:
+    ##    if self.remote_address and self.remote_port:
+    ##        self.remotes.append(Remote(address=self.remote_address, port=self.remote_port))
+    ##
 
     def _normalize_event_name(self, raw_name: str) -> str:
         aliases = {
@@ -319,8 +322,6 @@ class Peer:
             self.background.join(timeout=1)
         if self.bind is not None:
             self.bind.close()
-        if self.tcp_connection is not None:
-            self.tcp_connection.close()
         self._emit_connection_state(False)
         # Stop the scheduler as well
         self.dispatcher.stop_scheduler()
