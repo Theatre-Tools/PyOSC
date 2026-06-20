@@ -1,5 +1,6 @@
 import socket
 import threading
+from dataclasses import dataclass
 from select import select
 from typing import TYPE_CHECKING, Optional
 
@@ -12,6 +13,7 @@ if TYPE_CHECKING:
     from .peer import Peer
 
 
+@dataclass
 class connectionFamily:
     connection: Optional[socket.socket] = None
     binding: Optional[socket.socket] = None
@@ -23,6 +25,7 @@ class connectionFamily:
             self.binding.close()
 
 
+@dataclass
 class threadFamily:
     _acceptance_thread: Optional[threading.Thread] = None
     _listener_thread: Optional[threading.Thread] = None
