@@ -14,7 +14,6 @@ from pyosc.call_handler import CallHandler, CallHandler_Response
 from pyosc.dispatcher import Dispatcher, DispatcherInterface, Handler
 
 from .acceptor import _accept_connection
-from .connection import _tcp_listener
 from .initiator import _initiate_connection
 from .transport import ConnectionRole, Remote, Transport
 from .udp import UDPTransport
@@ -219,9 +218,6 @@ class Peer:
         """
         raise NotImplementedError("send_message is not implemented in the base Peer class. Use a specific transport class.")
 
-        """Proxy Methods: Proxy methods exist for the purpose of an nicer developer experience.
-        """
-
     def handler(self, *args, **kwargs):
         """Proxy method for the dispatcher's handler decorator."""
         return self.dispatcher.handler(*args, **kwargs)
@@ -302,27 +298,15 @@ class Peer:
             prefix=prefix,
         )
 
-    def listen_tcp(self):
-        """Initiates a background TCP listener
-
-        Raises:
-            e: Any exceptions raised during listening are propagated upwards
-        """
-        if self.connection_role == ConnectionRole.ACCEPTING:
-            _accept_connection(self)
-            return
-
-        self.listener_background = threading.Thread(target=_tcp_listener, daemon=True)
-        self.listener_background.start()
-
     def start_listening(self):
         """Invokes above methods to start a connection dependant on mode."""
         # Start the dispatcher's scheduler for timestamped bundles
         self.dispatcher.start_scheduler()
-        if self.transport == OSCTransport.TCP:
-            if self.connection_role == ConnectionRole.INITIATING:
-                self.listener_background = threading.Thread(target=_tcp_listener, daemon=True)
-                self.listener_background.start()
+        try:
+            if self.connection:
+                self.connection.start()
+        except Exception as e:
+            self._emit_error(e)
 
     def stop_listening(self):
         """Stops listening to incoming messages byterminating the background thread"""
