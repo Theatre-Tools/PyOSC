@@ -1,8 +1,14 @@
 from typing import Protocol
 
 from oscparser import OSCBundle, OSCMessage
+from pydantic import BaseModel
 
 from .dispatcher import Dispatcher
+
+
+class Remote(BaseModel):
+    address: str
+    port: int
 
 
 class Transport(Protocol):
