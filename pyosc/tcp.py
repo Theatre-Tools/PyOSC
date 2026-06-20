@@ -37,12 +37,10 @@ class threadFamily:
     _bind_thread: Optional[threading.Thread] = None
 
     def graceful_close(self):
-        if self._acceptance_thread:
-            self._acceptance_thread.join(timeout=1)
-        if self._listener_thread:
-            self._listener_thread.join(timeout=1)
-        if self._bind_thread:
-            self._bind_thread.join(timeout=1)
+
+        for thread in (self._acceptance_thread, self._listener_thread, self._bind_thread):
+            if thread and thread.is_alive():
+                thread.join(timeout=1)
 
 
 class TCPTransport(Transport):
