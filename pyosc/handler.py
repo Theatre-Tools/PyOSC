@@ -1,4 +1,3 @@
-## Define a type variable for the controller that is covariant, allowing it to accept subclasses of BaseModel
 import re
 from typing import Callable, ParamSpec, Protocol, TypeVar
 
