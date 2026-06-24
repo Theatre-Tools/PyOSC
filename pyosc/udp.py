@@ -92,11 +92,3 @@ class UDPTransport(Transport):
                 self.conn.sendto(encoded_packet, (remote.address, remote.port))
             except OSError as e:
                 raise PeerConnectionError(f"Could not send UDP packet to {remote.address}:{remote.port} - {e}") from e
-
-    def __enter__(self):
-        self.start()
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        if hasattr(self, "conn"):
-            self.conn.close()
