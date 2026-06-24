@@ -195,21 +195,28 @@ class Peer:
         return func
 
     def _emit(self, event_name: str, *args):
-        handlers = self._event_handlers.get(event_name, [])
-        for handler in handlers:
-            handler(*args)
+        try:
+            handlers = self._event_handlers.get(event_name, [])
+            for handler in handlers:
+                handler(*args)
+        except Exception as e:
+            self._emit_error(e)
+            if self.connection:
+                self.connection.close()
 
     def _emit_error(self, error: Exception | str):
         self.last_error = error
         self._emit("error", self, error)
 
     def _emit_connection_state(self, is_connected: bool):
+
         if is_connected:
             self.connected.set()
             self._emit("connect", self)
         else:
             self.connected.clear()
             self._emit("disconnect", self)
+
 
     def send_message(self, message: OSCMessage):
         """
@@ -310,6 +317,10 @@ class Peer:
                 self.connection.start()
         except Exception as e:
             self._emit_error(e)
+        except KeyboardInterrupt:
+            print("KeyboardInterrupt received. Stopping listening.")
+            if self.connection:
+                self.connection.close()
 
     def stop_listening(self):
         """Stops listening to incoming messages byterminating the background thread"""
