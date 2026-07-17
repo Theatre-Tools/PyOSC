@@ -4,8 +4,6 @@ from typing import Protocol
 from oscparser import OSCBundle, OSCMessage
 from pydantic import BaseModel
 
-from .dispatcher import Dispatcher
-
 
 class ConnectionRole(Enum):
     INITIATING = "initiating"
@@ -29,4 +27,4 @@ class Transport(Protocol):
 
     def start(self): ...
 
-    def add_dispatcher(self, dispatcher: "Dispatcher"): ...
+    def close(self): ...

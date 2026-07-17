@@ -85,11 +85,6 @@ class TCPTransport(Transport):
             bind = Bind(bind_address=peer.bind_ip, bind_port=peer.bind_port)
             return cls(peer=peer, framing=peer.framing, connection_role=ConnectionRole.ACCEPTING, bind=bind)
 
-    def close(self):
-        self.peer.stop_flag.set()
-        self.connection.graceful_close()
-        self.threads.graceful_close()
-        self.peer._emit_connection_state(False)
 
     def _bind_tcp_acceptor(self):
         try:
@@ -173,3 +168,9 @@ class TCPTransport(Transport):
             self.threads.graceful_close()
             self.peer._emit_connection_state(False)
             raise PeerConnectionError(f"Error occurred while starting TCP transport: {e}")
+
+    def close(self):
+        self.peer.stop_flag.set()
+        self.connection.graceful_close()
+        self.threads.graceful_close()
+        self.peer._emit_connection_state(False)
