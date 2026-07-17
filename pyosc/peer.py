@@ -242,7 +242,6 @@ class Peer:
         message_return_address: str | None = None,
         timeout: float = 5.0,
         max_responses: int = 1,
-        prefix: int = 0,
     ) -> CallHandler_Response[OSCMessage] | None: ...
 
     @overload
@@ -254,7 +253,6 @@ class Peer:
         validator: type[T],
         timeout: float = 5.0,
         max_responses: int = 1,
-        prefix: int = 0,
     ) -> CallHandler_Response[T] | None: ...
 
     def call(
@@ -265,7 +263,6 @@ class Peer:
         validator: type[BaseModel] = OSCMessage,
         timeout: float = 5.0,
         max_responses: int = 1,
-        prefix: int = 0,
     ) -> CallHandler_Response[Any] | list[CallHandler_Response[Any]] | None:
         """
         Proxies the call to the CallHandler instance for this peer.
@@ -276,7 +273,6 @@ class Peer:
             validator (type[BaseModel], optional): The validator to use for the response. Defaults to OSCMessage.
             timeout (float, optional): The timeout for the call. Defaults to 5.0.
             max_responses (int, optional): The maximum number of responses to wait for. Defaults to 1.
-            prefix (int, optional): The number of leading arguments in the response to ignore when validating. Defaults to 0.
 
         Returns:
             CallHandler_Response | None: A CallHandler_Response containing the response message and latency, or None if the call timed out.
@@ -287,7 +283,6 @@ class Peer:
             validator=validator,
             timeout=timeout,
             max_responses=max_responses,
-            prefix=prefix,
         )
 
     def start_listening(self):

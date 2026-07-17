@@ -7,6 +7,8 @@ from typing import Any, overload
 from oscparser import OSCMessage
 from pydantic import BaseModel, ValidationError
 
+from .exceptions import CallHandlerValidationError
+
 
 class CallHandler_Response[T: BaseModel]:
     def __init__(self, message: T, latency: float):
@@ -15,14 +17,9 @@ class CallHandler_Response[T: BaseModel]:
 
 
 class Call:
-    def __init__[T: BaseModel](self, queue: queue.Queue[T], validator: type[T], prefix: int = 0):
+    def __init__[T: BaseModel](self, queue: queue.Queue[T], validator: type[T]):
         self.queue = queue
         self.validator = validator
-        self.prefix_remaining = max(0, prefix)
-
-
-class CallHandlerValidationError(ValueError):
-    pass
 
 
 class CallHandler:
@@ -39,7 +36,6 @@ class CallHandler:
         message_return_address: str | None = None,
         timeout: float = 5.0,
         max_responses: int = 1,
-        prefix: int = 0,
     ) -> CallHandler_Response[OSCMessage] | list[CallHandler_Response[OSCMessage]] | None: ...
 
     @overload
@@ -51,7 +47,6 @@ class CallHandler:
         validator: type[T],
         timeout: float = 5.0,
         max_responses: int = 1,
-        prefix: int = 0,
     ) -> CallHandler_Response[T] | list[CallHandler_Response[T]] | None: ...
 
     def call(
@@ -62,7 +57,6 @@ class CallHandler:
         validator: type[BaseModel] | None = None,
         timeout: float = 5.0,
         max_responses: int = 1,
-        prefix: int = 0,
     ) -> CallHandler_Response[Any] | list[CallHandler_Response[Any]] | None:
         """Calling a call handler will send a message to the peer, and await a response that meets the critieria.
 
@@ -72,12 +66,9 @@ class CallHandler:
             ``validator (type[BaseModel] | None, optional)``: A Pydantic model to validate the response against. Defaults to None.
             ``timeout (float, optional)``: How long to wait for a response before timing out. Defaults to 5.0.
             ``max_responses (int, optional)``: How many responses to wait for before returning. Defaults to 1.
-            ``prefix (int, optional)``: How many messages to ignore before starting to listen for responses.
         Returns:
             - CallHandler_Response | list[CallHandler_Response] | None: A CallHandler_Response or list of CallHandler_Responses containing the response messages and latencies, or None if the call timed out.
         """
-        if prefix > 0:
-            max_responses = max_responses - prefix
 
         if validator is None:
             validator = OSCMessage
@@ -86,7 +77,7 @@ class CallHandler:
         responseq = queue.Queue()
         with self.queue_lock:
             handler = self.peer.register_handler(message_return_address, self)
-            self.queues[handler.pattern] = Call(responseq, validator, prefix)
+            self.queues[handler.pattern] = Call(responseq, validator)
         start_time = perf_counter_ns()
         try:
             self.peer.send_message(message)
@@ -127,11 +118,6 @@ class CallHandler:
                 return
             call = self.queues.get(pattern[0])
             if call is None:
-                return
-
-            # Ignore prefixed responses before running validation.
-            if call.prefix_remaining > 0:
-                call.prefix_remaining -= 1
                 return
 
             try:
