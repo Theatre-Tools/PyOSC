@@ -217,7 +217,6 @@ class Peer:
             self.connected.clear()
             self._emit("disconnect", self)
 
-
     def send_message(self, message: OSCMessage):
         """
         Sends an OSC packet with a given message to the peer
@@ -324,15 +323,10 @@ class Peer:
 
     def stop_listening(self):
         """Stops listening to incoming messages byterminating the background thread"""
-        self.stop_flag.set()
-        if self.accept_background is not None and self.accept_background.is_alive():
-            self.accept_background.join(timeout=1)
-        if self.listener_background is not None and self.listener_background.is_alive():
-            self.listener_background.join(timeout=1)
-        if self.background is not None and self.background.is_alive():
-            self.background.join(timeout=1)
-        if self.bind is not None:
-            self.bind.close()
-        self._emit_connection_state(False)
-        # Stop the scheduler as well
-        self.dispatcher.stop_scheduler()
+        if self.connection:
+            self.connection.close()
+            self._emit_connection_state(False)
+            # Stop the scheduler as well
+            self.dispatcher.stop_scheduler()
+        else:
+            raise RuntimeError("No connection to stop listening on.")
