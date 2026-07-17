@@ -120,23 +120,6 @@ class Peer:
         self.dispatcher = Dispatcher(error_emit=self._emit_error)
         self.callHandler = CallHandler(self)
 
-        ##if self.connection_role and self.transport == OSCTransport.TCP:
-        ##    # Connection roles only apply to TCP peers, as UDP is connectionless. If a connection role is specified for a UDP peer, raise an error.
-        ##    if self.connection_role == ConnectionRole.INITIATING:
-        ##        self.tcp_connection = _initiate_connection(self)
-        ##        self.dispatcher = Dispatcher(error_emit=self._emit_error)
-        ##        self.callHandler = CallHandler(self)
-        ##    else:
-        ##        _accept_connection(self)
-        ##        self.dispatcher = Dispatcher(error_emit=self._emit_error)
-        ##        self.callHandler = CallHandler(self)
-
-    ##
-    ##elif not self.connection_role and self.transport == OSCTransport.UDP:
-    ##    if self.remote_address and self.remote_port:
-    ##        self.remotes.append(Remote(address=self.remote_address, port=self.remote_port))
-    ##
-
     def _normalize_event_name(self, raw_name: str) -> str:
         aliases = {
             "connect": "connect",
