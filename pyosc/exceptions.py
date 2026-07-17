@@ -40,3 +40,6 @@ class PeerConnectionError(PeerError):
 
 class PeerListenerError(PeerError):
     """Raised when a background listener fails."""
+
+class CallHandlerValidationError(ValueError):
+    pass
