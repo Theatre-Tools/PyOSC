@@ -84,8 +84,8 @@ class CallHandler:
             if max_responses > 1:
                 response_list = []
                 for i in range(max_responses):
-                    latency = perf_counter_ns() - start_time
                     try:
+                        latency = perf_counter_ns() - start_time
                         response_list.append(
                             CallHandler_Response(
                                 message=responseq.get(timeout=timeout),
