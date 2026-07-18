@@ -3,22 +3,11 @@ from typing import Callable, ParamSpec, Protocol, TypeVar
 
 from pydantic import BaseModel, ValidationError
 
+from .exceptions import DispatcherMissingFieldError, DispatcherTypeMismatchError, DispatcherValidationError
+
 
 class DispatcherInterface[T: BaseModel](Protocol):
     def __call__(self, message: T) -> None: ...
-
-
-## Define custom exceptions for the dispatcher to provide more specific error handling capabilities.
-class DispatcherValidationError(ValueError):
-    pass
-
-
-class DispatcherMissingFieldError(DispatcherValidationError):
-    pass
-
-
-class DispatcherTypeMismatchError(DispatcherValidationError):
-    pass
 
 
 T_C = TypeVar("T_C", bound=BaseModel, covariant=True)
