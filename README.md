@@ -7,6 +7,10 @@ Python library to support OSC (Open Sound Control).
 
 I had issues getting the support I needed out of any of the other packages, so I decided to build my own from scratch. I wanted something that was simple to use, and handled OSC peers in a way that makes sense to me, given that most libruaryies try and apply a client server model that doesn't really exist in OSC. I also wanted to support both UDP and TCP transport protocols, as well as both OSC version 1.0 and 1.1. I wanted to make sure the library was flexible enough for me to work the way I wanted to work, and that it would be easy to treat OSC more as an API, than as a messaging protocol.
 
+#### Update 18.7.2026
+Yes, I am still actively working hard on version 2.0.0 of this project. However, It does have to happen in my spare (ish) time, of which I now have a little bit more. I hope to have version 2.0.0 released with new features by the end of hopefully August (2026) however that might slip based on work commitments. If you have any interest in the progess of that, check out the branch [2.0.0](https://github.com/Theatre-Tools/PyOSC/tree/2.0.0) and the issues. If you have any specific features you would like to see in version 2.0.0, shoot an issue over and I'll see what I can do. <br>
+\- Morph Tollon
+
 ## Features
 - Support for both UDP and TCP transport protocols
 - Flexible message handling with customizable handlers
