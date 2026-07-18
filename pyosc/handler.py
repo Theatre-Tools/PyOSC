@@ -214,6 +214,16 @@ class Handler:
             raise ValueError("Unregister action not bound for this handler.")
         self._unregister_action()
 
+    def drop(self) -> None:
+        """Proxy method for unregister
+
+        Raises:
+            ValueError: If the unregister action is not bound to this handler, which should never happen if handlers are created through the Dispatcher's register_handler method or handler decorator.
+        """
+        if not self._unregister_action:
+            raise ValueError("Unregister action not bound for this handler.")
+        self._unregister_action()
+
     def pause(self) -> None:
         """Proxy method for pause
 
