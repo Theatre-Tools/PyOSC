@@ -25,6 +25,9 @@ class Peer:
         Exception: If the connection to the peer cannot be established
     """
 
+    send_message: Callable[[OSCMessage], None]
+
+
     @overload
     def __init__(
         self,
@@ -117,6 +120,7 @@ class Peer:
             self.connection = UDPTransport.from_peer(self)
         else:
             self.connection = TCPTransport.from_peer(self)
+        self.send_message = self.connection.send
         self.dispatcher = Dispatcher(error_emit=self._emit_error)
         self.callHandler = CallHandler(self)
 
@@ -200,15 +204,6 @@ class Peer:
             self.connected.clear()
             self._emit("disconnect", self)
 
-    def send_message(self, message: OSCMessage):
-        """
-        Sends an OSC packet with a given message to the peer
-        - ``message``: The OSCMessage to send
-        Raises:
-            e: Any exceptions raised during sending are propagated upwards
-
-        """
-        raise NotImplementedError("send_message is not implemented in the base Peer class. Use a specific transport class.")
 
     def handler(self, *args, **kwargs):
         """Proxy method for the dispatcher's handler decorator."""
