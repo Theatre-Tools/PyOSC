@@ -1,5 +1,4 @@
 import inspect
-import socket
 import threading
 from typing import Any, Callable, Literal, overload
 
@@ -101,9 +100,6 @@ class Peer:
         self.remotes: list[Remote] = []
         if not self.remote_address:
             self.learning = True
-        self.bind: socket.socket | None = None
-        self.accept_background: threading.Thread | None = None
-        self.listener_background: threading.Thread | None = None
         self.connected = threading.Event()
         self.last_error: Exception | str | None = None
         self.background: threading.Thread | None = None
