@@ -287,7 +287,6 @@ class Peer:
 
     def start_listening(self):
         """Invokes above methods to start a connection dependant on mode."""
-        # Start the dispatcher's scheduler for timestamped bundles
         self.dispatcher.start_scheduler()
         try:
             if self.connection:
