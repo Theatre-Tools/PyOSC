@@ -40,7 +40,7 @@ class UDPTransport(Transport):
     def _listener_thread(self):
         try:
             while self.peer.stop_flag.is_set() is False:
-                read, _write, _exec = select([self.conn], [], [], 0.01)
+                read = select([self.conn], [], [], 0.01)[0]
                 for sock in read:
                     data, addr = sock.recvfrom(2**16)
                     if addr[0] not in [remote.address for remote in self.remotes]:
