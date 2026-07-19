@@ -304,7 +304,6 @@ class Peer:
         if self.connection:
             self.connection.close()
             self._emit_connection_state(False)
-            # Stop the scheduler as well
             self.dispatcher.stop_scheduler()
         else:
             raise RuntimeError("No connection to stop listening on.")
