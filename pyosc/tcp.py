@@ -71,7 +71,7 @@ class TCPTransport(Transport):
             self.remote = remote
 
     @classmethod
-    def from_peer(cls, peer: "Peer") -> "TCPTransport":
+    def create_from_peer(cls, peer: "Peer") -> "TCPTransport":
         if (
             peer.connection_role == ConnectionRole.INITIATING
             and peer.remote_address is not None
@@ -84,7 +84,6 @@ class TCPTransport(Transport):
                 raise ConnectionError("Invalid bind interface for accepting connection")
             bind = Bind(bind_address=peer.bind_ip, bind_port=peer.bind_port)
             return cls(peer=peer, framing=peer.framing, connection_role=ConnectionRole.ACCEPTING, bind=bind)
-
 
     def _bind_tcp_acceptor(self):
         try:

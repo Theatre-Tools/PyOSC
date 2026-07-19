@@ -13,9 +13,7 @@ from pydantic import BaseModel
 from pyosc.call_handler import CallHandler, CallHandler_Response
 from pyosc.dispatcher import Dispatcher, DispatcherInterface, Handler
 
-from .tcp import TCPTransport
 from .transport import ConnectionRole, Remote, Transport
-from .udp import UDPTransport
 
 
 class Peer:
@@ -116,13 +114,10 @@ class Peer:
             "disconnect": [],
             "error": [],
         }
-        if transport == OSCTransport.UDP:
-            self.connection = UDPTransport.from_peer(self)
-        else:
-            self.connection = TCPTransport.from_peer(self)
-        self.send_message = self.connection.send
+        self.connection = Transport.from_peer(self)
         self.dispatcher = Dispatcher(error_emit=self._emit_error)
         self.callHandler = CallHandler(self)
+        self.send_message = self.connection.send
 
     def _normalize_event_name(self, raw_name: str) -> str:
         aliases = {
