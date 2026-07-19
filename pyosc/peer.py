@@ -98,6 +98,8 @@ class Peer:
         self.connection_role = connection_role
         self.learning = learning
         self.remotes: list[Remote] = []
+        if self.remote_address and self.remote_port:
+            self.remotes.append(Remote(address=self.remote_address, port=self.remote_port))
         if not self.remote_address:
             self.learning = True
         self.connected = threading.Event()
