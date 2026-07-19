@@ -76,11 +76,11 @@ class CallHandler:
             message_return_address = message.address
         responseq = queue.Queue()
         with self.queue_lock:
-            handler = self.peer.register_handler(message_return_address, self)
+            handler = self.peer.dispatcher.register_handler(message_return_address, self)
             self.queues[handler.pattern] = Call(responseq, validator)
-        start_time = perf_counter_ns()
         try:
-            self.peer.send_message(message)
+            self.peer.connection.send(message)
+            start_time = perf_counter_ns()
             if max_responses > 1:
                 response_list = []
                 for i in range(max_responses):
