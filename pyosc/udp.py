@@ -45,7 +45,7 @@ class UDPTransport(Transport):
                     data, addr = sock.recvfrom(2**16)
                     if addr[0] not in [remote.address for remote in self.remotes]:
                         if not self.learning:
-                            continue
+                            pass
                         else:
                             if addr[0] not in [remote.address for remote in self.remotes]:
                                 if not self.remote_port:
