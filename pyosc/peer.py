@@ -25,7 +25,6 @@ class Peer:
 
     send_message: Callable[[OSCMessage], None]
 
-
     @overload
     def __init__(
         self,
@@ -102,7 +101,6 @@ class Peer:
         self.remotes: list[Remote] = []
         if not self.remote_address:
             self.learning = True
-        # Initialize connection attributes so static checkers know they exist
         self.bind: socket.socket | None = None
         self.accept_background: threading.Thread | None = None
         self.listener_background: threading.Thread | None = None
@@ -198,7 +196,6 @@ class Peer:
         else:
             self.connected.clear()
             self._emit("disconnect", self)
-
 
     def handler(self, *args, **kwargs):
         """Proxy method for the dispatcher's handler decorator."""
