@@ -42,4 +42,4 @@ class PeerListenerError(PeerError):
     """Raised when a background listener fails."""
 
 class CallHandlerValidationError(ValueError):
-    pass
+    """Raised when a message fails validation in the call handler."""
