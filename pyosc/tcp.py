@@ -1,4 +1,5 @@
 import socket
+import sys
 import threading
 from dataclasses import dataclass
 from select import select
@@ -89,6 +90,11 @@ class TCPTransport(Transport):
         try:
             self.connection.binding = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.connection.binding.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            if hasattr(socket, "TCP_FASTOPEN"):
+                try:
+                    self.connection.binding.setsockopt(socket.IPPROTO_TCP, socket.TCP_FASTOPEN, 5)
+                except OSError:
+                    pass
             self.connection.binding.bind((self.bind.bind_address, self.bind.bind_port))
             self.connection.binding.listen(1)
             self.threads._acceptance_thread = threading.Thread(target=self._accept_tcp_connection, args=(), daemon=True)
@@ -123,6 +129,11 @@ class TCPTransport(Transport):
         if self.remote:
             self.connection.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.connection.connection.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+            if sys.platform == 'linux':
+                self.connection.connection.setsockopt(socket.IPPROTO_TCP, socket.TCP_QUICKACK, 1)
+            self.connection.connection.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 4096)
+            self.connection.connection.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 4096)
+
             self.connection.connection.connect((self.remote.address, self.remote.port))
             self.peer._emit_connection_state(True)
             self.threads._listener_thread = threading.Thread(target=self._tcp_listener, daemon=True)
