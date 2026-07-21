@@ -11,6 +11,13 @@ from .exceptions import CallHandlerValidationError
 
 
 class CallHandler_Response[T: BaseModel]:
+    """CallHandler_Response
+
+    Args:
+        message: The response message from the peer, validated against the provided Pydantic model.
+        latency: Response time in milliseconds (ms).
+    """
+
     def __init__(self, message: T, latency: float):
         self.message = message
         self.latency = latency
