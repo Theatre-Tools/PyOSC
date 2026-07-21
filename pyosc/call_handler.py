@@ -95,7 +95,7 @@ class CallHandler:
                             )
                         )
                     except queue.Empty:
-                        if response_list:
+                        if response_list.__len__() > 0:
                             return response_list
                         else:
                             return None
