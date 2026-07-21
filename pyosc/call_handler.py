@@ -74,10 +74,10 @@ class CallHandler:
             validator = OSCMessage
         if not message_return_address:
             message_return_address = message.address
-        responseq = queue.Queue()
+        responses = queue.Queue()
         with self.queue_lock:
             handler = self.peer.dispatcher.register_handler(message_return_address, self)
-            self.queues[handler.pattern] = Call(responseq, validator)
+            self.queues[handler.pattern] = Call(responses, validator)
         try:
             self.peer.connection.send(message)
             start_time = perf_counter_ns()
@@ -88,7 +88,7 @@ class CallHandler:
                         latency = perf_counter_ns() - start_time
                         response_list.append(
                             CallHandler_Response(
-                                message=responseq.get(timeout=timeout),
+                                message=responses.get(timeout=timeout),
                                 latency=latency / 1e6,
                             )
                         )
@@ -99,7 +99,7 @@ class CallHandler:
                             return None
                 return response_list
             else:
-                response = responseq.get(timeout=timeout)
+                response = responses.get(timeout=timeout)
                 latency = perf_counter_ns() - start_time
                 return CallHandler_Response(message=response, latency=latency / 1e6)
         except queue.Empty:
