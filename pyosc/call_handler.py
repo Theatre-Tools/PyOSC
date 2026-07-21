@@ -69,6 +69,8 @@ class CallHandler:
         Returns:
             - CallHandler_Response | list[CallHandler_Response] | None: A CallHandler_Response or list of CallHandler_Responses containing the response messages and latencies, or None if the call timed out.
         """
+        if not max_responses >= 1:
+            raise ValueError("max_responses must be greater than 0")
 
         if validator is None:
             validator = OSCMessage
