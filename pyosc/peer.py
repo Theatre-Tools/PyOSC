@@ -1,6 +1,6 @@
 import inspect
 import threading
-from typing import Any, Callable, Literal, overload
+from typing import Callable, Literal, overload
 
 from oscparser import (
     OSCFraming,
@@ -9,7 +9,7 @@ from oscparser import (
 )
 from pydantic import BaseModel
 
-from pyosc.call_handler import CallHandler, CallHandler_Response
+from pyosc.call_handler import CallHandler
 from pyosc.dispatcher import Dispatcher, DispatcherInterface, Handler
 
 from .transport import ConnectionRole, Remote, Transport
@@ -214,61 +214,6 @@ class Peer:
         validator: type[T] = OSCMessage,
     ) -> Handler:
         return self.dispatcher.register_handler(message_address, func, validator)
-
-    """
-    Call methods require overloads to properly type hint the various return types based on the presence of a validator.
-    The implementation is all handled by the CallHandler class, which the Peer class proxies to for a nicer developer experience."""
-
-    @overload
-    def call(
-        self,
-        message: OSCMessage,
-        *,
-        message_return_address: str | None = None,
-        timeout: float = 5.0,
-        max_responses: int = 1,
-    ) -> CallHandler_Response[OSCMessage] | None: ...
-
-    @overload
-    def call[T: BaseModel](
-        self,
-        message: OSCMessage,
-        *,
-        message_return_address: str | None = None,
-        validator: type[T],
-        timeout: float = 5.0,
-        max_responses: int = 1,
-    ) -> CallHandler_Response[T] | None: ...
-
-    def call(
-        self,
-        message: OSCMessage,
-        *,
-        message_return_address: str | None = None,
-        validator: type[BaseModel] = OSCMessage,
-        timeout: float = 5.0,
-        max_responses: int = 1,
-    ) -> CallHandler_Response[Any] | list[CallHandler_Response[Any]] | None:
-        """
-        Proxies the call to the CallHandler instance for this peer.
-
-        Args:
-            message (OSCMessage): The OSCMessage to send as the call request.
-            message_return_address (str | None, optional): The address to which the response should be sent. Defaults to None.
-            validator (type[BaseModel], optional): The validator to use for the response. Defaults to OSCMessage.
-            timeout (float, optional): The timeout for the call. Defaults to 5.0.
-            max_responses (int, optional): The maximum number of responses to wait for. Defaults to 1.
-
-        Returns:
-            CallHandler_Response | None: A CallHandler_Response containing the response message and latency, or None if the call timed out.
-        """
-        return self.callHandler.call(
-            message,
-            message_return_address=message_return_address,
-            validator=validator,
-            timeout=timeout,
-            max_responses=max_responses,
-        )
 
     def start_listening(self):
         """Invokes above methods to start a connection dependant on mode."""
