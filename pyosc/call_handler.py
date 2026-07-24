@@ -113,6 +113,8 @@ class CallHandler:
                 return CallHandler_Response(message=response, latency=latency / 1e6)
         except queue.Empty:
             return None
+        except Exception as e:
+            self.peer._emit_error(e)
         finally:
             with self.queue_lock:
                 self.queues.pop(handler.pattern, None)
@@ -133,3 +135,5 @@ class CallHandler:
                 call.queue.put(call.validator.model_validate(message.model_dump()))
             except ValidationError as e:
                 raise CallHandlerValidationError(f"CallHandler validation error: {e}") from e
+            except Exception as e:
+                self.peer._emit_error(e)
