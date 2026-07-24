@@ -5,9 +5,7 @@ from time import perf_counter_ns
 from typing import Any, overload
 
 from oscparser import OSCMessage
-from pydantic import BaseModel, ValidationError
-
-from .exceptions import CallHandlerValidationError
+from pydantic import BaseModel
 
 
 class CallHandler_Response[T: BaseModel]:
@@ -133,7 +131,5 @@ class CallHandler:
 
             try:
                 call.queue.put(call.validator.model_validate(message.model_dump()))
-            except ValidationError as e:
-                raise CallHandlerValidationError(f"CallHandler validation error: {e}") from e
             except Exception as e:
                 self.peer._emit_error(e)
