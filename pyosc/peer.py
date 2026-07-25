@@ -220,7 +220,7 @@ class Peer:
         self.dispatcher.start_scheduler()
         try:
             if self.connection:
-                self.connection.start()
+                self.connection.listen()
         except Exception as e:
             self._emit_error(e)
         except KeyboardInterrupt:
