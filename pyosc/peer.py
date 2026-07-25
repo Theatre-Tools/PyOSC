@@ -217,8 +217,9 @@ class Peer:
 
     def start_listening(self):
         """Invokes above methods to start a connection dependant on mode."""
-        self.dispatcher.start_scheduler()
         try:
+            if self.dispatcher:
+                self.dispatcher.start_scheduler()
             if self.connection:
                 self.connection.listen()
         except Exception as e:
