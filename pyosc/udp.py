@@ -66,7 +66,7 @@ class UDPTransport(Transport):
             if hasattr(self, "conn"):
                 self.conn.close()
 
-    def start(self):
+    def listen(self):
         try:
             conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             conn.bind((self.bind_ip, self.bind_port))

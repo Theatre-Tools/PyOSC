@@ -7,6 +7,7 @@ from pydantic import BaseModel
 if TYPE_CHECKING:
     from .peer import Peer
 
+
 class ConnectionRole(Enum):
     INITIATING = "initiating"
     ACCEPTING = "accepting"
@@ -23,22 +24,21 @@ class Bind(BaseModel):
 
 
 class Transport(Protocol):
-
     @staticmethod
     def from_peer(peer: "Peer") -> "Transport":
         if peer.transport == OSCTransport.UDP:
             from .udp import UDPTransport
+
             return UDPTransport.create_from_peer(peer)
         elif peer.transport == OSCTransport.TCP:
             from .tcp import TCPTransport
+
             return TCPTransport.create_from_peer(peer)
         else:
             raise ValueError(f"Unsupported transport type: {peer.transport}")
 
     def send(self, packet: OSCMessage | OSCBundle): ...
 
-    def receive(self) -> OSCMessage | OSCBundle: ...
-
-    def start(self): ...
+    def listen(self): ...
 
     def close(self): ...

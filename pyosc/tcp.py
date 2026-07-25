@@ -129,7 +129,7 @@ class TCPTransport(Transport):
         if self.remote:
             self.connection.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.connection.connection.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-            if sys.platform == 'linux':
+            if sys.platform == "linux":
                 self.connection.connection.setsockopt(socket.IPPROTO_TCP, socket.TCP_QUICKACK, 1)
             self.connection.connection.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 4096)
             self.connection.connection.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 4096)
@@ -166,7 +166,7 @@ class TCPTransport(Transport):
         except Exception as e:
             self.peer._emit_error(PeerConnectionError(f"Error occurred while sending TCP data: {e}"))
 
-    def start(self):
+    def listen(self):
         try:
             if self.connection_role == ConnectionRole.INITIATING:
                 self._initiate_tcp_connection()
