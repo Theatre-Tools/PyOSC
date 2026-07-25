@@ -228,6 +228,8 @@ class Peer:
             print("KeyboardInterrupt received. Stopping listening.")
             if self.connection:
                 self.connection.close()
+            if self.dispatcher:
+                self.dispatcher.stop_scheduler()
 
     def stop_listening(self):
         """Stops listening to incoming messages byterminating the background thread"""
