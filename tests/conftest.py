@@ -5,7 +5,7 @@ import time
 from typing import Generator
 
 import pytest
-from oscparser import OSCEncoder, OSCFraming, OSCModes
+from oscparser import OSCEncoder, OSCFraming, OSCTransport
 
 
 @pytest.fixture
@@ -62,13 +62,13 @@ def udp_server(free_udp_port) -> Generator[tuple[socket.socket, int], None, None
 @pytest.fixture
 def osc_encoder_tcp() -> OSCEncoder:
     """Get an OSC encoder for TCP mode."""
-    return OSCEncoder(mode=OSCModes.TCP, framing=OSCFraming.OSC10)
+    return OSCEncoder(transport=OSCTransport.TCP, framing=OSCFraming.OSC10)
 
 
 @pytest.fixture
 def osc_encoder_udp() -> OSCEncoder:
     """Get an OSC encoder for UDP mode."""
-    return OSCEncoder(mode=OSCModes.UDP, framing=OSCFraming.OSC10)
+    return OSCEncoder(transport=OSCTransport.UDP, framing=OSCFraming.OSC10)
 
 
 def wait_for_condition(condition_func, timeout=1.0, interval=0.01):
