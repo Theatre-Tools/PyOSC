@@ -26,7 +26,7 @@ class UDPTransport(Transport):
         self.learning = learning
 
     @classmethod
-    def create_from_peer(cls, peer: Peer) -> "UDPTransport":
+    def create_from_peer(cls, peer: "Peer") -> "UDPTransport":
         return cls(
             bind_ip=peer.bind_ip,
             bind_port=peer.bind_port,
