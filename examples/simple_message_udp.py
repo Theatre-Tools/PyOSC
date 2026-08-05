@@ -1,12 +1,12 @@
-from pyosc import OSCFraming, OSCInt, OSCMessage, OSCModes, OSCString, Peer
+from pyosc import OSCFraming, OSCInt, OSCMessage, OSCString, OSCTransport, Peer
 
 peer = Peer(
-    "127.0.0.1",
-    8001,
-    mode=OSCModes.UDP,
+    remote_address="127.0.0.1",
+    remote_port=8001,
+    transport=OSCTransport.UDP,
     framing=OSCFraming.OSC10,
-    udp_rx_address="127.0.0.1",
-    udp_rx_port=9002,
+    bind_ip="127.0.0.1",
+    bind_port=9002,
 )
 
 message = OSCMessage(
