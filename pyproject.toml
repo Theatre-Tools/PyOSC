@@ -63,11 +63,25 @@ docs = [
     "markdown (>=3.10,<4.0)"
 ]
 
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["E402"]
+"**/{tests,docs}/*" = ["E402"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+skip-magic-trailing-comma = false
+
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "W1", "W2", "F", "RUF", "I"]
+ignore = ["E501"]
+
 
 [tool.ruff]
 line-length = 127
+target-version = "py313"
 
 [tool.pyright]
 venvPath = "."
