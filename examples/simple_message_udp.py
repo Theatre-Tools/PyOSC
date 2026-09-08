@@ -1,4 +1,5 @@
-from pyosc import OSCFraming, OSCInt, OSCMessage, OSCString, OSCTransport, Peer
+from pyosc import OSCFraming, OSCMessage, OSCTransport, Peer
+from pyosc.types import OSCInt, OSCString
 
 peer = Peer(
     remote_address="127.0.0.1",
