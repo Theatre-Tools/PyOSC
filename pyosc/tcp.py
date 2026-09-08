@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Optional
 
 from oscparser import OSCDecoder, OSCEncoder, OSCFraming, OSCTransport
 
-from .exceptions import PeerConnectionError, PeerListenerError
+from .exceptions import Exceptions
 from .transport import Bind, ConnectionRole, Remote, Transport
 
 if TYPE_CHECKING:
@@ -101,12 +101,12 @@ class TCPTransport(Transport):
             self.threads._acceptance_thread.start()
         except Exception as e:
             self.connection.graceful_close()
-            raise PeerConnectionError(f"Error occurred while binding TCP acceptor: {e}")
+            raise Exceptions.PeerConnectionError(f"Error occurred while binding TCP acceptor: {e}")
 
     def _tcp_listener(self):
         try:
             if not self.peer.connected.is_set() or not self.connection.connection:
-                raise PeerConnectionError("TCP listener cannot start until a client has connected")
+                raise Exceptions.PeerConnectionError("TCP listener cannot start until a client has connected")
             while self.peer.stop_flag.is_set() is False:
                 read, _write, _exec = select([self.connection.connection], [], [], 0.01)
                 for sock in read:
@@ -119,7 +119,7 @@ class TCPTransport(Transport):
                         self.peer.dispatcher.dispatch(msg)
             self.connection.graceful_close()
         except Exception as e:
-            listener_error = PeerListenerError(
+            listener_error = Exceptions.PeerListenerError(
                 f"TCP listener failed for {self.peer.remote_address}:{self.peer.remote_port} - {e}"
             )
             self.peer._emit_error(listener_error)
@@ -139,11 +139,11 @@ class TCPTransport(Transport):
             self.threads._listener_thread = threading.Thread(target=self._tcp_listener, daemon=True)
             self.threads._listener_thread.start()
         else:
-            raise PeerConnectionError("Remote peer must be provided for initiating connection")
+            raise Exceptions.PeerConnectionError("Remote peer must be provided for initiating connection")
 
     def _accept_tcp_connection(self):
         if not self.connection.binding:
-            raise PeerConnectionError("TCP acceptor cannot accept connections without a binding socket")
+            raise Exceptions.PeerConnectionError("TCP acceptor cannot accept connections without a binding socket")
         try:
             connection, address = self.connection.binding.accept()
             self.connection.connection = connection
@@ -155,16 +155,16 @@ class TCPTransport(Transport):
             self.connection.graceful_close()
             self.threads.graceful_close()
             self.peer._emit_connection_state(False)
-            raise PeerConnectionError(f"Error occurred while accepting TCP connection: {e}")
+            raise Exceptions.PeerConnectionError(f"Error occurred while accepting TCP connection: {e}")
 
     def send(self, packet):
         if not self.peer.connected.is_set() or not self.connection.connection:
-            raise PeerConnectionError("Cannot send data, peer is not connected")
+            raise Exceptions.PeerConnectionError("Cannot send data, peer is not connected")
         try:
             encoded_packet = self.encoder.encode(packet)
             self.connection.connection.sendall(encoded_packet)
         except Exception as e:
-            self.peer._emit_error(PeerConnectionError(f"Error occurred while sending TCP data: {e}"))
+            self.peer._emit_error(Exceptions.PeerConnectionError(f"Error occurred while sending TCP data: {e}"))
 
     def listen(self):
         try:
@@ -177,7 +177,7 @@ class TCPTransport(Transport):
             self.connection.graceful_close()
             self.threads.graceful_close()
             self.peer._emit_connection_state(False)
-            raise PeerConnectionError(f"Error occurred while starting TCP transport: {e}")
+            raise Exceptions.PeerConnectionError(f"Error occurred while starting TCP transport: {e}")
 
     def close(self):
         self.peer.stop_flag.set()

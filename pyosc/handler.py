@@ -3,7 +3,7 @@ from typing import Callable, ParamSpec, Protocol, TypeVar
 
 from pydantic import BaseModel, ValidationError
 
-from .exceptions import DispatcherMissingFieldError, DispatcherTypeMismatchError, DispatcherValidationError
+from .exceptions import Exceptions
 
 
 class DispatcherInterface[T: BaseModel](Protocol):
@@ -89,12 +89,14 @@ class Handler:
             errors = e.errors()
             formatted_errors = "; ".join(f"{error['loc']}: {error['msg']} ({error['type']})" for error in errors)
             if any(error["type"] == "missing" for error in errors):
-                raise DispatcherMissingFieldError(
+                raise Exceptions.DispatcherMissingFieldError(
                     f"Validation error: Missing required fields in message {message}. {formatted_errors}"
                 )
             if any(error["type"].endswith("_type") for error in errors):
-                raise DispatcherTypeMismatchError(f"Validation error: Type mismatch in message {message}. {formatted_errors}")
-            raise DispatcherValidationError(f"Validation error: Invalid message {message}. {formatted_errors}")
+                raise Exceptions.DispatcherTypeMismatchError(
+                    f"Validation error: Type mismatch in message {message}. {formatted_errors}"
+                )
+            raise Exceptions.DispatcherValidationError(f"Validation error: Invalid message {message}. {formatted_errors}")
         except Exception as e:
             raise Exception(f"Error in handler: {e}")
 

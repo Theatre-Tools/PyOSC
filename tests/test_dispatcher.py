@@ -9,9 +9,10 @@ from pydantic import BaseModel
 
 from pyosc.dispatcher import Dispatcher
 from pyosc.handler import (
-    DispatcherMissingFieldError,
     Handler,
 )
+
+from pyosc.exceptions import Exceptions
 
 
 class CustomModel(BaseModel):
@@ -111,7 +112,7 @@ class TestHandlerValidation(unittest.TestCase):
         handler = Handler.from_address("/test", mock_dispatcher, StrictModel)
 
         message = OSCMessage(address="/test", args=())
-        with self.assertRaises(DispatcherMissingFieldError):
+        with self.assertRaises(Exceptions.DispatcherMissingFieldError):
             handler.run(message)
 
         # Dispatcher should not be called when validation fails

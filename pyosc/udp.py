@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from oscparser import OSCBundle, OSCDecoder, OSCEncoder, OSCFraming, OSCMessage, OSCTransport
 
-from .exceptions import PeerConfigurationError, PeerConnectionError, PeerListenerError
+from .exceptions import Exceptions
 from .transport import Remote, Transport
 
 if TYPE_CHECKING:
@@ -49,7 +49,7 @@ class UDPTransport(Transport):
                         else:
                             if addr[0] not in [remote.address for remote in self.remotes]:
                                 if not self.remote_port:
-                                    raise PeerConfigurationError(
+                                    raise Exceptions.PeerConfigurationError(
                                         "UDP remote port must be specified for UDP Peers in learning mode"
                                     )
                                 self.remotes.append(Remote(address=addr[0], port=self.remote_port))
@@ -58,7 +58,7 @@ class UDPTransport(Transport):
             self.conn.close()
             self.peer._emit_connection_state(False)
         except Exception as e:
-            listener_error = PeerListenerError(f"UDP listener failed for {self.bind_ip}:{self.bind_port} - {e}")
+            listener_error = Exceptions.PeerListenerError(f"UDP listener failed for {self.bind_ip}:{self.bind_port} - {e}")
             self.peer._emit_error(listener_error)
             self.peer._emit_connection_state(False)
         finally:
@@ -76,22 +76,24 @@ class UDPTransport(Transport):
             self.background.start()
 
         except OSError as e:
-            raise PeerConfigurationError(f"Could not bind UDP Peer to {self.bind_ip}:{self.bind_port} - {e}") from e
+            raise Exceptions.PeerConfigurationError(f"Could not bind UDP Peer to {self.bind_ip}:{self.bind_port} - {e}") from e
 
     def send(self, packet: OSCMessage | OSCBundle):
         if self.conn is None:
-            raise PeerConnectionError("UDP connection is not established.")
+            raise Exceptions.PeerConnectionError("UDP connection is not established.")
         encoded_packet = self.encoder.encode(packet)
         if self.peer.remotes.__len__() == 0:
             if self.learning:
-                raise PeerConnectionError(
+                raise Exceptions.PeerConnectionError(
                     "No remote addresses are known for this UDP peer. Specify a remote address if you want to send messages before receiving messages."
                 )
         for remote in self.peer.remotes:
             try:
                 self.conn.sendto(encoded_packet, (remote.address, remote.port))
             except OSError as e:
-                raise PeerConnectionError(f"Could not send UDP packet to {remote.address}:{remote.port} - {e}") from e
+                raise Exceptions.PeerConnectionError(
+                    f"Could not send UDP packet to {remote.address}:{remote.port} - {e}"
+                ) from e
 
     def close(self):
         self.peer.stop_flag.set()

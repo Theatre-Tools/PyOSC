@@ -25,6 +25,7 @@ from oscparser import (
 
 from pyosc.peer import Peer
 from pyosc.transport import Bind, ConnectionRole, Remote
+from pyosc.exceptions import Exceptions
 
 __all__ = [
     "OSCRGBA",
@@ -53,4 +54,5 @@ __all__ = [
     "OSCTrue",
     "Peer",
     "Remote",
+    "Exceptions",
 ]
