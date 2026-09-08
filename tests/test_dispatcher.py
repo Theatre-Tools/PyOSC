@@ -8,11 +8,10 @@ from oscparser import OSCBundle, OSCInt, OSCMessage
 from pydantic import BaseModel
 
 from pyosc.dispatcher import Dispatcher
+from pyosc.exceptions import Exceptions
 from pyosc.handler import (
     Handler,
 )
-
-from pyosc.exceptions import Exceptions
 
 
 class CustomModel(BaseModel):
